@@ -1,7 +1,9 @@
 /**
  * @leapfrog/core — shared schema, db access, LLM client, and prompts.
- * Populated across the M1/M2 milestones; this stub keeps the workspace wired up.
+ * Populated across the M1/M2 milestones.
  */
+
+export * from './db/index.js';
 
 export const APP_NAME = 'LeapFrog';
 
