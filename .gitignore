@@ -15,6 +15,9 @@ coverage/
 *.log
 npm-debug.log*
 
+# TypeScript build artifacts
+*.tsbuildinfo
+
 # Local database & generated data
 *.sqlite
 *.sqlite-*
