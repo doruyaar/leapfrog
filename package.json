@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "typecheck": "tsc --build",
+    "typecheck": "tsc --build && npm run typecheck --workspace @leapfrog/web",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
