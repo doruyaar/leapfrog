@@ -6,5 +6,8 @@ node_modules
 package-lock.json
 data/seed
 
+# Drizzle-generated migrations & snapshots
+**/drizzle/**
+
 # Hand-authored design docs — not machine-formatted
 docs
