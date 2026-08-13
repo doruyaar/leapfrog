@@ -56,8 +56,10 @@ export const sources = sqliteTable(
 );
 
 /**
- * Immutable ingested items — the system of record. Never mutated after insert;
- * re-ingestion is an idempotent upsert keyed by `urlHash`.
+ * Ingested items — the system of record. Re-ingestion is an idempotent upsert keyed
+ * by `urlHash`: seeing an item again changes nothing unless the source republished it
+ * with different text, which rewrites the content columns and bumps `contentHash`.
+ * Derived rows (enrichment, chunks) are rebuilt from here, never the other way round.
  */
 export const rawItems = sqliteTable(
   'raw_items',

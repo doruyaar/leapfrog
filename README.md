@@ -21,14 +21,26 @@ npm run dev      # open http://localhost:3000
 
 Live ingestion (optional) needs `OPENAI_API_KEY` and `INGEST_LIVE=1`.
 
-## Fetching sources
+## Running the pipeline
 
-The ingestion adapters (RSS/Atom, GitHub Releases, NVD) can be run on their own —
-useful for smoke-testing a new source before adding it to the catalog:
+`npm run ingest` runs the pipeline as far as it is built — fetch, normalize, dedupe,
+persist — into `data/leapfrog.sqlite` (migrations included, so a fresh clone works):
+
+```bash
+npm run ingest                            # every catalog source
+npm run ingest -- --match sonatype        # one vendor
+npm run ingest -- --kind nvd --max 5      # one adapter, 5 items per source
+```
+
+Re-running is a no-op: sources are keyed on their locator and items on a canonical-URL
+hash, so nothing is stored twice. Each source keeps its own fetch cursor, so later runs
+only ask for new items.
+
+`npm run fetch` is the same fetch with no database writes — useful for smoke-testing a
+new source before adding it to the catalog:
 
 ```bash
 npm run fetch -- --max 3                  # every catalog source
-npm run fetch -- --match sonatype         # one vendor
 npm run fetch -- --kind nvd --json        # machine-readable output
 ```
 
