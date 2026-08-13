@@ -3,12 +3,14 @@ import { runEmbedCommand } from './commands/embed.js';
 import { runEnrichCommand } from './commands/enrich.js';
 import { runFetchCommand } from './commands/fetch-sources.js';
 import { runIngestCommand } from './commands/ingest.js';
+import { runSeedCommand } from './commands/seed.js';
 
 const USAGE = `${greet()}
 
 Usage: worker <command> [options]
 
 Commands:
+  seed      Load the committed demo snapshot (no API key needed). Safe to repeat.
   fetch     Run the source adapters against the catalog and print what they return.
   ingest    Fetch, normalize, dedupe, and persist into SQLite. Safe to repeat.
   enrich    Classify, score, and summarize stored raw items with the LLM. Safe to repeat.
@@ -23,7 +25,10 @@ Options (all commands):
   --max <n>                 Cap items (fetch: 10/source, ingest: 25/source, enrich/embed: all pending)
   --json                    Print machine-readable output
 
-Options for "ingest", "enrich", and "embed":
+Options (seed):
+  --skip-embed              Load data only; do not build the retrieval index
+
+Options for "seed", "ingest", "enrich", and "embed":
   --db <path>               SQLite file to use (default data/leapfrog.sqlite)
 
 Environment:
@@ -43,6 +48,8 @@ async function main(argv: string[]): Promise<number> {
   const [command, ...rest] = argv;
 
   switch (command) {
+    case 'seed':
+      return runSeedCommand(rest);
     case 'fetch':
       return runFetchCommand(rest);
     case 'ingest':

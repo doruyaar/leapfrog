@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "seed": "tsx src/index.ts seed",
     "fetch": "tsx src/index.ts fetch",
     "ingest": "tsx src/index.ts ingest",
     "enrich": "tsx src/index.ts enrich",

@@ -20,6 +20,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "dev": "npm run dev --workspace @leapfrog/web",
+    "seed": "npm run build --workspace @leapfrog/core && npm run seed --workspace @leapfrog/worker --",
     "fetch": "npm run build --workspace @leapfrog/core && npm run fetch --workspace @leapfrog/worker --",
     "ingest": "npm run build --workspace @leapfrog/core && npm run ingest --workspace @leapfrog/worker --",
     "enrich": "npm run build --workspace @leapfrog/core && npm run enrich --workspace @leapfrog/worker --",
