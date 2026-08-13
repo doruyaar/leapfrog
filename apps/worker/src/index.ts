@@ -1,4 +1,5 @@
 import { greet } from '@leapfrog/core';
+import { runBriefCommand } from './commands/brief.js';
 import { runEmbedCommand } from './commands/embed.js';
 import { runEnrichCommand } from './commands/enrich.js';
 import { runFetchCommand } from './commands/fetch-sources.js';
@@ -15,6 +16,7 @@ Commands:
   ingest    Fetch, normalize, dedupe, and persist into SQLite. Safe to repeat.
   enrich    Classify, score, and summarize stored raw items with the LLM. Safe to repeat.
   embed     Chunk and embed enriched items into the retrieval index. Safe to repeat.
+  brief     Compose and store today's ranked, cited brief. Safe to repeat.
 
 Options (fetch, ingest):
   --kind <rss|github|nvd>   Only sources of this kind
@@ -28,7 +30,12 @@ Options (all commands):
 Options (seed):
   --skip-embed              Load data only; do not build the retrieval index
 
-Options for "seed", "ingest", "enrich", and "embed":
+Options (brief):
+  --date <YYYY-MM-DD>       Day the brief covers (default today)
+  --top <n>                 Number of signals in the brief (default 8)
+  --notify                  Push impact >= 4 signals to SLACK_WEBHOOK_URL if set
+
+Options for "seed", "ingest", "enrich", "embed", and "brief":
   --db <path>               SQLite file to use (default data/leapfrog.sqlite)
 
 Environment:
@@ -58,6 +65,8 @@ async function main(argv: string[]): Promise<number> {
       return runEnrichCommand(rest);
     case 'embed':
       return runEmbedCommand(rest);
+    case 'brief':
+      return runBriefCommand(rest);
     case undefined:
     case 'help':
     case '--help':
