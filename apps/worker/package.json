@@ -1,0 +1,19 @@
+{
+  "name": "@leapfrog/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc --build",
+    "typecheck": "tsc --build",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@leapfrog/core": "*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.1"
+  }
+}
