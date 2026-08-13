@@ -1,0 +1,28 @@
+# Private / local-only material — never commit
+.private/
+
+# Local env & secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+.next/
+dist/
+build/
+coverage/
+*.log
+npm-debug.log*
+
+# Local database & generated data
+*.sqlite
+*.sqlite-*
+*.db
+
+# OS / editor
+.DS_Store
+.idea/
+*.swp
+
+.cursor/
