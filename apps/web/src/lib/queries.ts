@@ -10,7 +10,10 @@ import {
   categoryBreakdown,
   readComparisonMatrix,
   suggestMatrixUpdates,
+  composeBattlecard,
+  toMarkdown,
   FOCUS_VENDOR,
+  type Battlecard,
   type BriefItem,
   type Category,
   type ComparisonMatrix,
@@ -131,8 +134,42 @@ export function getMatrixSuggestions(matrix: ComparisonMatrix): MatrixSuggestion
   return db ? suggestMatrixUpdates(db, matrix) : [];
 }
 
+/** A competitor the platform can build a battlecard against (matrix columns minus focus). */
+export interface BattlecardVendor {
+  name: string;
+  slug: string;
+}
+
+/** The competitors a battlecard can be composed for — every matrix column but the focus. */
+export function getBattlecardVendors(): BattlecardVendor[] {
+  const matrix = readComparisonMatrix();
+  return matrix.vendors
+    .filter((v) => v.name !== matrix.focusVendor)
+    .map((v) => ({ name: v.name, slug: v.slug }));
+}
+
+/** A composed battlecard plus its Markdown export, or `null` for an unknown vendor / no data. */
+export interface BattlecardView {
+  card: Battlecard;
+  markdown: string;
+}
+
+export async function getBattlecard(slug: string): Promise<BattlecardView | null> {
+  const matrix = readComparisonMatrix();
+  const column = matrix.vendors.find((v) => v.slug === slug.toLowerCase());
+  if (!column || column.name === matrix.focusVendor) return null;
+
+  const db = getDb();
+  if (!db) return null;
+
+  const card = await composeBattlecard(db, column.name, { matrix });
+  if (!card) return null;
+  return { card, markdown: toMarkdown(card) };
+}
+
 export { FOCUS_VENDOR };
 export type {
+  Battlecard,
   BriefItem,
   Category,
   ComparisonMatrix,

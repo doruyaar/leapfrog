@@ -1,5 +1,6 @@
 import { greet } from '@leapfrog/core';
 import { runAskCommand } from './commands/ask.js';
+import { runBattlecardCommand } from './commands/battlecard.js';
 import { runBriefCommand } from './commands/brief.js';
 import { runEmbedCommand } from './commands/embed.js';
 import { runEnrichCommand } from './commands/enrich.js';
@@ -19,6 +20,7 @@ Commands:
   embed     Chunk and embed enriched items into the retrieval index. Safe to repeat.
   brief     Compose and store today's ranked, cited brief. Safe to repeat.
   ask       Answer a question with hybrid RAG and grounded citations.
+  battlecard Compose a competitor battlecard and export it as Markdown.
 
 Options (fetch, ingest):
   --kind <rss|github|nvd>   Only sources of this kind
@@ -41,6 +43,10 @@ Options (ask):
   --q <text>                The question to answer (required)
   --vendor <name>           Restrict retrieval to one vendor
   --category <name>         Restrict retrieval to one category
+
+Options (battlecard):
+  --vendor <name>           Competitor to compose the card against (required)
+  --out <file.md>           Write Markdown to a file instead of stdout
 
 Options for "seed", "ingest", "enrich", "embed", and "brief":
   --db <path>               SQLite file to use (default data/leapfrog.sqlite)
@@ -76,6 +82,8 @@ async function main(argv: string[]): Promise<number> {
       return runBriefCommand(rest);
     case 'ask':
       return runAskCommand(rest);
+    case 'battlecard':
+      return runBattlecardCommand(rest);
     case undefined:
     case 'help':
     case '--help':
