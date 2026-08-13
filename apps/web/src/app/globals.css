@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens sampled pixel-for-pixel from the reference platform UI.
+ * The chrome (top bar + sidebar) is dark in BOTH themes, exactly as in the
+ * reference; only the content canvas flips between light and night mode.
+ */
+:root {
+  /* Chrome — constant across themes */
+  --chrome: #262830;
+  --chrome-hover: #2f323d;
+  --chrome-active: #414858;
+  --chrome-sub: #101219;
+  --chrome-line: #363a4a;
+  --chrome-ink: #d9dbe2;
+  --chrome-ink-dim: #9799a0;
+  --chrome-ink-faint: #6c707c;
+
+  /* Accent */
+  --accent: #3bc03f;
+  --accent-hover: #4bcd4f;
+  --accent-btn: #42be4a;
+  --accent-ink: #ffffff;
+  --accent-soft: #eaf7ea;
+
+  /* Canvas — light mode matches the reference exactly */
+  --canvas: #f8fafc;
+  --card: #ffffff;
+  --line: #e4e7e9;
+  --line-soft: #eef0f2;
+  --field: #ffffff;
+  --field-line: #d9dcdf;
+  --ink-strong: #26282d;
+  --ink: #3f4348;
+  --ink-dim: #757a80;
+  --ink-faint: #a0a5ab;
+  --row-hover: #f4f6f8;
+  --row-selected: #eef6ef;
+}
+
+.dark {
+  --canvas: #16181d;
+  --card: #1e2026;
+  --line: #2d3037;
+  --line-soft: #262930;
+  --field: #14161a;
+  --field-line: #343841;
+  --ink-strong: #f1f2f4;
+  --ink: #d5d8dd;
+  --ink-dim: #8f959f;
+  --ink-faint: #6a707a;
+  --row-hover: #24272e;
+  --row-selected: #1b2a1c;
+  --accent-soft: #1c2a1d;
+}
+
+@theme inline {
+  --color-chrome: var(--chrome);
+  --color-chrome-hover: var(--chrome-hover);
+  --color-chrome-active: var(--chrome-active);
+  --color-chrome-sub: var(--chrome-sub);
+  --color-chrome-line: var(--chrome-line);
+  --color-chrome-ink: var(--chrome-ink);
+  --color-chrome-ink-dim: var(--chrome-ink-dim);
+  --color-chrome-ink-faint: var(--chrome-ink-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-btn: var(--accent-btn);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-canvas: var(--canvas);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-field: var(--field);
+  --color-field-line: var(--field-line);
+
+  --color-ink-strong: var(--ink-strong);
+  --color-ink: var(--ink);
+  --color-ink-dim: var(--ink-dim);
+  --color-ink-faint: var(--ink-faint);
+  --color-row-hover: var(--row-hover);
+  --color-row-selected: var(--row-selected);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  /* The reference UI runs at a compact 13px base with 11–12px chrome text. */
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  background-color: var(--canvas);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--field-line) transparent;
+}
