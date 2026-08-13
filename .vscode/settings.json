@@ -1,0 +1,84 @@
+{
+  // JFrog-inspired: mostly natural black/dark backgrounds with small "frog green" (#40BE46) accents.
+  // Scoped to this project only. Reload the window if colors don't apply immediately.
+  "workbench.colorCustomizations": {
+    // Title bar (dark, thin green underline only)
+    "titleBar.activeBackground": "#0D0D0D",
+    "titleBar.activeForeground": "#E6E6E6",
+    "titleBar.inactiveBackground": "#0D0D0D",
+    "titleBar.inactiveForeground": "#8A8A8A",
+    "titleBar.border": "#40BE46",
+
+    // Activity bar (dark; green only on the active item)
+    "activityBar.background": "#0D0D0D",
+    "activityBar.foreground": "#E6E6E6",
+    "activityBar.inactiveForeground": "#6E6E6E",
+    "activityBar.activeBorder": "#40BE46",
+    "activityBarBadge.background": "#40BE46",
+    "activityBarBadge.foreground": "#04140A",
+
+    // Side bar (dark)
+    "sideBar.background": "#0F0F0F",
+    "sideBar.foreground": "#CFCFCF",
+    "sideBar.border": "#1A1A1A",
+    "sideBarTitle.foreground": "#9E9E9E",
+    "sideBarSectionHeader.background": "#0D0D0D",
+    "sideBarSectionHeader.foreground": "#B5B5B5",
+
+    // Editor (natural black)
+    "editor.background": "#0A0A0A",
+    "editor.foreground": "#DCDCDC",
+    "editorLineNumber.foreground": "#4A4A4A",
+    "editorLineNumber.activeForeground": "#40BE46",
+    "editorCursor.foreground": "#40BE46",
+    "editor.selectionBackground": "#264F2B66",
+    "editor.lineHighlightBackground": "#141414",
+    "editorIndentGuide.background1": "#1E1E1E",
+    "editorIndentGuide.activeBackground1": "#2E2E2E",
+
+    // Tabs (dark; green only on active tab's top border)
+    "tab.activeBackground": "#0A0A0A",
+    "tab.activeForeground": "#FFFFFF",
+    "tab.activeBorderTop": "#40BE46",
+    "tab.inactiveBackground": "#0F0F0F",
+    "tab.inactiveForeground": "#8A8A8A",
+    "tab.border": "#0F0F0F",
+    "editorGroupHeader.tabsBackground": "#0F0F0F",
+
+    // Status bar (dark base; kept subtle, green only when debugging/remote)
+    "statusBar.background": "#0D0D0D",
+    "statusBar.foreground": "#CFCFCF",
+    "statusBar.border": "#1A1A1A",
+    "statusBar.noFolderBackground": "#0D0D0D",
+    "statusBar.debuggingBackground": "#40BE46",
+    "statusBar.debuggingForeground": "#04140A",
+    "statusBarItem.remoteBackground": "#40BE46",
+    "statusBarItem.remoteForeground": "#04140A",
+
+    // Accents & controls (small green touches)
+    "focusBorder": "#40BE46",
+    "button.background": "#40BE46",
+    "button.foreground": "#04140A",
+    "button.hoverBackground": "#54D25A",
+    "progressBar.background": "#40BE46",
+    "badge.background": "#40BE46",
+    "badge.foreground": "#04140A",
+    "list.activeSelectionBackground": "#1A1A1A",
+    "list.activeSelectionForeground": "#FFFFFF",
+    "list.hoverBackground": "#161616",
+    "list.highlightForeground": "#40BE46",
+    "textLink.foreground": "#54D25A",
+    "textLink.activeForeground": "#7ED085",
+
+    // Panel / terminal (dark; green cursor + ansi green only)
+    "panel.background": "#0A0A0A",
+    "panel.border": "#1A1A1A",
+    "panelTitle.activeBorder": "#40BE46",
+    "panelTitle.activeForeground": "#E6E6E6",
+    "terminal.background": "#0A0A0A",
+    "terminal.foreground": "#DCDCDC",
+    "terminal.ansiGreen": "#40BE46",
+    "terminal.ansiBrightGreen": "#7ED085",
+    "terminalCursor.foreground": "#40BE46"
+  }
+}
