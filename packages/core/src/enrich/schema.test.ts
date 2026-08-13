@@ -60,7 +60,9 @@ describe('parseEnrichmentOutput', () => {
   });
 
   it('quarantines an unknown category', () => {
-    const result = parseEnrichmentOutput(JSON.stringify({ ...VALID, category: 'Weather' }));
+    const result = parseEnrichmentOutput(
+      JSON.stringify({ ...VALID, category: 'Weather' }),
+    );
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.reason).toMatch(/category/);

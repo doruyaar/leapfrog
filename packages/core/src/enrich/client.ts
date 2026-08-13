@@ -35,7 +35,9 @@ export class MissingApiKeyError extends Error {
  * config with sensible defaults; the API key is the only hard requirement, and its
  * absence is a typed error the worker turns into a friendly message.
  */
-export function readOpenRouterConfig(env: NodeJS.ProcessEnv = process.env): OpenRouterConfig {
+export function readOpenRouterConfig(
+  env: NodeJS.ProcessEnv = process.env,
+): OpenRouterConfig {
   const apiKey = env.OPENROUTER_API_KEY?.trim();
   if (!apiKey) throw new MissingApiKeyError();
 

@@ -68,7 +68,12 @@ describe('enrichItems', () => {
     runMigrations(db);
     sourceId = db
       .insert(sources)
-      .values({ kind: 'github', name: 'Nexus Releases', url: 'sonatype/nexus', vendor: 'Sonatype' })
+      .values({
+        kind: 'github',
+        name: 'Nexus Releases',
+        url: 'sonatype/nexus',
+        vendor: 'Sonatype',
+      })
       .returning({ id: sources.id })
       .get().id;
   });
@@ -83,9 +88,18 @@ describe('enrichItems', () => {
 
     const report = await enrichItems(db, { model });
 
-    expect(report).toMatchObject({ attempted: 1, enriched: 1, quarantined: 0, failed: 0 });
+    expect(report).toMatchObject({
+      attempted: 1,
+      enriched: 1,
+      quarantined: 0,
+      failed: 0,
+    });
 
-    const row = db.select().from(enrichedItems).where(eq(enrichedItems.rawItemId, rawId)).get();
+    const row = db
+      .select()
+      .from(enrichedItems)
+      .where(eq(enrichedItems.rawItemId, rawId))
+      .get();
     expect(row).toMatchObject({
       status: 'ok',
       category: 'Product',
@@ -104,13 +118,24 @@ describe('enrichItems', () => {
 
   it('quarantines invalid output but keeps observability', async () => {
     const rawId = seedRaw(db, sourceId, 'bad');
-    const model = stubModel({ bad: { content: 'totally not json', requestId: 'req-bad' } });
+    const model = stubModel({
+      bad: { content: 'totally not json', requestId: 'req-bad' },
+    });
 
     const report = await enrichItems(db, { model });
 
-    expect(report).toMatchObject({ attempted: 1, enriched: 0, quarantined: 1, failed: 0 });
+    expect(report).toMatchObject({
+      attempted: 1,
+      enriched: 0,
+      quarantined: 1,
+      failed: 0,
+    });
 
-    const row = db.select().from(enrichedItems).where(eq(enrichedItems.rawItemId, rawId)).get();
+    const row = db
+      .select()
+      .from(enrichedItems)
+      .where(eq(enrichedItems.rawItemId, rawId))
+      .get();
     expect(row!.status).toBe('quarantined');
     expect(row!.quarantineReason).toMatch(/invalid JSON/);
     expect(row!.requestId).toBe('req-bad');
@@ -124,8 +149,17 @@ describe('enrichItems', () => {
 
     const report = await enrichItems(db, { model });
 
-    expect(report).toMatchObject({ attempted: 1, enriched: 0, quarantined: 0, failed: 1 });
-    const row = db.select().from(enrichedItems).where(eq(enrichedItems.rawItemId, rawId)).get();
+    expect(report).toMatchObject({
+      attempted: 1,
+      enriched: 0,
+      quarantined: 0,
+      failed: 1,
+    });
+    const row = db
+      .select()
+      .from(enrichedItems)
+      .where(eq(enrichedItems.rawItemId, rawId))
+      .get();
     expect(row).toBeUndefined();
   });
 
@@ -142,7 +176,9 @@ describe('enrichItems', () => {
     expect(pending).toEqual(['bad']);
 
     // Re-running upgrades the quarantined row in place — no duplicate rows.
-    const report = await enrichItems(db, { model: stubModel({ bad: { content: okJson() } }) });
+    const report = await enrichItems(db, {
+      model: stubModel({ bad: { content: okJson() } }),
+    });
     expect(report).toMatchObject({ attempted: 1, enriched: 1, quarantined: 0 });
 
     const rows = db.select().from(enrichedItems).all();

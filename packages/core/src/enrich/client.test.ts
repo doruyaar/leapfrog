@@ -59,8 +59,8 @@ describe('readOpenRouterConfig', () => {
 
 describe('createOpenRouterModel', () => {
   it('POSTs a structured-output chat request with auth', async () => {
-    const fetch = vi.fn(
-      async (_url: string | URL | Request, _init?: RequestInit) => completion(),
+    const fetch = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) =>
+      completion(),
     );
     const model = createOpenRouterModel(CONFIG, { fetch });
 
@@ -82,8 +82,8 @@ describe('createOpenRouterModel', () => {
   });
 
   it('returns the content and observability from the response', async () => {
-    const fetch = vi.fn(
-      async (_url: string | URL | Request, _init?: RequestInit) => completion(),
+    const fetch = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) =>
+      completion(),
     );
     const model = createOpenRouterModel(CONFIG, { fetch });
 
