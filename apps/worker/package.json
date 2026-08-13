@@ -7,6 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "fetch": "tsx src/index.ts fetch",
     "ingest": "tsx src/index.ts ingest",
+    "enrich": "tsx src/index.ts enrich",
     "start": "node dist/index.js",
     "build": "tsc --build",
     "typecheck": "tsc --build",
