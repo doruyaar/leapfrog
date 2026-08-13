@@ -1,0 +1,19 @@
+[
+  { "kind": "rss", "name": "JFrog Blog", "url": "https://jfrog.com/blog/feed/", "vendor": "JFrog" },
+  { "kind": "github", "name": "JFrog CLI Releases", "url": "jfrog/jfrog-cli", "vendor": "JFrog" },
+  { "kind": "nvd", "name": "NVD — JFrog Artifactory", "url": "cpe:2.3:a:jfrog:artifactory", "vendor": "JFrog" },
+  { "kind": "rss", "name": "Sonatype Blog", "url": "https://blog.sonatype.com/rss.xml", "vendor": "Sonatype" },
+  { "kind": "github", "name": "Nexus Repository Releases", "url": "sonatype/nexus-public", "vendor": "Sonatype" },
+  { "kind": "nvd", "name": "NVD — Sonatype Nexus", "url": "cpe:2.3:a:sonatype:nexus_repository_manager", "vendor": "Sonatype" },
+  { "kind": "rss", "name": "GitLab Blog", "url": "https://about.gitlab.com/atom.xml", "vendor": "GitLab" },
+  { "kind": "nvd", "name": "NVD — GitLab", "url": "cpe:2.3:a:gitlab:gitlab", "vendor": "GitLab" },
+  { "kind": "rss", "name": "GitHub Changelog", "url": "https://github.blog/changelog/feed/", "vendor": "GitHub" },
+  { "kind": "rss", "name": "Docker Blog", "url": "https://www.docker.com/blog/feed/", "vendor": "Docker" },
+  { "kind": "rss", "name": "Cloudsmith Blog", "url": "https://cloudsmith.com/blog/rss/", "vendor": "Cloudsmith" },
+  { "kind": "github", "name": "Harbor Releases", "url": "goharbor/harbor", "vendor": "Harbor" },
+  { "kind": "rss", "name": "Snyk Blog", "url": "https://snyk.io/blog/feed/", "vendor": "Snyk" },
+  { "kind": "rss", "name": "Chainguard Unchained", "url": "https://www.chainguard.dev/unchained/rss.xml", "vendor": "Chainguard" },
+  { "kind": "rss", "name": "AWS DevOps Blog", "url": "https://aws.amazon.com/blogs/devops/feed/", "vendor": "AWS" },
+  { "kind": "rss", "name": "The Register — DevOps", "url": "https://www.theregister.com/software/devops/headlines.atom", "vendor": null },
+  { "kind": "rss", "name": "InfoQ", "url": "https://feed.infoq.com/", "vendor": null }
+]

@@ -1,0 +1,410 @@
+[
+  {
+    "source": "NVD — Sonatype Nexus",
+    "externalId": "CVE-2026-3199",
+    "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-3199",
+    "title": "CVE-2026-3199: Path traversal in Sonatype Nexus Repository Manager 3 allows unauthenticated artifact read",
+    "content": "A path traversal vulnerability in the repository content handler of Sonatype Nexus Repository Manager 3 (versions 3.68.0 through 3.77.1) allows an unauthenticated remote attacker to read arbitrary files outside the intended repository storage, including configuration files and stored credentials. The flaw is assigned a CVSS 3.1 base score of 9.8 (Critical). CISA has added CVE-2026-3199 to its Known Exploited Vulnerabilities catalog after observing active exploitation in the wild. Sonatype has released version 3.77.2 and urges immediate upgrade; no workaround fully mitigates the issue.",
+    "publishedAt": "2026-08-11T14:20:00Z",
+    "enrichment": {
+      "category": "Security",
+      "vendors": ["Sonatype"],
+      "products": ["Nexus Repository Manager"],
+      "impact_score": 5,
+      "summary": "A critical (CVSS 9.8) path-traversal flaw in Nexus Repository Manager 3 is being actively exploited to read stored credentials; Sonatype shipped 3.77.2 as the fix.",
+      "why_it_matters": "An actively-exploited critical CVE in a direct competitor's flagship registry is a live displacement opening for JFrog: security-conscious buyers will re-evaluate, and JFrog can lead with Artifactory's hardening and its clean advisory record.",
+      "rationale": "Actively exploited, critical severity, competitor's core product."
+    }
+  },
+  {
+    "source": "NVD — Sonatype Nexus",
+    "externalId": "CVE-2026-5189",
+    "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-5189",
+    "title": "CVE-2026-5189: Authentication bypass in Sonatype Nexus Repository Manager 3 REST API",
+    "content": "An authentication bypass in the REST API of Sonatype Nexus Repository Manager 3 (versions up to 3.77.1) lets a remote attacker perform privileged administrative actions, including creating users and altering repository configuration, without valid credentials. The issue carries a CVSS 3.1 base score of 8.6 (High). Sonatype addressed the flaw in 3.77.2 alongside CVE-2026-3199 and recommends restricting network access to the admin API until patched.",
+    "publishedAt": "2026-08-11T14:35:00Z",
+    "enrichment": {
+      "category": "Security",
+      "vendors": ["Sonatype"],
+      "products": ["Nexus Repository Manager"],
+      "impact_score": 4,
+      "summary": "A high-severity (CVSS 8.6) authentication-bypass in the Nexus 3 REST API allows unauthenticated admin actions; fixed in 3.77.2.",
+      "why_it_matters": "A second serious Nexus CVE in the same advisory reinforces a reliability narrative JFrog sales can use, and strengthens the case for platforms with a stronger security posture.",
+      "rationale": "High severity auth bypass in a competitor's core product, paired with an actively-exploited critical."
+    }
+  },
+  {
+    "source": "GitLab Blog",
+    "externalId": "gitlab-artifact-registry-ga",
+    "url": "https://about.gitlab.com/blog/2026/08/05/gitlab-artifact-registry-general-availability/",
+    "title": "GitLab Artifact Registry is now generally available",
+    "content": "GitLab announced the general availability of GitLab Artifact Registry, a unified registry for container images, language packages (npm, Maven, PyPI, NuGet), and Helm charts built directly into the GitLab DevSecOps platform. The registry adds pull-through caching, immutable tags, and integrated vulnerability scanning that shares results with GitLab's existing security dashboard. GitLab positions the offering as a way to consolidate artifact management, CI/CD, and security in a single tool, reducing the need for a separate binary repository.",
+    "publishedAt": "2026-08-05T09:00:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["GitLab"],
+      "products": ["GitLab Artifact Registry"],
+      "impact_score": 5,
+      "summary": "GitLab shipped a GA unified Artifact Registry (containers plus npm/Maven/PyPI/NuGet/Helm) with caching, immutable tags, and integrated scanning, bundled into its DevSecOps platform.",
+      "why_it_matters": "This is a direct platform-play against Artifactory's universal-repository positioning; GitLab customers now have a bundled alternative, so JFrog must sharpen its multi-cloud, multi-tech, and enterprise-scale differentiation.",
+      "rationale": "A major competitor launch that closes a real gap in a platform bundle."
+    }
+  },
+  {
+    "source": "NVD — JFrog Artifactory",
+    "externalId": "CVE-2026-4477",
+    "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-4477",
+    "title": "CVE-2026-4477: Stored XSS in JFrog Artifactory build-info UI",
+    "content": "A stored cross-site scripting vulnerability in the build-info viewer of JFrog Artifactory (versions 7.90.0 through 7.98.4) allows an authenticated user with deploy permissions to inject script that executes in the browser of another user viewing the build. The issue has a CVSS 3.1 base score of 6.4 (Medium). JFrog released 7.98.5 with output encoding fixes and credited an external researcher via its responsible-disclosure program.",
+    "publishedAt": "2026-07-29T11:00:00Z",
+    "enrichment": {
+      "category": "Security",
+      "vendors": ["JFrog"],
+      "products": ["Artifactory"],
+      "impact_score": 4,
+      "summary": "A medium-severity stored XSS in Artifactory's build-info UI (CVSS 6.4) was fixed in 7.98.5; exploitation requires an authenticated deployer.",
+      "why_it_matters": "A CVE in JFrog's own product needs a ready talking point: it was responsibly disclosed, requires privileged access, and was patched quickly — the contrast with actively-exploited competitor CVEs is the message.",
+      "rationale": "Own-product CVE the CI team must be prepared to address, though lower severity and not exploited."
+    }
+  },
+  {
+    "source": "Docker Blog",
+    "externalId": "docker-hub-pricing-2026",
+    "url": "https://www.docker.com/blog/updated-docker-hub-plans-2026/",
+    "title": "Updated Docker Hub plans and pull-rate limits for 2026",
+    "content": "Docker announced revised Docker Hub subscription tiers effective September 1, 2026. Anonymous and free-tier pull rates are being tightened further, image retention on the free plan is reduced to 30 days for inactive repositories, and a new usage-based pricing dimension for storage and image pulls is introduced for Team and Business plans. Docker says the changes fund continued investment in Docker Hardened Images and registry reliability.",
+    "publishedAt": "2026-08-08T16:00:00Z",
+    "enrichment": {
+      "category": "Pricing",
+      "vendors": ["Docker"],
+      "products": ["Docker Hub"],
+      "impact_score": 4,
+      "summary": "Docker is tightening Docker Hub free-tier pull limits and retention and adding usage-based storage/pull pricing for paid plans from September 2026.",
+      "why_it_matters": "Registry pricing pressure pushes teams to seek predictable-cost alternatives; JFrog can position Artifactory's remote-repository caching and flat licensing as insulation from Docker Hub rate limits and metered costs.",
+      "rationale": "A competitor pricing move that changes buyer economics and creates a switching trigger."
+    }
+  },
+  {
+    "source": "Chainguard Unchained",
+    "externalId": "chainguard-libraries-java",
+    "url": "https://www.chainguard.dev/unchained/chainguard-libraries-for-java",
+    "title": "Introducing Chainguard Libraries for Java: rebuilt-from-source Maven artifacts",
+    "content": "Chainguard launched Chainguard Libraries for Java, a registry of Maven dependencies rebuilt from source in Chainguard's hardened, provenance-attested build environment. The service aims to cut off malware injected into upstream packages by rebuilding artifacts rather than mirroring them, and provides SLSA build-level provenance for each library. It is offered as a drop-in Maven repository that development teams can point their build tools at.",
+    "publishedAt": "2026-08-06T13:00:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["Chainguard"],
+      "products": ["Chainguard Libraries"],
+      "impact_score": 4,
+      "summary": "Chainguard released a Maven repository of Java libraries rebuilt from source with SLSA provenance, extending its hardened-artifacts strategy from container images to language packages.",
+      "why_it_matters": "This encroaches on the secure-software-supply-chain narrative and the Maven repository use case central to Artifactory; JFrog's Curation and Xray provenance features are the direct counter.",
+      "rationale": "A notable competitor launch entering JFrog's core language-package and supply-chain-security territory."
+    }
+  },
+  {
+    "source": "JFrog Blog",
+    "externalId": "jfrog-curation-transitive",
+    "url": "https://jfrog.com/blog/curation-transitive-dependency-blocking/",
+    "title": "JFrog Curation adds transitive dependency blocking and policy waivers",
+    "content": "JFrog announced an update to JFrog Curation that blocks malicious or non-compliant packages at the transitive-dependency level, not just direct dependencies, and introduces time-boxed policy waivers so teams can unblock a build while a remediation is tracked. The release integrates with Xray policy and reports blocked-download metrics to the platform's security dashboard.",
+    "publishedAt": "2026-08-04T10:00:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["JFrog"],
+      "products": ["Curation", "Xray"],
+      "impact_score": 3,
+      "summary": "JFrog Curation now blocks malicious transitive dependencies and supports time-boxed policy waivers, tightening the shift-left gate at the point of download.",
+      "why_it_matters": "This is JFrog's own answer to rebuilt-from-source and curated-registry competitors; it is the proof point sales should pair against Chainguard Libraries and Sonatype Firewall.",
+      "rationale": "Incremental but strategically relevant own-product progress on supply-chain security."
+    }
+  },
+  {
+    "source": "GitHub Changelog",
+    "externalId": "ghcr-immutable-tags",
+    "url": "https://github.blog/changelog/2026-07-30-container-registry-immutable-tags-ga/",
+    "title": "GitHub Container Registry: immutable tags now generally available",
+    "content": "GitHub announced that immutable tags for GitHub Container Registry (GHCR) are now generally available. Repository administrators can mark tags as immutable to prevent overwrites, improving reproducibility and supply-chain integrity. The feature integrates with GitHub Actions attestations so that a pushed image tag can be tied to a verifiable build provenance record.",
+    "publishedAt": "2026-07-30T15:00:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["GitHub"],
+      "products": ["GitHub Container Registry"],
+      "impact_score": 3,
+      "summary": "GitHub made immutable tags GA for its container registry, linking them to Actions build-provenance attestations.",
+      "why_it_matters": "GitHub keeps closing registry feature gaps that make GHCR 'good enough' for teams already on GitHub, chipping at Artifactory's entry-level container use cases.",
+      "rationale": "Incremental competitor feature parity in a bundled platform."
+    }
+  },
+  {
+    "source": "Cloudsmith Blog",
+    "externalId": "cloudsmith-series-b",
+    "url": "https://cloudsmith.com/blog/cloudsmith-series-b-funding/",
+    "title": "Cloudsmith raises $40M Series B to scale its cloud-native artifact platform",
+    "content": "Cloudsmith announced a $40 million Series B round led by a growth investor, bringing total funding to roughly $63 million. The company says it will use the capital to expand its fully managed, cloud-native package management platform, invest in supply-chain security features such as policy enforcement and provenance, and grow its go-to-market in North America. Cloudsmith reports strong growth among engineering teams that want a SaaS-first alternative to self-hosted repositories.",
+    "publishedAt": "2026-07-22T12:00:00Z",
+    "enrichment": {
+      "category": "Business",
+      "vendors": ["Cloudsmith"],
+      "products": [],
+      "impact_score": 3,
+      "summary": "Cloudsmith raised a $40M Series B to expand its SaaS-first artifact-management platform and supply-chain-security features.",
+      "why_it_matters": "A funded, cloud-native challenger targets the same SaaS buyers as JFrog's cloud offering; worth tracking for pricing and feature moves even if enterprise overlap is currently limited.",
+      "rationale": "Competitor funding that increases medium-term competitive pressure in the SaaS segment."
+    }
+  },
+  {
+    "source": "Snyk Blog",
+    "externalId": "snyk-container-registry-scanning",
+    "url": "https://snyk.io/blog/snyk-registry-scanning-broker/",
+    "title": "Snyk expands registry scanning with agentless broker for private registries",
+    "content": "Snyk introduced an agentless broker that continuously scans container images and packages sitting in private registries, including Artifactory, Nexus, Harbor, and cloud registries, and feeds findings into Snyk's prioritization engine. The company frames it as meeting customers where their artifacts already live rather than requiring migration, and adds reachability analysis to reduce false positives.",
+    "publishedAt": "2026-08-01T09:30:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["Snyk"],
+      "products": ["Snyk Container"],
+      "impact_score": 3,
+      "summary": "Snyk launched an agentless broker that scans images and packages inside third-party registries (Artifactory, Nexus, Harbor) with reachability-based prioritization.",
+      "why_it_matters": "Snyk is deepening as a scanning layer on top of any registry, which both competes with Xray and, awkwardly, integrates with Artifactory — JFrog should watch whether this erodes attach for its own security products.",
+      "rationale": "Competitor security capability that overlaps with Xray in accounts JFrog already holds."
+    }
+  },
+  {
+    "source": "AWS DevOps Blog",
+    "externalId": "codeartifact-oci",
+    "url": "https://aws.amazon.com/blogs/devops/aws-codeartifact-now-supports-oci-container-images/",
+    "title": "AWS CodeArtifact now supports OCI container images",
+    "content": "AWS announced that CodeArtifact, its managed artifact repository, now supports OCI-compliant container images in addition to npm, PyPI, Maven, NuGet, and other language package formats. The update lets AWS customers store container images alongside language packages in a single managed service with IAM-based access control and pay-as-you-go pricing, reducing the need for a separate container registry.",
+    "publishedAt": "2026-07-25T17:00:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["AWS"],
+      "products": ["CodeArtifact"],
+      "impact_score": 3,
+      "summary": "AWS CodeArtifact added OCI container-image support, letting customers keep images and language packages in one managed, IAM-controlled service.",
+      "why_it_matters": "A more complete CodeArtifact makes the bundled AWS-native path stickier for AWS-committed shops, pressuring Artifactory's multi-format advantage inside that ecosystem.",
+      "rationale": "Cloud-provider competitor closing a format gap within its own platform."
+    }
+  },
+  {
+    "source": "Sonatype Blog",
+    "externalId": "sonatype-firewall-ai-malware",
+    "url": "https://blog.sonatype.com/sonatype-repository-firewall-ai-malware-detection",
+    "title": "Sonatype Repository Firewall adds AI-model and malware behavioral detection",
+    "content": "Sonatype announced enhancements to Repository Firewall that detect malicious behavior in open-source packages using behavioral analysis and extend coverage to AI/ML model artifacts pulled from public hubs. The company highlights its record of catching next-generation supply-chain attacks before they reach developer machines and positions Firewall as a proactive quarantine layer in front of Nexus and other repositories.",
+    "publishedAt": "2026-08-02T10:30:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["Sonatype"],
+      "products": ["Repository Firewall"],
+      "impact_score": 3,
+      "summary": "Sonatype extended Repository Firewall with behavioral malware detection and coverage for AI/ML model artifacts.",
+      "why_it_matters": "Sonatype keeps investing in the proactive-quarantine story that competes head-to-head with JFrog Curation; AI-model artifact coverage is a gap JFrog should be prepared to answer.",
+      "rationale": "Competitor feature progress directly opposite a JFrog product, plus a new AI-artifact angle."
+    }
+  },
+  {
+    "source": "Harbor Releases",
+    "externalId": "harbor-v2.13.0",
+    "url": "https://github.com/goharbor/harbor/releases/tag/v2.13.0",
+    "title": "Harbor 2.13.0 released with improved SBOM generation and OCI referrers",
+    "content": "The CNCF Harbor project released version 2.13.0. Highlights include native SBOM generation for pushed images, full support for the OCI referrers API to attach signatures and attestations, performance improvements for large replications, and updated Trivy-based vulnerability scanning. Harbor remains a popular open-source, self-hosted container registry option.",
+    "publishedAt": "2026-07-18T08:00:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["Harbor"],
+      "products": ["Harbor"],
+      "impact_score": 2,
+      "summary": "Harbor 2.13.0 adds native SBOM generation, OCI referrers support, and replication performance improvements.",
+      "why_it_matters": "Open-source Harbor continues to mature as the free self-hosted default for container-only needs, relevant when JFrog competes on cost against teams that do not need multi-format breadth.",
+      "rationale": "Incremental open-source progress in a container-only niche."
+    }
+  },
+  {
+    "source": "GitHub Changelog",
+    "externalId": "ghas-secret-pricing",
+    "url": "https://github.blog/changelog/2026-08-03-github-advanced-security-metered-pricing-update/",
+    "title": "GitHub Advanced Security moves secret protection and code security to metered pricing",
+    "content": "GitHub announced that Secret Protection and Code Security, previously sold together as GitHub Advanced Security, are now available as standalone products with metered, per-active-committer pricing. GitHub says the unbundling lets smaller teams adopt security features without the full enterprise suite, and aligns billing with actual usage.",
+    "publishedAt": "2026-08-03T14:00:00Z",
+    "enrichment": {
+      "category": "Pricing",
+      "vendors": ["GitHub"],
+      "products": ["GitHub Advanced Security"],
+      "impact_score": 3,
+      "summary": "GitHub unbundled Advanced Security into standalone Secret Protection and Code Security with metered per-committer pricing.",
+      "why_it_matters": "Cheaper entry points for GitHub-native security broaden its reach in the shift-left market where JFrog also plays with Xray and Advanced Security add-ons.",
+      "rationale": "Competitor pricing change that lowers adoption friction in an adjacent security market."
+    }
+  },
+  {
+    "source": "NVD — GitLab",
+    "externalId": "CVE-2026-6042",
+    "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-6042",
+    "title": "CVE-2026-6042: Improper access control in GitLab package registry",
+    "content": "An improper access-control vulnerability in the package registry of GitLab CE/EE (versions 17.9 through 18.2.1) could allow a project member with limited permissions to download packages from other private projects under specific group configurations. The issue has a CVSS 3.1 base score of 6.5 (Medium). GitLab patched the issue in 18.2.2, 18.1.4, and 18.0.6 and recommends upgrading.",
+    "publishedAt": "2026-08-09T13:00:00Z",
+    "enrichment": {
+      "category": "Security",
+      "vendors": ["GitLab"],
+      "products": ["GitLab Package Registry"],
+      "impact_score": 3,
+      "summary": "A medium-severity access-control flaw (CVSS 6.5) in GitLab's package registry could leak private packages across projects; fixed in 18.2.2 and backports.",
+      "why_it_matters": "A registry-specific CVE in GitLab's newly-GA artifact story is useful proof that a bundled registry is not automatically a hardened one — relevant right after their Artifact Registry launch.",
+      "rationale": "Moderate competitor CVE that supports JFrog's security-maturity positioning."
+    }
+  },
+  {
+    "source": "The Register — DevOps",
+    "externalId": "elreg-npm-supply-chain-worm",
+    "url": "https://www.theregister.com/2026/08/07/npm_self_replicating_worm/",
+    "title": "Self-replicating worm hits npm, compromising hundreds of packages",
+    "content": "A self-replicating supply-chain worm spread through npm this week, stealing developer credentials and using them to publish trojanized versions of hundreds of packages, according to security researchers. The malware harvested tokens from CI environments and propagated to any package a compromised maintainer could publish. Registries and security vendors scrambled to quarantine affected versions, and the incident renewed calls for provenance, short-lived tokens, and curated dependency firewalls.",
+    "publishedAt": "2026-08-07T18:30:00Z",
+    "enrichment": {
+      "category": "Ecosystem",
+      "vendors": [],
+      "products": ["npm"],
+      "impact_score": 4,
+      "summary": "A self-replicating worm compromised hundreds of npm packages by stealing CI tokens, renewing demand for provenance and dependency-firewall controls.",
+      "why_it_matters": "High-profile supply-chain attacks are demand generators for exactly what JFrog Curation, Xray, and provenance features protect against; timely ammunition for proactive outreach.",
+      "rationale": "Major ecosystem event that elevates buyer urgency for supply-chain security."
+    }
+  },
+  {
+    "source": "InfoQ",
+    "externalId": "infoq-slsa-v13-adoption",
+    "url": "https://www.infoq.com/news/2026/07/slsa-provenance-adoption/",
+    "title": "SLSA provenance adoption accelerates as enterprises mandate build attestations",
+    "content": "A growing number of enterprises are mandating SLSA build provenance and signed attestations for internally-produced and third-party artifacts, according to industry reports discussed at a recent conference. Tooling from Sigstore, in-toto, and major CI platforms has matured to make provenance generation and verification more turnkey, and regulators referencing secure-software-development frameworks are cited as a driver.",
+    "publishedAt": "2026-07-15T10:00:00Z",
+    "enrichment": {
+      "category": "Ecosystem",
+      "vendors": [],
+      "products": [],
+      "impact_score": 2,
+      "summary": "Enterprises are increasingly mandating SLSA provenance and signed attestations, aided by maturing Sigstore/in-toto tooling and regulatory pressure.",
+      "why_it_matters": "The provenance mandate trend favors platforms that can generate, store, and verify attestations at scale — a place JFrog should keep demonstrating end-to-end coverage.",
+      "rationale": "Slow-moving but strategically relevant market trend."
+    }
+  },
+  {
+    "source": "JFrog Blog",
+    "externalId": "jfrog-mlops-model-registry",
+    "url": "https://jfrog.com/blog/jfrog-ml-model-registry-provenance/",
+    "title": "JFrog extends the platform with ML model registry and model provenance",
+    "content": "JFrog announced expanded machine-learning support, letting teams store, version, and scan ML models alongside conventional binaries in Artifactory, with provenance and license/security scanning via Xray. The company frames models as just another artifact type that belongs under the same governance, access control, and distribution controls as packages and containers.",
+    "publishedAt": "2026-07-28T10:00:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["JFrog"],
+      "products": ["Artifactory", "Xray"],
+      "impact_score": 3,
+      "summary": "JFrog added an ML model registry with provenance and Xray scanning, treating models as governed artifacts within the platform.",
+      "why_it_matters": "As competitors add AI-artifact coverage, JFrog's 'one system of record for every artifact type, including models' is a differentiation point worth leading with in AI-forward accounts.",
+      "rationale": "Own-product expansion into the emerging AI-artifact category."
+    }
+  },
+  {
+    "source": "Sonatype Blog",
+    "externalId": "sonatype-pricing-repackage-2026",
+    "url": "https://blog.sonatype.com/sonatype-platform-packaging-update-2026",
+    "title": "Sonatype repackages its platform into a unified subscription",
+    "content": "Sonatype announced it is consolidating Nexus Repository, Lifecycle, and Repository Firewall into a single platform subscription with tiered per-developer pricing. The company says the change simplifies procurement and encourages adoption of its security products, and includes a migration path for existing Nexus Repository customers.",
+    "publishedAt": "2026-07-21T11:00:00Z",
+    "enrichment": {
+      "category": "Pricing",
+      "vendors": ["Sonatype"],
+      "products": ["Nexus Repository", "Nexus Lifecycle"],
+      "impact_score": 3,
+      "summary": "Sonatype bundled Repository, Lifecycle, and Firewall into one per-developer platform subscription.",
+      "why_it_matters": "A unified subscription changes how Sonatype deals are structured and priced against JFrog's platform bundle; sales should refresh competitive pricing guidance.",
+      "rationale": "Competitor packaging change with direct deal-level implications."
+    }
+  },
+  {
+    "source": "Docker Blog",
+    "externalId": "docker-hardened-images-expansion",
+    "url": "https://www.docker.com/blog/docker-hardened-images-catalog-expansion/",
+    "title": "Docker expands Docker Hardened Images catalog and adds FIPS variants",
+    "content": "Docker announced a significant expansion of its Docker Hardened Images catalog, adding more language runtimes and FIPS-validated variants aimed at regulated industries. The minimal, near-zero-CVE images ship with provenance and SBOMs, and Docker is positioning them as a secure base-image standard for enterprises.",
+    "publishedAt": "2026-07-24T15:00:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["Docker"],
+      "products": ["Docker Hardened Images"],
+      "impact_score": 3,
+      "summary": "Docker grew its Hardened Images catalog with more runtimes and FIPS variants, pushing minimal near-zero-CVE base images with provenance and SBOMs.",
+      "why_it_matters": "Hardened base images compete with Chainguard and touch the secure-artifact conversation; relevant to how JFrog frames curated, scanned base images in Artifactory.",
+      "rationale": "Competitor secure-image progress in the hardened-base-image race."
+    }
+  },
+  {
+    "source": "Snyk Blog",
+    "externalId": "snyk-acquires-reachability-startup",
+    "url": "https://snyk.io/blog/snyk-acquires-reachability-analysis-startup/",
+    "title": "Snyk acquires reachability-analysis startup to cut vulnerability noise",
+    "content": "Snyk announced it has acquired a startup specializing in runtime and static reachability analysis, with the goal of prioritizing only the vulnerabilities that are actually exploitable in a given application. Terms were not disclosed. Snyk plans to integrate the technology across its SCA and container products to reduce alert fatigue for developers.",
+    "publishedAt": "2026-07-19T12:00:00Z",
+    "enrichment": {
+      "category": "Business",
+      "vendors": ["Snyk"],
+      "products": ["Snyk Open Source"],
+      "impact_score": 3,
+      "summary": "Snyk acquired a reachability-analysis startup to prioritize exploitable vulnerabilities and cut noise across its SCA and container products.",
+      "why_it_matters": "Better prioritization strengthens Snyk against Xray on developer-experience and false-positive reduction — an area JFrog should benchmark.",
+      "rationale": "Competitor acquisition that improves a capability where it competes with Xray."
+    }
+  },
+  {
+    "source": "Cloudsmith Blog",
+    "externalId": "cloudsmith-ml-model-support",
+    "url": "https://cloudsmith.com/blog/cloudsmith-adds-hugging-face-model-support/",
+    "title": "Cloudsmith adds support for Hugging Face and ML model artifacts",
+    "content": "Cloudsmith announced support for hosting and proxying machine-learning models, including Hugging Face model formats, within its managed package platform. The feature lets teams apply the same access control, retention, and provenance policies to models as to conventional packages, and adds pull-through caching for popular public model hubs.",
+    "publishedAt": "2026-08-10T09:00:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["Cloudsmith"],
+      "products": ["Cloudsmith"],
+      "impact_score": 2,
+      "summary": "Cloudsmith added hosting and proxying for ML models, including Hugging Face formats, with caching and policy controls.",
+      "why_it_matters": "Another registry adding AI-artifact support signals the category is becoming table stakes; reinforces why JFrog's model registry investment is timely.",
+      "rationale": "Minor competitor feature that confirms a broader market direction."
+    }
+  },
+  {
+    "source": "JFrog CLI Releases",
+    "externalId": "jfrog-cli-v2.79.0",
+    "url": "https://github.com/jfrog/jfrog-cli/releases/tag/v2.79.0",
+    "title": "JFrog CLI 2.79.0 adds OIDC token exchange and faster uploads",
+    "content": "JFrog CLI 2.79.0 was released. The update adds native OIDC token exchange for keyless authentication from CI providers, parallelized uploads that improve large-artifact transfer speed, and additional commands for managing release bundles. The release is backward compatible and recommended for all users.",
+    "publishedAt": "2026-08-01T08:00:00Z",
+    "enrichment": {
+      "category": "Product",
+      "vendors": ["JFrog"],
+      "products": ["JFrog CLI"],
+      "impact_score": 2,
+      "summary": "JFrog CLI 2.79.0 introduced OIDC keyless authentication from CI, faster parallel uploads, and release-bundle commands.",
+      "why_it_matters": "Keyless CI auth is a security and DX improvement that matches the short-lived-token best practices the recent npm worm reinforced; a small but on-message proof point.",
+      "rationale": "Routine own-product release with a mildly relevant security/DX angle."
+    }
+  },
+  {
+    "source": "InfoQ",
+    "externalId": "infoq-artifact-management-market-report",
+    "url": "https://www.infoq.com/news/2026/07/binary-repository-market-2026/",
+    "title": "Analysts size the binary repository market as consolidation around platforms continues",
+    "content": "A new analyst brief estimates the binary repository and artifact management market continues double-digit growth as organizations consolidate tooling around end-to-end software supply-chain platforms. The report names JFrog and Sonatype as leaders, highlights GitLab and GitHub as platform challengers bundling registries, and notes cloud providers and SaaS-native vendors as fast-growing in specific segments.",
+    "publishedAt": "2026-07-12T09:00:00Z",
+    "enrichment": {
+      "category": "Business",
+      "vendors": ["JFrog", "Sonatype", "GitLab", "GitHub"],
+      "products": [],
+      "impact_score": 2,
+      "summary": "An analyst brief projects continued double-digit growth in artifact management, names JFrog and Sonatype as leaders, and flags GitLab/GitHub platform bundling as the main challenge.",
+      "why_it_matters": "Third-party validation of JFrog's leadership plus a clear read on the platform-bundling threat — useful framing for QBRs and competitive strategy.",
+      "rationale": "Market-level context rather than an actionable event."
+    }
+  }
+]
