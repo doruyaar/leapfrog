@@ -28,6 +28,7 @@
     "embed": "npm run build --workspace @leapfrog/core && npm run embed --workspace @leapfrog/worker --",
     "brief": "npm run build --workspace @leapfrog/core && npm run brief --workspace @leapfrog/worker --",
     "ask": "npm run build --workspace @leapfrog/core && npm run ask --workspace @leapfrog/worker --",
+    "battlecard": "npm run build --workspace @leapfrog/core && npm run battlecard --workspace @leapfrog/worker --",
     "test": "vitest run",
     "test:watch": "vitest"
   },

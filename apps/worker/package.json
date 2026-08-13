@@ -12,6 +12,7 @@
     "embed": "tsx src/index.ts embed",
     "brief": "tsx src/index.ts brief",
     "ask": "tsx src/index.ts ask",
+    "battlecard": "tsx src/index.ts battlecard",
     "start": "node dist/index.js",
     "build": "tsc --build",
     "typecheck": "tsc --build",
