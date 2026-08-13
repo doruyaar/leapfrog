@@ -24,8 +24,9 @@ CREATE TRIGGER `chunks_fts_au` AFTER UPDATE ON `chunks` BEGIN
 END;
 --> statement-breakpoint
 -- Per-chunk embedding vectors. `chunk_id` mirrors `chunks.id`; rows are written
--- when embeddings are computed (M2). Dimension = text-embedding-3-small (1536).
+-- when embeddings are computed (M2). Dimension = local bge-small-en-v1.5 (384);
+-- keep in sync with EMBEDDING_DIM in constants.ts.
 CREATE VIRTUAL TABLE `vec_chunks` USING vec0(
 	chunk_id integer primary key,
-	embedding float[1536]
+	embedding float[384]
 );

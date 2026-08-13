@@ -72,16 +72,32 @@ and which one is the focus vendor — is configurable in the UI.
 | Web/UI | **Next.js (App Router) + Tailwind + shadcn/ui** | Full-stack in one app; fastest path to a polished UI |
 | Worker | **`apps/worker` — plain TS process, node-cron schedule** | Ingestion decoupled from serving (separate compute from state); trivially replaceable by a queue in prod |
 | DB | **SQLite (better-sqlite3) + Drizzle ORM + FTS5 + sqlite-vec** | Zero infra: `git clone && npm i && npm run dev` works on any laptop. One file = system of record, keyword index, and vector index. Documented migration path → Postgres + pgvector |
-| LLM | **OpenAI `gpt-4o-mini` (enrichment) / `gpt-4o` (chat), via a thin provider-agnostic client** | Cheap enough to enrich every item; provider swap is one config change. Prompts live in `prompts/*.md` as versioned assets, params in config, outputs validated with **zod schemas** before touching the DB |
-| Embeddings | **text-embedding-3-small** | Cost/quality sweet spot for news-length chunks |
+| LLM | **OpenRouter `openai/gpt-4o-mini` (enrichment) / `openai/gpt-4o` (chat), via a thin provider-agnostic client** | One OpenAI-compatible gateway, one key — swap to Claude/Llama/etc. with a config change and no vendor lock-in. Cheap enough to enrich every item. Prompts live in `prompts/*.md` as versioned assets, params in config, outputs validated with **zod schemas** before touching the DB |
+| Embeddings | **Local `bge-small-en-v1.5` (384-dim) via transformers.js** | Runs on-device: no API key, fully offline, so the vector index reinforces the local-first story instead of adding a cloud dependency. Strong retrieval quality for news-length chunks (OpenRouter offers no embeddings endpoint) |
 | Retrieval | **Hybrid: FTS5 (BM25) + vector, metadata pre-filter, RRF merge** | News queries mix exact identifiers ("CVE-2026-3199") with semantic asks — hybrid handles both |
 | Evals | **Golden dataset (~30 labeled items) + `npm run eval`** | Classification accuracy + LLM-as-judge faithfulness check. No prompt change ships without it |
 | CI | **GitHub Actions: typecheck, lint, test, eval-smoke** | Green from the first commit |
 | Deploy | **Local-first + `docker compose up`** | See "Local-first" below |
 
+### Configuration (models are config, not code)
+All model choices live in env, so a provider swap is a one-line change with no code edit
+(see [`.env.example`](../.env.example)). Because generation goes through OpenRouter's
+OpenAI-compatible gateway, `OPENROUTER_CHAT_MODEL` can be `openai/gpt-4o` today and
+`anthropic/claude-3.5-sonnet` or `meta-llama/llama-3.1-70b` tomorrow — same code path.
+
+| Var | Default | Purpose |
+|---|---|---|
+| `INGEST_LIVE` | `0` | `1` runs the real pipeline; unset = demo mode (no keys) |
+| `OPENROUTER_API_KEY` | — | Generation key (live mode only) |
+| `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | Gateway endpoint |
+| `OPENROUTER_ENRICH_MODEL` | `openai/gpt-4o-mini` | Bulk enrichment (cost-optimized) |
+| `OPENROUTER_CHAT_MODEL` | `openai/gpt-4o` | Ask / battlecard generation (quality) |
+| `EMBEDDING_MODEL` | `Xenova/bge-small-en-v1.5` | Local embeddings (no key, offline) |
+
 ### Local-first (no cloud dependency by design)
-The product is designed to run end-to-end on a laptop: SQLite, in-process cron, one required
-secret (`OPENAI_API_KEY`) — and even that is optional thanks to **demo mode**. Every external
+The product is designed to run end-to-end on a laptop: SQLite, in-process cron, local
+embeddings, one required secret (`OPENROUTER_API_KEY`) — and even that is optional thanks
+to **demo mode**. Every external
 dependency is a chance for a fresh clone to fail. Cloud scale-out is a documented, deliberate
 *next step*, not a prerequisite: Postgres+pgvector, a queue (SQS/BullMQ+Redis), scheduled
 ingestion (EventBridge/Cloud Scheduler), object store for raw snapshots.

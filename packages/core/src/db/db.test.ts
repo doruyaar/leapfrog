@@ -193,7 +193,7 @@ describe('db schema + migrations', () => {
         impactScore: 4,
         summary: 'New registry feature',
         whyItMatters: 'Closes a gap vs the focus vendor',
-        model: 'gpt-4o-mini',
+        model: 'openai/gpt-4o-mini',
         promptVersion: 'enrich@1',
       })
       .returning();

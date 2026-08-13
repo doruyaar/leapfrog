@@ -16,8 +16,8 @@ flowchart LR
     subgraph WORKER["apps/worker — ingestion pipeline (node-cron / manual trigger)"]
         FETCH["Fetch<br/>SourceAdapter interface,<br/>retry + backoff"]
         NORM["Normalize + Dedupe<br/>canonical URL hash, content hash,<br/>idempotent upsert"]
-        ENRICH["LLM Enrich (gpt-4o-mini)<br/>category, vendors, impact 1–5,<br/>'why it matters'<br/>zod-validated structured output"]
-        EMBED["Chunk + Embed<br/>text-embedding-3-small,<br/>metadata on every chunk"]
+        ENRICH["LLM Enrich (OpenRouter openai/gpt-4o-mini)<br/>category, vendors, impact 1–5,<br/>'why it matters'<br/>zod-validated structured output"]
+        EMBED["Chunk + Embed<br/>local bge-small-en-v1.5 (transformers.js),<br/>metadata on every chunk"]
         COMPOSE["Brief Composer (daily)<br/>rank by impact × recency,<br/>cited executive summary"]
     end
 
@@ -60,7 +60,7 @@ flowchart LR
 sequenceDiagram
     participant W as Worker
     participant P as prompts/enrich.md (versioned)
-    participant LLM as gpt-4o-mini
+    participant LLM as OpenRouter openai/gpt-4o-mini
     participant V as zod validator
     participant DB as SQLite
 
@@ -85,7 +85,7 @@ flowchart TD
     F --> V["Vector search (sqlite-vec)<br/>semantic meaning"]
     B --> M["RRF merge + recency boost"]
     V --> M
-    M --> G["Grounded generation (gpt-4o)<br/>context-only, cite item IDs,<br/>refuse if not in sources"]
+    M --> G["Grounded generation (OpenRouter openai/gpt-4o)<br/>context-only, cite item IDs,<br/>refuse if not in sources"]
     G --> A["Answer + clickable citations"]
 ```
 

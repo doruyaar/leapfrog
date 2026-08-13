@@ -19,7 +19,10 @@ npm run seed     # loads bundled demo data — no API key required
 npm run dev      # open http://localhost:3000
 ```
 
-Live ingestion (optional) needs `OPENAI_API_KEY` and `INGEST_LIVE=1`.
+Live ingestion (optional) needs `OPENROUTER_API_KEY` and `INGEST_LIVE=1`. Embeddings run
+locally (transformers.js), so no embeddings key is required. Models are configurable —
+copy [`.env.example`](.env.example) to `.env` and swap `OPENROUTER_CHAT_MODEL` /
+`OPENROUTER_ENRICH_MODEL` for any OpenRouter model without touching code.
 
 ## Running the pipeline
 
