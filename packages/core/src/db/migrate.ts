@@ -1,9 +1,20 @@
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { createDatabase, type Database } from './client.js';
 
-/** Absolute path to the generated + custom migration folder (`packages/core/drizzle`). */
-export const MIGRATIONS_FOLDER = fileURLToPath(new URL('../../drizzle', import.meta.url));
+/**
+ * Absolute path to the generated + custom migration folder (`packages/core/drizzle`).
+ * Built as `dirname(...) + ../../drizzle` rather than `new URL('../../drizzle', ...)` so
+ * bundlers (Turbopack/webpack, when the web app pulls in core) do not try to resolve the
+ * folder as a module — it is a runtime asset path, read only by the worker's migrator.
+ */
+export const MIGRATIONS_FOLDER = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  'drizzle',
+);
 
 /**
  * Apply all pending migrations (standard tables plus the FTS5 / sqlite-vec
