@@ -26,6 +26,7 @@
     "ingest": "npm run build --workspace @leapfrog/core && npm run ingest --workspace @leapfrog/worker --",
     "enrich": "npm run build --workspace @leapfrog/core && npm run enrich --workspace @leapfrog/worker --",
     "embed": "npm run build --workspace @leapfrog/core && npm run embed --workspace @leapfrog/worker --",
+    "brief": "npm run build --workspace @leapfrog/core && npm run brief --workspace @leapfrog/worker --",
     "test": "vitest run",
     "test:watch": "vitest"
   },

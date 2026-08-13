@@ -3,6 +3,7 @@
  * Populated across the M1/M2 milestones.
  */
 
+export * from './brief/index.js';
 export * from './db/index.js';
 export * from './embed/index.js';
 export * from './enrich/index.js';
