@@ -1,6 +1,12 @@
+import { isAbsolute } from 'node:path';
 import { and, eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createDatabase, type Database } from './client.js';
+import {
+  createDatabase,
+  DEFAULT_DB_PATH,
+  resolveDatabasePath,
+  type Database,
+} from './client.js';
 import { EMBEDDING_DIM } from './constants.js';
 import { runMigrations } from './migrate.js';
 import { chunks, enrichedItems, rawItems, sources } from './schema.js';
@@ -29,6 +35,22 @@ async function seedRawItem(db: Database, sourceId: number, title: string) {
     .returning();
   return raw!;
 }
+
+describe('resolveDatabasePath', () => {
+  it('anchors a relative path to the workspace root, so every process shares one file', () => {
+    const resolved = resolveDatabasePath();
+    expect(isAbsolute(resolved)).toBe(true);
+    expect(resolved.endsWith(DEFAULT_DB_PATH)).toBe(true);
+    expect(resolveDatabasePath('data/other.sqlite')).toBe(
+      resolved.replace('leapfrog.sqlite', 'other.sqlite'),
+    );
+  });
+
+  it('takes an absolute path and :memory: as given', () => {
+    expect(resolveDatabasePath('/tmp/leapfrog.sqlite')).toBe('/tmp/leapfrog.sqlite');
+    expect(resolveDatabasePath(':memory:')).toBe(':memory:');
+  });
+});
 
 describe('db schema + migrations', () => {
   let db: Database;

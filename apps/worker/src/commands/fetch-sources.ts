@@ -1,21 +1,13 @@
 /**
- * `worker fetch` — run the source adapters against the catalog and report what
- * came back. Nothing is written to the database: persistence arrives with the
- * normalize/dedupe stage. Until then this is how a source is smoke-tested before
- * it is added to the catalog, and how the demo-mode snapshot gets captured.
+ * `worker fetch` — run the source adapters against the catalog and report what came
+ * back, writing nothing. This is how a source is smoke-tested before it is added to
+ * the catalog; `worker ingest` is the same fetch with persistence.
  */
-import {
-  DEFAULT_SOURCES,
-  fetchSources,
-  type SourceInput,
-  type SourceRunOutcome,
-} from '@leapfrog/core';
+import { fetchSources, type SourceInput, type SourceRunOutcome } from '@leapfrog/core';
+import { numberFlag, parseFlags, stringFlag } from '../args.js';
+import { selectSources, type SourceFilter } from '../catalog.js';
 
-export interface FetchOptions {
-  /** Only sources of this kind (`rss`, `github`, `nvd`). */
-  kind?: string;
-  /** Case-insensitive substring match on the source name or locator. */
-  match?: string;
+export interface FetchOptions extends SourceFilter {
   maxItems: number;
   /** Ignore items older than this many days. */
   sinceDays?: number;
@@ -24,55 +16,18 @@ export interface FetchOptions {
 }
 
 export function parseFetchArgs(argv: string[]): FetchOptions {
-  const options: FetchOptions = { maxItems: 10, json: false };
-
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    const value = argv[i + 1];
-
-    switch (arg) {
-      case '--kind':
-        options.kind = value;
-        i += 1;
-        break;
-      case '--match':
-        options.match = value;
-        i += 1;
-        break;
-      case '--max':
-        options.maxItems = Number(value);
-        i += 1;
-        break;
-      case '--since-days':
-        options.sinceDays = Number(value);
-        i += 1;
-        break;
-      case '--json':
-        options.json = true;
-        break;
-      default:
-        throw new Error(`unknown option: ${arg}`);
-    }
-  }
-
-  if (!Number.isFinite(options.maxItems) || options.maxItems < 1) {
-    throw new Error('--max must be a positive number');
-  }
-  if (options.sinceDays !== undefined && !Number.isFinite(options.sinceDays)) {
-    throw new Error('--since-days must be a number');
-  }
-
-  return options;
-}
-
-export function selectSources(options: FetchOptions): SourceInput[] {
-  const match = options.match?.toLowerCase();
-
-  return DEFAULT_SOURCES.filter((source) => {
-    if (options.kind && source.kind !== options.kind) return false;
-    if (!match) return true;
-    return `${source.name} ${source.url}`.toLowerCase().includes(match);
+  const flags = parseFlags(argv, {
+    values: ['kind', 'match', 'max', 'since-days'],
+    switches: ['json'],
   });
+
+  return {
+    kind: stringFlag(flags, 'kind'),
+    match: stringFlag(flags, 'match'),
+    maxItems: numberFlag(flags, 'max', { min: 1 }) ?? 10,
+    sinceDays: numberFlag(flags, 'since-days', { min: 0 }),
+    json: flags.json === true,
+  };
 }
 
 function report(outcomes: SourceRunOutcome[]): void {
@@ -106,7 +61,7 @@ function report(outcomes: SourceRunOutcome[]): void {
 
 export async function runFetchCommand(argv: string[]): Promise<number> {
   const options = parseFetchArgs(argv);
-  const sources = selectSources(options);
+  const sources: SourceInput[] = selectSources(options);
 
   if (sources.length === 0) {
     console.error('no catalog sources matched the given filters');
