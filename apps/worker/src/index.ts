@@ -1,4 +1,5 @@
 import { greet } from '@leapfrog/core';
+import { runEmbedCommand } from './commands/embed.js';
 import { runEnrichCommand } from './commands/enrich.js';
 import { runFetchCommand } from './commands/fetch-sources.js';
 import { runIngestCommand } from './commands/ingest.js';
@@ -11,6 +12,7 @@ Commands:
   fetch     Run the source adapters against the catalog and print what they return.
   ingest    Fetch, normalize, dedupe, and persist into SQLite. Safe to repeat.
   enrich    Classify, score, and summarize stored raw items with the LLM. Safe to repeat.
+  embed     Chunk and embed enriched items into the retrieval index. Safe to repeat.
 
 Options (fetch, ingest):
   --kind <rss|github|nvd>   Only sources of this kind
@@ -18,10 +20,10 @@ Options (fetch, ingest):
   --since-days <n>          Ignore items older than n days
 
 Options (all commands):
-  --max <n>                 Cap items (fetch: 10/source, ingest: 25/source, enrich: all pending)
+  --max <n>                 Cap items (fetch: 10/source, ingest: 25/source, enrich/embed: all pending)
   --json                    Print machine-readable output
 
-Options for "ingest" and "enrich":
+Options for "ingest", "enrich", and "embed":
   --db <path>               SQLite file to use (default data/leapfrog.sqlite)
 
 Environment:
@@ -30,11 +32,12 @@ Environment:
   NVD_API_KEY               Raises the NVD limit from 5 to 50 requests/30s
   OPENROUTER_API_KEY        Required for "enrich"; without it, use demo-mode seed data
   OPENROUTER_ENRICH_MODEL   Enrichment model slug (default openai/gpt-4o-mini)
+  EMBEDDING_MODEL           Local embedding model (default Xenova/bge-small-en-v1.5)
 `;
 
 /**
- * Worker entrypoint. Scheduling (node-cron) and the embed/index stage land in the
- * later M2/M3 issues; today the worker exposes each finished stage as a CLI command.
+ * Worker entrypoint. Scheduling (node-cron) lands in a later issue; today the worker
+ * exposes each finished pipeline stage as a CLI command.
  */
 async function main(argv: string[]): Promise<number> {
   const [command, ...rest] = argv;
@@ -46,6 +49,8 @@ async function main(argv: string[]): Promise<number> {
       return runIngestCommand(rest);
     case 'enrich':
       return runEnrichCommand(rest);
+    case 'embed':
+      return runEmbedCommand(rest);
     case undefined:
     case 'help':
     case '--help':

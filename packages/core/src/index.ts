@@ -4,6 +4,7 @@
  */
 
 export * from './db/index.js';
+export * from './embed/index.js';
 export * from './enrich/index.js';
 export * from './ingest/index.js';
 export * from './normalize/index.js';
