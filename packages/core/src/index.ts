@@ -4,6 +4,7 @@
  */
 
 export * from './db/index.js';
+export * from './ingest/index.js';
 
 export const APP_NAME = 'LeapFrog';
 

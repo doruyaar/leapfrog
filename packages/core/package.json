@@ -21,7 +21,9 @@
   "dependencies": {
     "better-sqlite3": "^13.0.3",
     "drizzle-orm": "^0.45.2",
-    "sqlite-vec": "^0.1.9"
+    "fast-xml-parser": "^5.10.1",
+    "sqlite-vec": "^0.1.9",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",
