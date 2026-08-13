@@ -1,4 +1,5 @@
 import { greet } from '@leapfrog/core';
+import { runAskCommand } from './commands/ask.js';
 import { runBriefCommand } from './commands/brief.js';
 import { runEmbedCommand } from './commands/embed.js';
 import { runEnrichCommand } from './commands/enrich.js';
@@ -17,6 +18,7 @@ Commands:
   enrich    Classify, score, and summarize stored raw items with the LLM. Safe to repeat.
   embed     Chunk and embed enriched items into the retrieval index. Safe to repeat.
   brief     Compose and store today's ranked, cited brief. Safe to repeat.
+  ask       Answer a question with hybrid RAG and grounded citations.
 
 Options (fetch, ingest):
   --kind <rss|github|nvd>   Only sources of this kind
@@ -34,6 +36,11 @@ Options (brief):
   --date <YYYY-MM-DD>       Day the brief covers (default today)
   --top <n>                 Number of signals in the brief (default 8)
   --notify                  Push impact >= 4 signals to SLACK_WEBHOOK_URL if set
+
+Options (ask):
+  --q <text>                The question to answer (required)
+  --vendor <name>           Restrict retrieval to one vendor
+  --category <name>         Restrict retrieval to one category
 
 Options for "seed", "ingest", "enrich", "embed", and "brief":
   --db <path>               SQLite file to use (default data/leapfrog.sqlite)
@@ -67,6 +74,8 @@ async function main(argv: string[]): Promise<number> {
       return runEmbedCommand(rest);
     case 'brief':
       return runBriefCommand(rest);
+    case 'ask':
+      return runAskCommand(rest);
     case undefined:
     case 'help':
     case '--help':
