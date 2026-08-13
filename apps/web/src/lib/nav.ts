@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   Swords,
+  Table2,
   Users,
   Wand2,
   type LucideIcon,
@@ -65,6 +66,7 @@ export const MODULES: NavModule[] = [
               { label: 'Signals', href: '/signals', icon: Rss },
               { label: 'Briefs', href: '/briefs', icon: FileText },
               { label: 'Competitors', href: '/competitors', icon: Swords },
+              { label: 'Comparison', href: '/comparison', icon: Table2 },
             ],
           },
           {

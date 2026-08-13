@@ -8,10 +8,14 @@ import {
   readVendorBySlug,
   readVendors,
   categoryBreakdown,
+  readComparisonMatrix,
+  suggestMatrixUpdates,
   FOCUS_VENDOR,
   type BriefItem,
   type Category,
+  type ComparisonMatrix,
   type ListSignalsOptions,
+  type MatrixSuggestion,
   type SignalDetail,
   type SignalSummary,
   type VendorSummary,
@@ -116,5 +120,24 @@ export function getVendorPage(slug: string, category?: Category): VendorPage | n
   };
 }
 
+/** The curated comparison matrix (a static, human-owned asset — no database needed). */
+export function getComparisonMatrix(): ComparisonMatrix {
+  return readComparisonMatrix();
+}
+
+/** Corpus-derived, human-reviewable suggestions for which matrix cells to revisit. */
+export function getMatrixSuggestions(matrix: ComparisonMatrix): MatrixSuggestion[] {
+  const db = getDb();
+  return db ? suggestMatrixUpdates(db, matrix) : [];
+}
+
 export { FOCUS_VENDOR };
-export type { BriefItem, Category, SignalDetail, SignalSummary, VendorSummary };
+export type {
+  BriefItem,
+  Category,
+  ComparisonMatrix,
+  MatrixSuggestion,
+  SignalDetail,
+  SignalSummary,
+  VendorSummary,
+};
