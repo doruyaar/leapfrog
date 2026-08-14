@@ -1,0 +1,75 @@
+[
+  {
+    "id": "pricing-update-revision",
+    "note": "revised item: a price actually moved",
+    "revised": true,
+    "prior": "Sonatype announced updated pricing for its Nexus platform. The Pro tier now costs $98 per user per month. Annual commitments receive a 10% discount.",
+    "next": "Sonatype announced updated pricing for its Nexus platform. The Pro tier now costs $119 per user per month. Annual commitments receive a 10% discount.",
+    "expectedKind": "update"
+  },
+  {
+    "id": "formatting-only-revision",
+    "note": "revised item: whitespace and casing only, no substance",
+    "revised": true,
+    "prior": "GitLab released version 17.2 of its package registry. The release adds SBOM export for container images.",
+    "next": "GitLab  released version 17.2 of its Package Registry.\nThe release adds SBOM export for container images.",
+    "expectedKind": "duplicate"
+  },
+  {
+    "id": "release-note-clarified",
+    "note": "revised item: a sentence was added",
+    "revised": true,
+    "prior": "Docker Hub introduces automated vulnerability scanning for all public repositories.",
+    "next": "Docker Hub introduces automated vulnerability scanning for all public repositories. Scanning runs on every push and results appear within five minutes.",
+    "expectedKind": "update"
+  },
+  {
+    "id": "pure-rewording",
+    "note": "same announcement, new packaging",
+    "prior": "Sonatype launches SBOM scanning for container images, giving teams visibility into every component shipped to production.",
+    "next": "Sonatype's new SBOM scanning for container images gives teams visibility into all components they ship to production.",
+    "expectedKind": "rephrase"
+  },
+  {
+    "id": "syndicated-headline",
+    "note": "third-party coverage restating a vendor announcement",
+    "prior": "GitLab announces acquisition of Oxeye to expand application security testing capabilities across the DevSecOps platform.",
+    "next": "GitLab has acquired security startup Oxeye, a move that expands its application security testing capabilities across its DevSecOps platform.",
+    "expectedKind": "rephrase"
+  },
+  {
+    "id": "genuinely-new-feature",
+    "note": "different capability from the prior item",
+    "prior": "Docker Hub introduces automated vulnerability scanning for all public repositories.",
+    "next": "Docker launches Docker Debug, a new CLI tool for inspecting any container image without installing a shell inside it.",
+    "expectedKind": "new"
+  },
+  {
+    "id": "same-vendor-different-story",
+    "note": "same vendor, unrelated news must not collapse",
+    "prior": "JFrog reports record fourth-quarter revenue, beating analyst expectations on cloud growth.",
+    "next": "JFrog discloses a critical vulnerability in Artifactory that allows unauthenticated remote code execution; a patch is available.",
+    "expectedKind": "new"
+  },
+  {
+    "id": "version-bump-new-story",
+    "note": "a later release is news, not a re-phrasing of the earlier one",
+    "prior": "Harbor 2.10 ships with OCI 1.1 artifact support and improved replication performance.",
+    "next": "Harbor 2.11 introduces SBOM generation at push time and adds IPv6 support for all core services.",
+    "expectedKind": "new"
+  },
+  {
+    "id": "first-item-for-vendor",
+    "note": "no prior state at all",
+    "prior": null,
+    "next": "Cloudsmith raises $25M Series B to expand its cloud-native artifact management platform.",
+    "expectedKind": "new"
+  },
+  {
+    "id": "press-release-vs-blog",
+    "note": "vendor blog and press release describe the same launch",
+    "prior": "Aqua Security announces Trivy Premium, an enterprise distribution of the popular open-source scanner with SLA-backed support and centralized policy management.",
+    "next": "Aqua Security has announced a premium enterprise edition of its Trivy scanner, offering SLA-backed support and centralized policy management on top of the open-source tool.",
+    "expectedKind": "rephrase"
+  }
+]
