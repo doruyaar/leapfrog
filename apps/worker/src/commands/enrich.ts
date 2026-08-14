@@ -64,7 +64,9 @@ function logItemComplete(
 ): void {
   const secs = `${(elapsedMs / 1000).toFixed(1)}s`;
   if (outcome.status === 'ok') {
-    console.log(`✓ ${tag(progress)} ${outcome.category}, impact ${outcome.impactScore} (${secs})`);
+    console.log(
+      `✓ ${tag(progress)} ${outcome.category}, impact ${outcome.impactScore} (${secs})`,
+    );
   } else if (outcome.status === 'quarantined') {
     console.warn(`⚠ ${tag(progress)} quarantined: ${outcome.reason} (${secs})`);
   } else {

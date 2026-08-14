@@ -35,11 +35,7 @@ export function readStoredBattlecard(
   db: Database,
   vendor: string,
 ): StoredBattlecardView | null {
-  const row = db
-    .select()
-    .from(battlecards)
-    .where(eq(battlecards.vendor, vendor))
-    .get();
+  const row = db.select().from(battlecards).where(eq(battlecards.vendor, vendor)).get();
   if (!row) return null;
 
   try {

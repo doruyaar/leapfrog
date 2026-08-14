@@ -67,11 +67,7 @@ export interface NewFactInput {
 
 /** Append a new fact and return its id. Never updates an existing row. */
 export function insertFact(db: Executor, input: NewFactInput): number {
-  return db
-    .insert(vendorFacts)
-    .values(input)
-    .returning({ id: vendorFacts.id })
-    .get().id;
+  return db.insert(vendorFacts).values(input).returning({ id: vendorFacts.id }).get().id;
 }
 
 /** Point a superseded fact at its replacement — the only write to an existing row. */

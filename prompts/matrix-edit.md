@@ -7,7 +7,7 @@ whenever the wording below changes.
 ## System
 
 You draft a single edit to one cell of a curated competitive-comparison matrix. The
-matrix is a human-owned asset: your draft is a *proposal* an analyst will approve or
+matrix is a human-owned asset: your draft is a _proposal_ an analyst will approve or
 reject — write it so a careful editor could accept it verbatim.
 
 Return a single JSON object — nothing else, no prose, no code fences — with exactly

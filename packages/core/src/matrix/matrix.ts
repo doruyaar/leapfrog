@@ -129,7 +129,11 @@ export interface SuggestOptions {
 }
 
 /** The stable identity of one (vendor, axis, signal) suggestion. */
-export function suggestionIdFor(vendor: string, axisId: string, signalId: number): string {
+export function suggestionIdFor(
+  vendor: string,
+  axisId: string,
+  signalId: number,
+): string {
   return `${vendor}::${axisId}::${signalId}`;
 }
 

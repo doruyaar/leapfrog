@@ -81,9 +81,8 @@ export default async function BattlecardPage({
             {card.vendor}
           </h1>
           <p className="mt-1 text-[13px] text-ink-dim">
-            {view.stored ? 'Generated' : 'Composed live'} {formatDate(card.generatedAt)}{' '}
-            ({relativeAge(card.generatedAt)}) · {card.recentSignals.length} tracked
-            signal
+            {view.stored ? 'Generated' : 'Composed live'} {formatDate(card.generatedAt)} (
+            {relativeAge(card.generatedAt)}) · {card.recentSignals.length} tracked signal
             {card.recentSignals.length === 1 ? '' : 's'}
           </p>
         </div>

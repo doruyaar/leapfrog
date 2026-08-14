@@ -14,7 +14,13 @@ import { and, eq, inArray } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { VEC_TABLE } from '../db/constants.js';
 import { searchChunkEmbeddings } from '../db/vectors.js';
-import { chunks, enrichedItems, rawItems, sources, type SourceKind } from '../db/schema.js';
+import {
+  chunks,
+  enrichedItems,
+  rawItems,
+  sources,
+  type SourceKind,
+} from '../db/schema.js';
 import { cosineFromL2, readSimilarityThreshold } from '../diff/config.js';
 
 export type SourceTier = 'primary' | 'secondary';
