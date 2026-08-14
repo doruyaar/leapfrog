@@ -46,6 +46,16 @@ function print(report: SeedReport): void {
   } else {
     console.log('• embedding skipped (--skip-embed)');
   }
+  if (report.diff) {
+    const { byKind } = report.diff;
+    console.log(
+      `✓ ${report.diff.attempted} items diffed — ${byKind.new} new, ` +
+        `${byKind.update} updates, ${byKind.rephrase} re-phrasings`,
+    );
+  }
+  if (report.battlecards > 0) {
+    console.log(`✓ ${report.battlecards} battlecards stored`);
+  }
 }
 
 export async function runSeedCommand(argv: string[]): Promise<number> {

@@ -1,8 +1,10 @@
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowRightLeft, ArrowUpRight } from 'lucide-react';
 import type { Category } from '@leapfrog/core';
+import type { Corroboration } from '@/lib/queries';
 import { CATEGORY_COLOR, formatDate, relativeAge } from '@/lib/format';
 import { CategoryBadge, ImpactBadge, VendorMark } from './badges';
+import { CorroborationBadge } from './corroboration-badge';
 
 /** The minimal signal shape a card renders — satisfied by both feed rows and brief items. */
 export interface CardSignal {
@@ -16,12 +18,34 @@ export interface CardSignal {
   publishedAt: Date | string | null;
 }
 
+/** Small badge marking a signal that changed the recorded vendor state. */
+export function StateChangeBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent-soft px-2.5 py-0.5 text-[11px] font-medium text-accent">
+      <ArrowRightLeft className="size-3" />
+      State change
+    </span>
+  );
+}
+
 /**
  * The unit of the product: one triaged, scored, "so-what"-annotated signal. Clicking it
  * opens the detail view; every card carries its impact, category, vendor, and the
  * grounded "why it matters" line so the feed is scannable without drilling in.
+ * `stateChange` marks a material change to the vendor state (the brief distinguishes
+ * *news* from *change*); `corroboration` renders the trust badge when computed.
  */
-export function SignalCard({ signal, rank }: { signal: CardSignal; rank?: number }) {
+export function SignalCard({
+  signal,
+  rank,
+  stateChange = false,
+  corroboration,
+}: {
+  signal: CardSignal;
+  rank?: number;
+  stateChange?: boolean;
+  corroboration?: Corroboration['status'];
+}) {
   return (
     <Link
       href={`/signals/${signal.id}`}
@@ -56,6 +80,13 @@ export function SignalCard({ signal, rank }: { signal: CardSignal; rank?: number
       </div>
 
       <p className="line-clamp-2 text-[13px] text-ink-dim">{signal.summary}</p>
+
+      {(stateChange || corroboration) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {stateChange && <StateChangeBadge />}
+          {corroboration && <CorroborationBadge status={corroboration} />}
+        </div>
+      )}
 
       <div className="mt-auto border-t border-line-soft pt-3">
         <p className="line-clamp-2 text-[12.5px] text-ink">

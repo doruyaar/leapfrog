@@ -44,6 +44,14 @@ export interface SeedItem {
   content: string;
   /** ISO 8601 publish timestamp. */
   publishedAt?: string;
+  /**
+   * When present, the item is seeded as a *revision*: the previous text is
+   * ingested first and then replaced through the real upsert path, producing a
+   * `raw_item_revisions` pre-image so demo mode exercises the diff stage
+   * (GAP-PLAN issue 27) exactly the way a live re-publication would.
+   */
+  previousContent?: string;
+  previousTitle?: string;
   enrichment: SeedEnrichment;
 }
 
