@@ -4,13 +4,16 @@ export {
   readRelatedSignals,
   type ListSignalsOptions,
   type SignalDetail,
+  type SignalSort,
   type SignalSummary,
+  type SortDir,
 } from './signals.js';
 export {
   readChangeEventForItem,
   readChangeEvents,
   readMaterialChangeIds,
   type ChangeEventSummary,
+  type ChangeSort,
   type ListChangeEventsOptions,
 } from './changes.js';
 export {

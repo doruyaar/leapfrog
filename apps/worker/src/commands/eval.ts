@@ -26,7 +26,8 @@ export function parseEvalArgs(argv: string[]): EvalCommandOptions {
 function printReport(report: ChangeEvalReport, threshold: number): void {
   for (const result of report.results) {
     const mark = result.correct ? '✓' : '✗';
-    const sim = result.similarity === null ? '' : ` (sim ${result.similarity.toFixed(3)})`;
+    const sim =
+      result.similarity === null ? '' : ` (sim ${result.similarity.toFixed(3)})`;
     console.log(
       `${mark} ${result.id}: expected ${result.expected}, got ${result.actual}${sim}`,
     );

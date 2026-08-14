@@ -108,7 +108,11 @@ describe('matrix approval gate', () => {
     approveMatrixSuggestion(db, makeSuggestion(), { matrixPath });
     rejectMatrixSuggestion(
       db,
-      makeSuggestion({ suggestionId: 'JFrog::security::7', vendor: 'JFrog', signalId: 7 }),
+      makeSuggestion({
+        suggestionId: 'JFrog::security::7',
+        vendor: 'JFrog',
+        signalId: 7,
+      }),
     );
 
     expect(readReviewedSuggestionIds(db)).toEqual(
@@ -119,7 +123,10 @@ describe('matrix approval gate', () => {
   it('audit exposes the latest approval per cell, ignoring rejections', () => {
     const suggestion = makeSuggestion();
     approveMatrixSuggestion(db, suggestion, { matrixPath });
-    rejectMatrixSuggestion(db, makeSuggestion({ suggestionId: 'Sonatype::security::43' }));
+    rejectMatrixSuggestion(
+      db,
+      makeSuggestion({ suggestionId: 'Sonatype::security::43' }),
+    );
 
     const audit = readMatrixCellAudit(db);
     expect(audit.size).toBe(1);

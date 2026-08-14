@@ -364,8 +364,7 @@ function applyFactChanges(
       // A revision supersedes the fact its own item evidenced; otherwise the
       // update supersedes the vendor's current belief on this dimension.
       const previous =
-        readFactByEvidence(tx, input.rawItemId) ??
-        readCurrentFact(tx, vendor, dimension);
+        readFactByEvidence(tx, input.rawItemId) ?? readCurrentFact(tx, vendor, dimension);
       const newFactId = insertFact(tx, {
         vendor,
         dimension,

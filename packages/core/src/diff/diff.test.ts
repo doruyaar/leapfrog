@@ -13,11 +13,7 @@ import {
   type Category,
 } from '../db/schema.js';
 import type { Embedder } from '../embed/model.js';
-import {
-  classifyAgainstPriors,
-  classifyRevision,
-  toDimension,
-} from './deterministic.js';
+import { classifyAgainstPriors, classifyRevision, toDimension } from './deterministic.js';
 import { diffItems } from './diff.js';
 import { DETERMINISTIC_MODEL, DIFF_DETERMINISTIC_VERSION } from './prompt.js';
 import type { SimilarPrior } from './prompt.js';
@@ -117,7 +113,10 @@ describe('splitSentences / diffSentences', () => {
   });
 
   it('reports added and removed sentences, ignoring case and whitespace', () => {
-    const diff = diffSentences('Team is $9. Business is $21.', 'team is  $9. Business is $24.');
+    const diff = diffSentences(
+      'Team is $9. Business is $21.',
+      'team is  $9. Business is $24.',
+    );
     expect(diff.removed).toEqual(['Business is $21.']);
     expect(diff.added).toEqual(['Business is $24.']);
   });

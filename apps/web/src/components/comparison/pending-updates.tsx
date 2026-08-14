@@ -31,7 +31,11 @@ function LevelDot({ level }: { level: CellLevel }) {
  * the suggestion so it never resurfaces. The analyst approves; they don't
  * transcribe.
  */
-export function PendingUpdatesPanel({ suggestions }: { suggestions: MatrixSuggestion[] }) {
+export function PendingUpdatesPanel({
+  suggestions,
+}: {
+  suggestions: MatrixSuggestion[];
+}) {
   return (
     <section>
       <div className="mb-3 flex items-center gap-2">
@@ -43,9 +47,9 @@ export function PendingUpdatesPanel({ suggestions }: { suggestions: MatrixSugges
       </div>
 
       <p className="mb-3 text-[12px] text-ink-dim">
-        Drafted edits from recent signals, ranked by impact × recency. Nothing changes
-        the matrix until you approve it; every approval is recorded in the audit trail,
-        and a rejected draft stays dismissed.
+        Drafted edits from recent signals, ranked by impact × recency. Nothing changes the
+        matrix until you approve it; every approval is recorded in the audit trail, and a
+        rejected draft stays dismissed.
       </p>
 
       {suggestions.length === 0 ? (

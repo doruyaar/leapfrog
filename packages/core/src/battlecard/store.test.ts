@@ -97,10 +97,22 @@ describe('battlecard store', () => {
 
   it('counts only this vendor’s signals newer than the card', async () => {
     const since = new Date('2026-08-10T00:00:00Z');
-    await seedSignal(db, { vendor: 'Sonatype', publishedAt: new Date('2026-08-09T00:00:00Z') });
-    await seedSignal(db, { vendor: 'Sonatype', publishedAt: new Date('2026-08-11T00:00:00Z') });
-    await seedSignal(db, { vendor: 'Sonatype', publishedAt: new Date('2026-08-12T00:00:00Z') });
-    await seedSignal(db, { vendor: 'GitLab', publishedAt: new Date('2026-08-12T00:00:00Z') });
+    await seedSignal(db, {
+      vendor: 'Sonatype',
+      publishedAt: new Date('2026-08-09T00:00:00Z'),
+    });
+    await seedSignal(db, {
+      vendor: 'Sonatype',
+      publishedAt: new Date('2026-08-11T00:00:00Z'),
+    });
+    await seedSignal(db, {
+      vendor: 'Sonatype',
+      publishedAt: new Date('2026-08-12T00:00:00Z'),
+    });
+    await seedSignal(db, {
+      vendor: 'GitLab',
+      publishedAt: new Date('2026-08-12T00:00:00Z'),
+    });
 
     expect(countSignalsSince(db, 'Sonatype', since)).toBe(2);
     expect(countSignalsSince(db, 'GitLab', since)).toBe(1);

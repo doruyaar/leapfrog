@@ -3,14 +3,10 @@
  * to `ok` rows — quarantined change events never reach a screen — and joined with
  * the trigger item so every card can link its evidence.
  */
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, like, or } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
-import {
-  changeEvents,
-  rawItems,
-  type ChangeKind,
-  type Dimension,
-} from '../db/schema.js';
+import { changeEvents, rawItems, type ChangeKind, type Dimension } from '../db/schema.js';
+import type { SortDir } from './signals.js';
 
 /** A change event as shown on a card. */
 export interface ChangeEventSummary {
@@ -52,29 +48,58 @@ const COLUMNS = {
   createdAt: changeEvents.createdAt,
 } as const;
 
+/** The columns a change feed can be ordered by. */
+export type ChangeSort = 'published' | 'materiality';
+
 export interface ListChangeEventsOptions {
   vendor?: string;
   kinds?: ChangeKind[];
+  dimension?: Dimension;
+  /** Free-text match against vendor, before/after states, rationale, and trigger title. */
+  search?: string;
+  /** Order key (default `published`). */
+  sort?: ChangeSort;
+  /** Order direction (default `desc`). */
+  dir?: SortDir;
   limit?: number;
 }
 
-/** Shown change events, newest trigger first. */
+/** Shown change events, newest trigger first by default. */
 export function readChangeEvents(
   db: Database,
   options: ListChangeEventsOptions = {},
 ): ChangeEventSummary[] {
   const conditions = [eq(changeEvents.status, 'ok')];
   if (options.vendor) conditions.push(eq(changeEvents.vendor, options.vendor));
+  if (options.dimension) conditions.push(eq(changeEvents.dimension, options.dimension));
   if (options.kinds && options.kinds.length > 0) {
     conditions.push(inArray(changeEvents.kind, options.kinds));
   }
+
+  const term = options.search?.trim();
+  if (term) {
+    const pattern = `%${term}%`;
+    conditions.push(
+      or(
+        like(changeEvents.vendor, pattern),
+        like(changeEvents.before, pattern),
+        like(changeEvents.after, pattern),
+        like(changeEvents.rationale, pattern),
+        like(rawItems.title, pattern),
+      )!,
+    );
+  }
+
+  const direction = options.dir === 'asc' ? asc : desc;
+  const sortColumn =
+    options.sort === 'materiality' ? changeEvents.materiality : rawItems.publishedAt;
 
   const query = db
     .select(COLUMNS)
     .from(changeEvents)
     .innerJoin(rawItems, eq(rawItems.id, changeEvents.triggerItemId))
     .where(and(...conditions))
-    .orderBy(desc(rawItems.publishedAt), desc(changeEvents.id));
+    .orderBy(direction(sortColumn), desc(changeEvents.id));
 
   return options.limit ? query.limit(options.limit).all() : query.all();
 }
@@ -88,9 +113,7 @@ export function readChangeEventForItem(
     .select(COLUMNS)
     .from(changeEvents)
     .innerJoin(rawItems, eq(rawItems.id, changeEvents.triggerItemId))
-    .where(
-      and(eq(changeEvents.triggerItemId, rawItemId), eq(changeEvents.status, 'ok')),
-    )
+    .where(and(eq(changeEvents.triggerItemId, rawItemId), eq(changeEvents.status, 'ok')))
     .get();
   return row ?? null;
 }

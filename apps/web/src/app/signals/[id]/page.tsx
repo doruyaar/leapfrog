@@ -157,10 +157,7 @@ export default async function SignalDetailPage({
             {corroboration && (
               <div>
                 <SideTitle>Corroboration</SideTitle>
-                <CorroborationPanel
-                  corroboration={corroboration}
-                  signalId={signal.id}
-                />
+                <CorroborationPanel corroboration={corroboration} signalId={signal.id} />
               </div>
             )}
 

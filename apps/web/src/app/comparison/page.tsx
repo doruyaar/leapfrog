@@ -35,9 +35,9 @@ export default async function ComparisonPage() {
           Comparison Matrix
         </h1>
         <p className="mt-1 text-[13px] text-ink-dim">
-          A curated, human-owned capability grid across the field. The corpus drafts
-          cited edits for cells worth revisiting — a person approves what changes, and
-          every approval leaves an audit trail.
+          A curated, human-owned capability grid across the field. The corpus drafts cited
+          edits for cells worth revisiting — a person approves what changes, and every
+          approval leaves an audit trail.
         </p>
       </div>
 
