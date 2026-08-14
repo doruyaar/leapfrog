@@ -55,7 +55,10 @@ function workspaceRoot(from: string): string | undefined {
  * monorepo agrees on one database file.
  */
 export function resolveDatabasePath(path?: string): string {
-  const configured = path ?? process.env.LEAPFROG_DB_PATH ?? DEFAULT_DB_PATH;
+  // Treat an empty/whitespace `LEAPFROG_DB_PATH` (common in a copied `.env`) as unset,
+  // so it falls through to the default rather than resolving to the workspace root.
+  const fromEnv = process.env.LEAPFROG_DB_PATH?.trim() || undefined;
+  const configured = path ?? fromEnv ?? DEFAULT_DB_PATH;
   if (configured === ':memory:' || isAbsolute(configured)) return configured;
 
   return resolve(workspaceRoot(process.cwd()) ?? process.cwd(), configured);
