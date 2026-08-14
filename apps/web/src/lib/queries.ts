@@ -29,16 +29,27 @@ import {
   type BriefItem,
   type Category,
   type ChangeEventSummary,
+  type ChangeKind,
+  type ChangeSort,
   type ComparisonMatrix,
   type Corroboration,
+  type Dimension,
   type ListSignalsOptions,
   type MatrixCellAudit,
   type MatrixSuggestion,
   type SignalDetail,
+  type SignalSort,
   type SignalSummary,
+  type SortDir,
   type VendorSummary,
 } from '@leapfrog/core';
 import { getDb } from './db';
+import { paginate, type Paginated } from './list-params';
+
+/** How many cards a signals grid page shows — divisible by 2 and 3 for clean rows. */
+export const SIGNALS_PAGE_SIZE = 24;
+/** How many change cards a page shows in the single-column feed. */
+export const CHANGES_PAGE_SIZE = 12;
 
 /** A brief shaped for the UI — from storage if composed, else composed live for display. */
 export interface BriefView {
@@ -85,23 +96,57 @@ export function getSignals(options: ListSignalsOptions = {}): SignalSummary[] {
   return db ? readSignals(db, options) : [];
 }
 
-/** Everything the signals feed renders: the corpus, its category mix, and the active filter. */
-export interface SignalsFeed {
-  signals: SignalSummary[];
-  /** The signals matching the active category filter (or all when none is set). */
-  filtered: SignalSummary[];
-  breakdown: Array<{ category: Category; count: number }>;
-  activeCategory: Category | null;
+/** The search, filter, sort, and page state a signals feed is rendered for. */
+export interface SignalsFeedOptions {
+  /** Free-text query across title, summary, and "why it matters". */
+  q?: string;
+  category?: Category;
+  vendor?: string;
+  /** Keep only signals at or above this impact score (1–5). */
+  impactMin?: number;
+  sort?: SignalSort;
+  dir?: SortDir;
+  page: number;
 }
 
-export function getSignalsFeed(category?: Category): SignalsFeed {
-  const signals = getSignals();
-  const filtered = category ? signals.filter((s) => s.category === category) : signals;
+/** Everything the signals feed renders: a page of results plus the facets for filtering. */
+export interface SignalsFeedPage {
+  result: Paginated<SignalSummary>;
+  /** Category counts within the current search/vendor/impact filters (drives the chips). */
+  breakdown: Array<{ category: Category; count: number }>;
+  /** Every tracked vendor, for the vendor filter — stable regardless of the active filter. */
+  vendors: string[];
+  activeCategory: Category | null;
+  /** True when any search or filter is narrowing the corpus. */
+  isFiltered: boolean;
+}
+
+/**
+ * A page of the signals feed. Search and sort run in SQL; vendor, impact, and category
+ * are applied here so the category chips can show accurate counts within the current
+ * search (facets are computed before the category filter, standard faceted-search
+ * behaviour). Pagination is a simple slice — the corpus is small and already fully read.
+ */
+export function getSignalsFeed(options: SignalsFeedOptions): SignalsFeedPage {
+  const { q, category, vendor, impactMin, sort, dir, page } = options;
+  const isFiltered = Boolean(q || category || vendor || impactMin);
+
+  let matched = getSignals({ search: q, sort, dir });
+  if (vendor) {
+    const needle = vendor.toLowerCase();
+    matched = matched.filter((s) => s.vendor?.toLowerCase() === needle);
+  }
+  if (impactMin) matched = matched.filter((s) => s.impactScore >= impactMin);
+
+  const breakdown = categoryBreakdown(matched);
+  if (category) matched = matched.filter((s) => s.category === category);
+
   return {
-    signals,
-    filtered,
-    breakdown: categoryBreakdown(signals),
+    result: paginate(matched, page, SIGNALS_PAGE_SIZE),
+    breakdown,
+    vendors: getVendors().map((v) => v.vendor),
     activeCategory: category ?? null,
+    isFiltered,
   };
 }
 
@@ -255,22 +300,83 @@ export async function getBattlecard(slug: string): Promise<BattlecardView | null
   return { card, markdown: toMarkdown(card), stored: false, newSignals: 0 };
 }
 
-/** Everything the Changes page renders: material changes and collapsed noise. */
-export interface ChangeFeed {
-  /** Real movement: `new` and `update` events, newest first. */
-  material: ChangeEventSummary[];
-  /** Filtered noise: `rephrase` and `duplicate` events, collapsed in the UI. */
-  filtered: ChangeEventSummary[];
+/** The search, filter, sort, and page state the Changes feed is rendered for. */
+export interface ChangesFeedOptions {
+  /** Free-text across vendor, before/after states, rationale, and trigger title. */
+  q?: string;
+  vendor?: string;
+  dimension?: Dimension;
+  /** The change kinds to show; defaults to the material set (`new` + `update`). */
+  kinds?: ChangeKind[];
+  sort?: ChangeSort;
+  dir?: SortDir;
+  page: number;
 }
 
-export function getChangeFeed(): ChangeFeed {
-  const db = getDb();
-  if (!db) return { material: [], filtered: [] };
+/** Everything the Changes page renders: a page of events, the vendor facet, and noise. */
+export interface ChangesFeedPage {
+  result: Paginated<ChangeEventSummary>;
+  /** Vendors that have change events — for the vendor filter. */
+  vendors: string[];
+  /**
+   * Re-phrasings and duplicates in the current vendor/dimension/search context — the
+   * "collapsed as noise" disclosure. Empty unless the default material view is active.
+   */
+  noise: ChangeEventSummary[];
+  /** True when any search or filter is narrowing the feed. */
+  isFiltered: boolean;
+}
 
-  const events = readChangeEvents(db);
+/** The default kinds shown on the Changes feed: real movement, not re-wordings. */
+export const MATERIAL_KINDS: ChangeKind[] = ['new', 'update'];
+
+/**
+ * A page of the Changes feed. All narrowing (vendor, dimension, kind, search) and sorting
+ * run in SQL; pagination is a slice. When the feed is in its default material view (no
+ * search or filters beyond kind), the collapsed re-phrasing/duplicate count is surfaced so
+ * the "filtered as noise" moment is preserved.
+ */
+export function getChangesFeed(options: ChangesFeedOptions): ChangesFeedPage {
+  const db = getDb();
+  if (!db) {
+    return {
+      result: paginate<ChangeEventSummary>([], options.page, CHANGES_PAGE_SIZE),
+      vendors: [],
+      noise: [],
+      isFiltered: false,
+    };
+  }
+
+  const { q, vendor, dimension, kinds = MATERIAL_KINDS, sort, dir, page } = options;
+  const isMaterialView =
+    !q &&
+    !vendor &&
+    !dimension &&
+    kinds.length === MATERIAL_KINDS.length &&
+    kinds.every((k) => MATERIAL_KINDS.includes(k));
+
+  const matched = readChangeEvents(db, {
+    vendor,
+    dimension,
+    kinds,
+    search: q,
+    sort,
+    dir,
+  });
+
+  const vendors = [...new Set(readChangeEvents(db).map((e) => e.vendor))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+
+  const noise = isMaterialView
+    ? readChangeEvents(db, { kinds: ['rephrase', 'duplicate'] })
+    : [];
+
   return {
-    material: events.filter((e) => e.kind === 'new' || e.kind === 'update'),
-    filtered: events.filter((e) => e.kind === 'rephrase' || e.kind === 'duplicate'),
+    result: paginate(matched, page, CHANGES_PAGE_SIZE),
+    vendors,
+    noise,
+    isFiltered: !isMaterialView,
   };
 }
 
@@ -298,11 +404,16 @@ export type {
   BriefItem,
   Category,
   ChangeEventSummary,
+  ChangeKind,
+  ChangeSort,
   ComparisonMatrix,
   Corroboration,
+  Dimension,
   MatrixCellAudit,
   MatrixSuggestion,
   SignalDetail,
+  SignalSort,
   SignalSummary,
+  SortDir,
   VendorSummary,
 };
