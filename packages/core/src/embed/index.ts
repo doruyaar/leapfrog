@@ -28,5 +28,6 @@ export {
   embedItems,
   type EmbedItemOutcome,
   type EmbedOptions,
+  type EmbedProgress,
   type EmbedReport,
 } from './embed.js';

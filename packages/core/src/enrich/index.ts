@@ -12,6 +12,7 @@ export {
   enrichItems,
   type EnrichItemOutcome,
   type EnrichOptions,
+  type EnrichProgress,
   type EnrichReport,
 } from './enrich.js';
 export {

@@ -45,6 +45,15 @@ export interface EnrichReport {
   outcomes: EnrichItemOutcome[];
 }
 
+/** Where an item sits in the batch, for progress reporting. */
+export interface EnrichProgress {
+  /** 1-based position in the batch. */
+  index: number;
+  total: number;
+  rawItemId: number;
+  title: string;
+}
+
 export interface EnrichOptions {
   /** Completion source. Defaults to an OpenRouter model built from the environment. */
   model?: EnrichmentModel;
@@ -52,12 +61,29 @@ export interface EnrichOptions {
   rawItemIds?: number[];
   /** Cap when selecting pending items (ignored when `rawItemIds` is given). */
   maxItems?: number;
+  /**
+   * Max in-flight model requests. Enrichment is I/O-bound (one slow completion per
+   * item), so raising this shortens a batch roughly linearly — bounded by the
+   * provider's rate limit, past which requests just 429 and retry. Defaults to 1
+   * (fully sequential), which is the safe, deterministic choice.
+   */
+  concurrency?: number;
+  /**
+   * Called just before an item's model request goes out. Enrichment is one slow
+   * network call per item, so a long-running batch looks frozen without this — the
+   * CLI uses it to print "in flight" progress live rather than only at the end.
+   */
+  onItemStart?: (progress: EnrichProgress) => void;
+  /** Called after an item is persisted, with its outcome and wall-clock latency. */
+  onItemComplete?: (
+    progress: EnrichProgress & { outcome: EnrichItemOutcome; elapsedMs: number },
+  ) => void;
 }
 
 /**
  * Enrich a batch of raw items. Picks the model and the work set from `options`,
- * processes items sequentially (one in-flight request keeps us inside provider rate
- * limits), and returns a per-item report.
+ * runs up to `concurrency` completions at once (default 1 = sequential), and returns
+ * a per-item report. Outcomes keep input order regardless of completion order.
  */
 export async function enrichItems(
   db: Database,
@@ -68,10 +94,41 @@ export async function enrichItems(
     ? selectInputsByIds(db, options.rawItemIds)
     : selectPendingInputs(db, { limit: options.maxItems });
 
-  const outcomes: EnrichItemOutcome[] = [];
-  for (const input of inputs) {
-    outcomes.push(await enrichOne(db, model, input));
+  const total = inputs.length;
+  const outcomes: EnrichItemOutcome[] = new Array<EnrichItemOutcome>(total);
+  const workers = Math.max(1, Math.min(options.concurrency ?? 1, total));
+
+  // A shared cursor into `inputs`: each worker claims the next index until drained.
+  // better-sqlite3 writes are synchronous, so the concurrent completions serialize
+  // naturally on the write and never interleave a transaction.
+  let cursor = 0;
+  async function runWorker(): Promise<void> {
+    for (;;) {
+      const at = cursor;
+      cursor += 1;
+      const input = inputs[at];
+      if (!input) return;
+      const progress: EnrichProgress = {
+        index: at + 1,
+        total,
+        rawItemId: input.rawItemId,
+        title: input.title,
+      };
+      options.onItemStart?.(progress);
+
+      const startedAt = Date.now();
+      const outcome = await enrichOne(db, model, input);
+      outcomes[at] = outcome;
+
+      options.onItemComplete?.({
+        ...progress,
+        outcome,
+        elapsedMs: Date.now() - startedAt,
+      });
+    }
   }
+
+  await Promise.all(Array.from({ length: workers }, runWorker));
 
   return {
     attempted: inputs.length,
