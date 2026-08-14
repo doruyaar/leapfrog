@@ -57,30 +57,41 @@ export async function runBriefCommand(argv: string[]): Promise<number> {
   const db = createDatabase({ path: options.dbPath });
   runMigrations(db);
 
-  if (!options.json) {
-    console.log(`Composing brief in ${resolveDatabasePath(options.dbPath)}…`);
+  const verbose = !options.json;
+  if (verbose) {
+    console.log(`Composing brief in ${resolveDatabasePath(options.dbPath)}…\n`);
   }
 
   try {
+    if (verbose) process.stdout.write('→ Ranking signals and composing summary … ');
     const composed = await composeBrief(db, { date: options.date, topN: options.topN });
+    if (verbose) {
+      console.log(
+        `✓ ${composed.items.length} signal(s), summary via ${composed.model ?? 'empty'}`,
+      );
+    }
+
+    if (verbose) process.stdout.write('→ Saving brief … ');
     const brief = saveBrief(db, composed);
+    if (verbose) console.log(`✓ stored for ${brief.briefDate}`);
 
     let notified: Awaited<ReturnType<typeof notifyHighImpact>> | undefined;
     if (options.notify) {
+      if (verbose) process.stdout.write('→ Notifying Slack … ');
       notified = await notifyHighImpact(brief.briefDate, brief.items);
+      if (verbose) {
+        console.log(
+          notified.delivered
+            ? `✓ alerted on ${notified.sent} signal(s)`
+            : `• skipped (${notified.reason})`,
+        );
+      }
     }
 
     if (options.json) {
       console.log(JSON.stringify({ brief, notified }, null, 2));
     } else {
       print(brief);
-      if (notified) {
-        console.log(
-          notified.delivered
-            ? `\n✓ Slack: alerted on ${notified.sent} high-impact signal(s).`
-            : `\n• Slack: not sent (${notified.reason}).`,
-        );
-      }
     }
 
     return 0;

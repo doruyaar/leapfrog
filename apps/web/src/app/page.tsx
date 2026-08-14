@@ -1,47 +1,79 @@
-import { Plus, Wand2 } from 'lucide-react';
-import { SOURCE_TYPES } from '@/lib/source-types';
+import type { Metadata } from 'next';
+import { CalendarDays, Sparkles } from 'lucide-react';
+import { getBrief, getCorroboration, getMaterialChangeIds } from '@/lib/queries';
+import { formatDate } from '@/lib/format';
+import { CitedText } from '@/components/signals/cited-text';
+import { SignalCard } from '@/components/signals/signal-card';
+import { EmptyState } from '@/components/ui/empty-state';
 
-export default function QuickSetupPage() {
+export const metadata: Metadata = { title: "Today's Brief" };
+export const dynamic = 'force-dynamic';
+
+/** The home screen is the product: today's triaged, scored, cited brief. */
+export default async function HomePage() {
+  const brief = await getBrief();
+  // Material state changes and corroboration verdicts for the ranked items —
+  // the brief distinguishes *news* from *change*, and shows whether to trust it.
+  const itemIds = brief?.items.map((item) => item.id) ?? [];
+  const changedIds = getMaterialChangeIds(itemIds);
+  const corroborations = new Map(
+    itemIds.map((id) => [id, getCorroboration(id)?.status] as const),
+  );
+
   return (
     <div className="px-[34px] pb-11 pt-5">
-      <div className="border border-line bg-card px-11 py-[52px]">
-        <div className="flex flex-col items-center">
-          <div className="flex items-center gap-3.5">
-            <Wand2 className="size-[34px] text-accent" strokeWidth={1.6} />
-            <h1 className="text-[38px] font-normal leading-none text-ink-strong">
-              Quick Setup
-            </h1>
-          </div>
-          <p className="mt-4 text-[15px] text-ink-dim">
-            Select your source type to get started
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <h1 className="flex items-center gap-2.5 text-[26px] font-normal text-ink-strong">
+            <Sparkles className="size-6 text-accent" strokeWidth={1.7} />
+            Today&apos;s Brief
+          </h1>
+          <p className="mt-1 flex items-center gap-2 text-[13px] text-ink-dim">
+            <CalendarDays className="size-4" />
+            {brief ? formatDate(brief.date) : 'Not yet composed'}
+            {brief && (
+              <span className="ml-1 rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-faint">
+                {brief.live ? 'composed live' : `stored · ${brief.model ?? 'n/a'}`}
+              </span>
+            )}
           </p>
         </div>
-
-        <div className="mx-auto mt-11 grid max-w-[928px] grid-cols-4 gap-x-10 gap-y-10 sm:grid-cols-5 lg:grid-cols-7">
-          {SOURCE_TYPES.map((source) => (
-            <button
-              key={source.name}
-              type="button"
-              className="group relative flex aspect-square flex-col items-center justify-center gap-3 rounded-[3px] border border-line bg-card px-1.5 transition-shadow hover:shadow-[0_2px_9px_rgba(0,0,0,0.14)]"
-            >
-              {!source.enabled && (
-                <span className="absolute -right-2 -top-2 grid size-[21px] place-items-center rounded-full bg-accent text-white">
-                  <Plus className="size-[14px]" strokeWidth={3} />
-                </span>
-              )}
-              <span
-                className="grid size-[42px] place-items-center rounded-[4px] text-[14px] font-bold text-white"
-                style={{ backgroundColor: source.color }}
-              >
-                {source.short}
-              </span>
-              <span className="max-w-full truncate text-[12px] text-ink-dim">
-                {source.name}
-              </span>
-            </button>
-          ))}
-        </div>
       </div>
+
+      {!brief || brief.items.length === 0 ? (
+        <EmptyState
+          title="No brief yet"
+          hint="Load the demo snapshot, then reload — the brief composes itself from the seeded corpus. No API key needed."
+          command="npm run seed"
+        />
+      ) : (
+        <>
+          <section className="mb-6 border border-line bg-card p-5">
+            <h2 className="mb-2.5 text-[12px] font-semibold uppercase tracking-wider text-ink-faint">
+              Executive summary
+            </h2>
+            <CitedText
+              text={brief.summary}
+              className="text-[15px] leading-relaxed text-ink"
+            />
+            <p className="mt-3 text-[12px] text-ink-faint">
+              Ranked by impact × recency · citations link to the source signal.
+            </p>
+          </section>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {brief.items.map((item, i) => (
+              <SignalCard
+                key={item.id}
+                signal={item}
+                rank={i + 1}
+                stateChange={changedIds.has(item.id)}
+                corroboration={corroborations.get(item.id) ?? undefined}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

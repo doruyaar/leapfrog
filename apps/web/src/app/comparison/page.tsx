@@ -1,29 +1,31 @@
 import type { Metadata } from 'next';
 import { Table2 } from 'lucide-react';
-import { getComparisonMatrix, getMatrixSuggestions } from '@/lib/queries';
-import { MatrixTable, MatrixLegend } from '@/components/comparison/matrix-table';
 import {
-  SuggestionsPanel,
-  type Suggestion,
-} from '@/components/comparison/suggestions-panel';
+  getComparisonMatrix,
+  getMatrixCellAudit,
+  getMatrixSuggestions,
+} from '@/lib/queries';
+import {
+  MatrixTable,
+  MatrixLegend,
+  type CellAuditInfo,
+} from '@/components/comparison/matrix-table';
+import { PendingUpdatesPanel } from '@/components/comparison/pending-updates';
 
 export const metadata: Metadata = { title: 'Comparison Matrix' };
 export const dynamic = 'force-dynamic';
 
-export default function ComparisonPage() {
+export default async function ComparisonPage() {
   const matrix = getComparisonMatrix();
-  const suggestions: Suggestion[] = getMatrixSuggestions(matrix).map((s) => ({
-    vendor: s.vendor,
-    axisId: s.axisId,
-    axisLabel: s.axisLabel,
-    currentLevel: s.currentLevel,
-    currentNote: s.currentNote,
-    signalId: s.signalId,
-    signalTitle: s.signalTitle,
-    category: s.category,
-    impactScore: s.impactScore,
-    publishedAt: s.publishedAt ? s.publishedAt.toISOString() : null,
-  }));
+  const suggestions = await getMatrixSuggestions(matrix);
+
+  const audit: Record<string, CellAuditInfo> = {};
+  for (const [key, entry] of getMatrixCellAudit()) {
+    audit[key] = {
+      approvedAt: entry.approvedAt.toISOString(),
+      signalId: entry.signalId,
+    };
+  }
 
   return (
     <div className="px-[34px] pb-11 pt-5">
@@ -33,16 +35,17 @@ export default function ComparisonPage() {
           Comparison Matrix
         </h1>
         <p className="mt-1 text-[13px] text-ink-dim">
-          A curated, human-owned capability grid across the field. The corpus proposes
-          which cells to revisit — a person decides what changes.
+          A curated, human-owned capability grid across the field. The corpus drafts
+          cited edits for cells worth revisiting — a person approves what changes, and
+          every approval leaves an audit trail.
         </p>
       </div>
 
-      <MatrixTable matrix={matrix} />
+      <MatrixTable matrix={matrix} audit={audit} />
       <MatrixLegend />
 
       <div className="mt-8">
-        <SuggestionsPanel suggestions={suggestions} />
+        <PendingUpdatesPanel suggestions={suggestions} />
       </div>
     </div>
   );

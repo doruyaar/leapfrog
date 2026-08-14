@@ -1,7 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, Swords, ShieldAlert, Scale, MessageSquareQuote } from 'lucide-react';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Swords,
+  ShieldAlert,
+  Scale,
+  MessageSquareQuote,
+} from 'lucide-react';
 import { getBattlecard } from '@/lib/queries';
+import { refreshBattlecardAction } from '@/lib/actions';
 import { formatDate, relativeAge } from '@/lib/format';
 import { VendorMark } from '@/components/signals/badges';
 import { CitedText } from '@/components/signals/cited-text';
@@ -73,13 +81,36 @@ export default async function BattlecardPage({
             {card.vendor}
           </h1>
           <p className="mt-1 text-[13px] text-ink-dim">
-            Composed {formatDate(card.generatedAt)} ({relativeAge(card.generatedAt)}) ·{' '}
-            {card.recentSignals.length} tracked signal
+            {view.stored ? 'Generated' : 'Composed live'} {formatDate(card.generatedAt)}{' '}
+            ({relativeAge(card.generatedAt)}) · {card.recentSignals.length} tracked
+            signal
             {card.recentSignals.length === 1 ? '' : 's'}
           </p>
         </div>
         <ExportButton markdown={markdown} filename={`${filename}.md`} />
       </div>
+
+      {view.stored && view.newSignals > 0 && (
+        <div className="mb-6 flex items-center justify-between gap-4 border border-[#d9a521]/50 bg-[#d9a521]/10 px-5 py-3.5">
+          <p className="text-[13.5px] text-ink">
+            <span className="font-semibold">
+              {view.newSignals} new signal{view.newSignals === 1 ? '' : 's'}
+            </span>{' '}
+            since this card was generated — the card below may be stale.
+          </p>
+          <form action={refreshBattlecardAction}>
+            <input type="hidden" name="vendor" value={card.vendor} />
+            <input type="hidden" name="slug" value={slug} />
+            <button
+              type="submit"
+              className="inline-flex h-[32px] items-center gap-1.5 rounded-[4px] bg-accent px-3 text-[12.5px] font-medium text-white transition-opacity hover:opacity-90"
+            >
+              <RefreshCw className="size-3.5" />
+              Refresh
+            </button>
+          </form>
+        </div>
+      )}
 
       <section className="mb-6 border border-line bg-card p-5">
         <h2 className="mb-2.5 text-[12px] font-semibold uppercase tracking-wider text-ink-faint">

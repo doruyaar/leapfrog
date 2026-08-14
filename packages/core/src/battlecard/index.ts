@@ -8,3 +8,9 @@ export {
   type BattlecardSummarizer,
   type ComposeBattlecardOptions,
 } from './battlecard.js';
+export {
+  countSignalsSince,
+  readStoredBattlecard,
+  saveBattlecard,
+  type StoredBattlecardView,
+} from './store.js';

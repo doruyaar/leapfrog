@@ -9,13 +9,21 @@
  * - a raw item upserts on `urlHash`. Seeing it again is a no-op unless the source
  *   republished it with different text, in which case the content columns are
  *   rewritten and the id is reported as changed so the derived stages
- *   (enrichment, chunking) know to rebuild it;
+ *   (enrichment, chunking) know to rebuild it. The *previous* content is preserved
+ *   in `raw_item_revisions` inside the same transaction, so the "raw is immutable"
+ *   contract survives a revision — the pre-image is never lost;
  * - an item whose body already exists under a different URL is dropped as a
  *   duplicate — this is what keeps a syndicated story from being enriched twice.
  */
 import { eq } from 'drizzle-orm';
 import type { Database, Executor } from '../db/client.js';
-import { rawItems, sources, type NewRawItem, type Source } from '../db/schema.js';
+import {
+  rawItemRevisions,
+  rawItems,
+  sources,
+  type NewRawItem,
+  type Source,
+} from '../db/schema.js';
 import type { SourceInput } from '../ingest/types.js';
 
 export interface RawItemUpsertResult {
@@ -92,7 +100,16 @@ export function upsertRawItems(db: Database, items: NewRawItem[]): RawItemUpsert
 
     for (const item of items) {
       const stored = tx
-        .select({ id: rawItems.id, contentHash: rawItems.contentHash })
+        .select({
+          id: rawItems.id,
+          contentHash: rawItems.contentHash,
+          title: rawItems.title,
+          author: rawItems.author,
+          content: rawItems.content,
+          rawJson: rawItems.rawJson,
+          publishedAt: rawItems.publishedAt,
+          fetchedAt: rawItems.fetchedAt,
+        })
         .from(rawItems)
         .where(eq(rawItems.urlHash, item.urlHash))
         .get();
@@ -102,6 +119,23 @@ export function upsertRawItems(db: Database, items: NewRawItem[]): RawItemUpsert
           result.unchanged += 1;
           continue;
         }
+
+        // Preserve the pre-image before rewriting in place: the append-only
+        // revision record is what makes a deterministic before/after diff
+        // possible later, with zero inference.
+        tx.insert(rawItemRevisions)
+          .values({
+            rawItemId: stored.id,
+            contentHash: stored.contentHash,
+            title: stored.title,
+            author: stored.author,
+            content: stored.content,
+            rawJson: stored.rawJson,
+            publishedAt: stored.publishedAt,
+            fetchedAt: stored.fetchedAt,
+            revisedAt: fetchedAt,
+          })
+          .run();
 
         tx.update(rawItems)
           .set({

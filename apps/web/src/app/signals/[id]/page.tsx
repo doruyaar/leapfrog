@@ -1,9 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
-import { getRelatedSignals, getSignal } from '@/lib/queries';
+import { ArrowDown, ArrowLeft, ExternalLink } from 'lucide-react';
+import {
+  getChangeEvent,
+  getCorroboration,
+  getRelatedSignals,
+  getSignal,
+} from '@/lib/queries';
 import { formatDate } from '@/lib/format';
 import { CategoryBadge, ImpactBadge, VendorMark } from '@/components/signals/badges';
+import { CorroborationPanel } from '@/components/signals/corroboration-badge';
+import { StateChangeBadge } from '@/components/signals/signal-card';
 import { EmptyState } from '@/components/ui/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -48,6 +55,12 @@ export default async function SignalDetailPage({
   }
 
   const related = getRelatedSignals(signal.id, signal.vendor);
+  const changeEvent = getChangeEvent(signal.id);
+  const corroboration = getCorroboration(signal.id);
+  const materialChange =
+    changeEvent !== null &&
+    (changeEvent.kind === 'new' || changeEvent.kind === 'update') &&
+    changeEvent.materiality >= 4;
 
   return (
     <div className="px-[34px] pb-11 pt-5">
@@ -58,6 +71,7 @@ export default async function SignalDetailPage({
           <div className="mb-3 flex flex-wrap items-center gap-2.5">
             <CategoryBadge category={signal.category} />
             <ImpactBadge score={signal.impactScore} showLabel />
+            {materialChange && <StateChangeBadge />}
             <span className="text-[12px] text-ink-faint">
               {signal.sourceName} · {signal.sourceKind.toUpperCase()} ·{' '}
               {formatDate(signal.publishedAt)}
@@ -86,6 +100,35 @@ export default async function SignalDetailPage({
               </p>
             </div>
 
+            {changeEvent && changeEvent.before !== null && (
+              <>
+                <Section title="Compared to previous state" />
+                <div className="space-y-1.5">
+                  <blockquote className="border-l-2 border-line px-3 py-1.5 text-[13px] leading-snug text-ink-faint">
+                    <span className="mr-1.5 text-[10px] font-semibold uppercase tracking-wider">
+                      Before
+                    </span>
+                    “{changeEvent.before}”
+                  </blockquote>
+                  <div className="flex justify-start pl-3 text-ink-faint">
+                    <ArrowDown className="size-3.5" />
+                  </div>
+                  <blockquote className="border-l-2 border-accent bg-accent-soft px-3 py-1.5 text-[13px] leading-snug text-ink">
+                    <span className="mr-1.5 text-[10px] font-semibold uppercase tracking-wider text-accent">
+                      After
+                    </span>
+                    “{changeEvent.after}”
+                  </blockquote>
+                  {changeEvent.rationale && (
+                    <p className="text-[11.5px] italic text-ink-faint">
+                      {changeEvent.rationale} · {changeEvent.model} ·{' '}
+                      {changeEvent.promptVersion}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+
             <Section title="Summary" />
             <p className="text-[14px] leading-relaxed text-ink">{signal.summary}</p>
             {signal.rationale && (
@@ -111,6 +154,16 @@ export default async function SignalDetailPage({
           </div>
 
           <aside className="space-y-6">
+            {corroboration && (
+              <div>
+                <SideTitle>Corroboration</SideTitle>
+                <CorroborationPanel
+                  corroboration={corroboration}
+                  signalId={signal.id}
+                />
+              </div>
+            )}
+
             {(signal.vendors.length > 0 || signal.products.length > 0) && (
               <div>
                 <SideTitle>Entities</SideTitle>

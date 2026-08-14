@@ -32,6 +32,15 @@ export interface EmbedReport {
   outcomes: EmbedItemOutcome[];
 }
 
+/** Where an item sits in the batch, for progress reporting. */
+export interface EmbedProgress {
+  /** 1-based position in the batch. */
+  index: number;
+  total: number;
+  rawItemId: number;
+  title: string;
+}
+
 export interface EmbedOptions {
   /** Embedding source. Defaults to the local transformers.js model from the environment. */
   embedder?: Embedder;
@@ -41,6 +50,16 @@ export interface EmbedOptions {
   maxItems?: number;
   /** Override chunking size/overlap; defaults suit short news/CVE items. */
   chunking?: ChunkOptions;
+  /**
+   * Called just before an item is chunked and embedded. Local embedding is CPU-bound
+   * and runs one item at a time, so a long batch looks frozen without this — the CLI
+   * uses it to print live progress rather than only at the end.
+   */
+  onItemStart?: (progress: EmbedProgress) => void;
+  /** Called after an item is indexed, with its outcome and wall-clock latency. */
+  onItemComplete?: (
+    progress: EmbedProgress & { outcome: EmbedItemOutcome; elapsedMs: number },
+  ) => void;
 }
 
 /**
@@ -58,8 +77,23 @@ export async function embedItems(
     : selectPendingInputs(db, { limit: options.maxItems });
 
   const outcomes: EmbedItemOutcome[] = [];
+  const total = inputs.length;
+  let index = 0;
   for (const input of inputs) {
-    outcomes.push(await embedOne(db, embedder, input, options.chunking));
+    index += 1;
+    const progress: EmbedProgress = {
+      index,
+      total,
+      rawItemId: input.rawItemId,
+      title: input.title,
+    };
+    options.onItemStart?.(progress);
+
+    const startedAt = Date.now();
+    const outcome = await embedOne(db, embedder, input, options.chunking);
+    outcomes.push(outcome);
+
+    options.onItemComplete?.({ ...progress, outcome, elapsedMs: Date.now() - startedAt });
   }
 
   return {

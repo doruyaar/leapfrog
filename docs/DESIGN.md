@@ -158,4 +158,5 @@ Every LLM call logs `request_id`, latency, and token counts (observability from 
 - Architecture diagram: [`docs/diagrams/architecture.md`](diagrams/architecture.md)
 - Product scenarios: [`docs/diagrams/product-scenarios.md`](diagrams/product-scenarios.md)
 - Build plan & tasks: [`docs/diagrams/build-plan.md`](diagrams/build-plan.md)
+- Gap plan (change detection, corroboration, asset loop): [`docs/GAP-PLAN.md`](GAP-PLAN.md)
 - Decisions: [`docs/adr/`](adr/)

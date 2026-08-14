@@ -1,9 +1,12 @@
 import { greet } from '@leapfrog/core';
+import { loadEnv } from './env.js';
 import { runAskCommand } from './commands/ask.js';
 import { runBattlecardCommand } from './commands/battlecard.js';
 import { runBriefCommand } from './commands/brief.js';
+import { runDiffCommand } from './commands/diff.js';
 import { runEmbedCommand } from './commands/embed.js';
 import { runEnrichCommand } from './commands/enrich.js';
+import { runEvalCommand } from './commands/eval.js';
 import { runFetchCommand } from './commands/fetch-sources.js';
 import { runIngestCommand } from './commands/ingest.js';
 import { runSeedCommand } from './commands/seed.js';
@@ -17,10 +20,12 @@ Commands:
   fetch     Run the source adapters against the catalog and print what they return.
   ingest    Fetch, normalize, dedupe, and persist into SQLite. Safe to repeat.
   enrich    Classify, score, and summarize stored raw items with the LLM. Safe to repeat.
+  diff      Detect state changes: new vs. update vs. re-phrasing. No key needed. Safe to repeat.
   embed     Chunk and embed enriched items into the retrieval index. Safe to repeat.
   brief     Compose and store today's ranked, cited brief. Safe to repeat.
   ask       Answer a question with hybrid RAG and grounded citations.
-  battlecard Compose a competitor battlecard and export it as Markdown.
+  battlecard Compose, store, and export a competitor battlecard as Markdown.
+  eval      Score the golden datasets (change classification). No key needed.
 
 Options (fetch, ingest):
   --kind <rss|github|nvd>   Only sources of this kind
@@ -30,6 +35,12 @@ Options (fetch, ingest):
 Options (all commands):
   --max <n>                 Cap items (fetch: 10/source, ingest: 25/source, enrich/embed: all pending)
   --json                    Print machine-readable output
+
+Options (enrich):
+  --concurrency <n>         Max in-flight model requests (default 1; higher is faster but may hit rate limits)
+
+Options (diff):
+  --rebuild                 Drop all change events and vendor facts, then replay the corpus
 
 Options (seed):
   --skip-embed              Load data only; do not build the retrieval index
@@ -48,7 +59,7 @@ Options (battlecard):
   --vendor <name>           Competitor to compose the card against (required)
   --out <file.md>           Write Markdown to a file instead of stdout
 
-Options for "seed", "ingest", "enrich", "embed", and "brief":
+Options for "seed", "ingest", "enrich", "diff", "embed", and "brief":
   --db <path>               SQLite file to use (default data/leapfrog.sqlite)
 
 Environment:
@@ -57,6 +68,8 @@ Environment:
   NVD_API_KEY               Raises the NVD limit from 5 to 50 requests/30s
   OPENROUTER_API_KEY        Required for "enrich"; without it, use demo-mode seed data
   OPENROUTER_ENRICH_MODEL   Enrichment model slug (default openai/gpt-4o-mini)
+  OPENROUTER_DIFF_MODEL     Diff model slug (defaults to the enrich model; optional — diff runs key-free)
+  DIFF_SIMILARITY_THRESHOLD Similarity at which a new item counts as a re-phrasing (default 0.92)
   EMBEDDING_MODEL           Local embedding model (default Xenova/bge-small-en-v1.5)
 `;
 
@@ -65,6 +78,7 @@ Environment:
  * exposes each finished pipeline stage as a CLI command.
  */
 async function main(argv: string[]): Promise<number> {
+  loadEnv();
   const [command, ...rest] = argv;
 
   switch (command) {
@@ -76,6 +90,8 @@ async function main(argv: string[]): Promise<number> {
       return runIngestCommand(rest);
     case 'enrich':
       return runEnrichCommand(rest);
+    case 'diff':
+      return runDiffCommand(rest);
     case 'embed':
       return runEmbedCommand(rest);
     case 'brief':
@@ -84,6 +100,8 @@ async function main(argv: string[]): Promise<number> {
       return runAskCommand(rest);
     case 'battlecard':
       return runBattlecardCommand(rest);
+    case 'eval':
+      return runEvalCommand(rest);
     case undefined:
     case 'help':
     case '--help':

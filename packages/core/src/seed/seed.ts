@@ -11,7 +11,12 @@
 import { eq } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { enrichedItems, rawItems } from '../db/schema.js';
+import { composeBattlecard } from '../battlecard/battlecard.js';
+import { saveBattlecard } from '../battlecard/store.js';
+import { diffItems, type DiffReport } from '../diff/diff.js';
 import { embedItems, type Embedder, type EmbedReport } from '../embed/index.js';
+import { readComparisonMatrix } from '../matrix/matrix.js';
+import { readSignals } from '../query/signals.js';
 import {
   enrichmentOutputSchema,
   ENRICH_PROMPT_VERSION,
@@ -53,6 +58,10 @@ export interface SeedReport {
   enriched: number;
   /** The embed pass, or `null` when embedding was skipped. */
   embed: EmbedReport | null;
+  /** The deterministic diff pass, or `null` when embedding was skipped. */
+  diff: DiffReport | null;
+  /** Battlecards composed and stored for the matrix competitors. */
+  battlecards: number;
 }
 
 /** Group items by their source name so each source is normalized as one batch. */
@@ -66,13 +75,20 @@ function groupBySource(items: SeedItem[]): Map<string, SeedItem[]> {
   return groups;
 }
 
-function toFetchedItem(item: SeedItem): FetchedItem {
+/**
+ * Shape a seed item for the normalize path. Revision fixtures are replayed in two
+ * phases: `initial` carries the previous text, `current` the final one, so the
+ * second upsert travels the real "source republished it" branch and preserves a
+ * pre-image in `raw_item_revisions`.
+ */
+function toFetchedItem(item: SeedItem, phase: 'initial' | 'current'): FetchedItem {
+  const usePrevious = phase === 'initial' && item.previousContent !== undefined;
   return {
     externalId: item.externalId,
     url: item.url,
-    title: item.title,
+    title: usePrevious ? (item.previousTitle ?? item.title) : item.title,
     author: item.author,
-    content: item.content,
+    content: usePrevious ? item.previousContent! : item.content,
     publishedAt: item.publishedAt ? new Date(item.publishedAt) : undefined,
     raw: item,
   };
@@ -126,18 +142,48 @@ export async function seedDatabase(
   const sources = upsertSources(db, dataset.sources);
   const sourceIdByName = new Map(sources.map((s) => [s.name, s.id]));
 
+  /** Fixtures already in the store keep their final text — a re-seed must not
+   * replay the previous version over it and manufacture a spurious revision. */
+  const isStored = (item: SeedItem): boolean =>
+    db
+      .select({ id: rawItems.id })
+      .from(rawItems)
+      .where(eq(rawItems.urlHash, hashUrl(canonicalizeUrl(item.url))))
+      .get() !== undefined;
+
   const totals = { inserted: 0, revised: 0, unchanged: 0, duplicate: 0 };
   for (const [name, items] of groupBySource(dataset.items)) {
     const sourceId = sourceIdByName.get(name);
     if (sourceId === undefined) {
       throw new Error(`seed item references unknown source "${name}"`);
     }
-    const { items: rows } = normalizeItems(sourceId, items.map(toFetchedItem));
-    const result = upsertRawItems(db, rows);
+
+    const replayable = items.filter(
+      (item) => item.previousContent !== undefined && !isStored(item),
+    );
+    const replayableUrls = new Set(replayable.map((item) => item.url));
+
+    const initial = normalizeItems(
+      sourceId,
+      items.map((item) =>
+        toFetchedItem(item, replayableUrls.has(item.url) ? 'initial' : 'current'),
+      ),
+    );
+    const result = upsertRawItems(db, initial.items);
     totals.inserted += result.inserted;
     totals.revised += result.revised;
     totals.unchanged += result.unchanged;
     totals.duplicate += result.duplicate;
+
+    // Second pass for revision fixtures: replay the republished text so the real
+    // revise branch runs and the pre-image lands in `raw_item_revisions`.
+    if (replayable.length > 0) {
+      const current = normalizeItems(
+        sourceId,
+        replayable.map((item) => toFetchedItem(item, 'current')),
+      );
+      totals.revised += upsertRawItems(db, current.items).revised;
+    }
   }
 
   let enriched = 0;
@@ -158,6 +204,15 @@ export async function seedDatabase(
   const embed =
     options.embed === false ? null : await embedItems(db, { embedder: options.embedder });
 
+  // The diff stage needs the vector index for its similarity check, so it runs
+  // (deterministic path only — seeding never calls a model) when embedding did.
+  const diff =
+    embed === null
+      ? null
+      : await diffItems(db, { model: null, embedder: options.embedder });
+
+  const battlecards = await seedBattlecards(db);
+
   return {
     sources: sources.length,
     rawInserted: totals.inserted,
@@ -166,5 +221,40 @@ export async function seedDatabase(
     rawDuplicate: totals.duplicate,
     enriched,
     embed,
+    diff,
+    battlecards,
   };
+}
+
+/** How far before a vendor's newest signal the seeded card is dated. */
+const SEED_CARD_AGE_MS = 3 * 86_400_000;
+
+/**
+ * Compose and store a battlecard per matrix competitor, dated shortly *before* the
+ * vendor's newest signals. The snapshot simulates the situation the staleness
+ * check exists for — "this card was generated, then the market moved" — so the
+ * "N new signals since — Refresh" banner is demonstrable with zero keys.
+ */
+async function seedBattlecards(db: Database): Promise<number> {
+  const matrix = readComparisonMatrix();
+  let stored = 0;
+
+  for (const vendor of matrix.vendors) {
+    if (vendor.name === matrix.focusVendor) continue;
+
+    const signals = readSignals(db, { vendor: vendor.name });
+    const newest = signals
+      .map((s) => s.publishedAt?.getTime())
+      .filter((t): t is number => t !== undefined)
+      .reduce((a, b) => Math.max(a, b), 0);
+    const asOf = newest > 0 ? new Date(newest - SEED_CARD_AGE_MS) : new Date();
+
+    const card = await composeBattlecard(db, vendor.name, { matrix, now: asOf });
+    if (card) {
+      saveBattlecard(db, card);
+      stored += 1;
+    }
+  }
+
+  return stored;
 }
