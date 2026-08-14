@@ -10,12 +10,25 @@ const LEVEL_STYLE: Record<CellLevel, { dot: string; label: string }> = {
   info: { dot: 'bg-[#6b93b8]', label: 'Varies' },
 };
 
+/** Serializable audit info per cell (`vendor::axisId`) — the last approved edit. */
+export interface CellAuditInfo {
+  approvedAt: string;
+  signalId: number | null;
+}
+
 /**
  * The curated capability grid: axes down the left, vendors across the top. The focus
  * vendor's column is tinted so the table reads as "us vs. the field". Each cell carries a
  * coverage dot (strong/partial/gap/varies) plus the human-written note behind it.
+ * Cells updated through the approval flow show their audit trail on hover.
  */
-export function MatrixTable({ matrix }: { matrix: ComparisonMatrix }) {
+export function MatrixTable({
+  matrix,
+  audit = {},
+}: {
+  matrix: ComparisonMatrix;
+  audit?: Record<string, CellAuditInfo>;
+}) {
   return (
     <div className="overflow-x-auto border border-line bg-card">
       <table className="w-full min-w-[760px] border-collapse text-left">
@@ -67,10 +80,16 @@ export function MatrixTable({ matrix }: { matrix: ComparisonMatrix }) {
                 const level: CellLevel = cell?.level ?? 'none';
                 const style = LEVEL_STYLE[level];
                 const isFocus = vendor.name === matrix.focusVendor;
+                const cellAudit = audit[`${vendor.name}::${axis.id}`];
                 return (
                   <td
                     key={vendor.slug}
                     className={cn('px-4 py-3 align-top', isFocus && 'bg-accent-soft/40')}
+                    title={
+                      cellAudit
+                        ? `Last updated ${new Date(cellAudit.approvedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} by an approved edit${cellAudit.signalId ? ` (driven by signal #${cellAudit.signalId})` : ''}`
+                        : undefined
+                    }
                   >
                     <div className="flex items-start gap-2">
                       <span
@@ -79,6 +98,12 @@ export function MatrixTable({ matrix }: { matrix: ComparisonMatrix }) {
                       />
                       <span className="text-[12.5px] leading-snug text-ink">
                         {cell?.note ?? '—'}
+                        {cellAudit && (
+                          <span
+                            className="ml-1.5 inline-block size-1.5 rounded-full bg-accent align-middle"
+                            aria-label="Updated through an approved edit"
+                          />
+                        )}
                       </span>
                     </div>
                   </td>

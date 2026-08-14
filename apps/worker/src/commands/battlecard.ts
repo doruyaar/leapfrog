@@ -9,6 +9,7 @@ import {
   composeBattlecard,
   createDatabase,
   runMigrations,
+  saveBattlecard,
   toMarkdown,
 } from '@leapfrog/core';
 import { parseFlags, stringFlag } from '../args.js';
@@ -50,6 +51,10 @@ export async function runBattlecardCommand(argv: string[]): Promise<number> {
       );
       return 1;
     }
+
+    // Persist the refreshed card so the web app serves it with a real
+    // generatedAt — this is what the staleness check compares against.
+    saveBattlecard(db, card);
 
     if (options.json) {
       console.log(JSON.stringify(card, null, 2));

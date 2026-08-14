@@ -92,15 +92,25 @@ export function readComparisonMatrix(
 
 /** A grounded, human-reviewable suggestion to revisit one curated cell. */
 export interface MatrixSuggestion {
+  /** Stable identity for the approval audit trail: `vendor::axis::signal`. */
+  suggestionId: string;
   vendor: string;
   axisId: string;
   axisLabel: string;
   /** The cell as it stands today, so the reviewer sees what might change. */
   currentLevel: CellLevel;
   currentNote: string;
+  /**
+   * The drafted edit (GAP-PLAN §5.2): what the cell would become if approved.
+   * Deterministic by construction — level unchanged, note extended with a cited
+   * sentence from the signal's validated summary; a live model may replace it,
+   * but only with a citation-checked draft.
+   */
+  proposed: MatrixCell;
   /** The signal that prompts the review. */
   signalId: number;
   signalTitle: string;
+  signalSummary: string;
   category: Category;
   impactScore: number;
   publishedAt: Date | null;
@@ -114,6 +124,35 @@ export interface SuggestOptions {
   minImpact?: number;
   /** Cap on the number of suggestions returned. */
   limit?: number;
+  /** Suggestion ids already approved or rejected; these never resurface. */
+  reviewedSuggestionIds?: ReadonlySet<string>;
+}
+
+/** The stable identity of one (vendor, axis, signal) suggestion. */
+export function suggestionIdFor(vendor: string, axisId: string, signalId: number): string {
+  return `${vendor}::${axisId}::${signalId}`;
+}
+
+/** First sentence of a validated summary — the citable core of a drafted note. */
+function firstSentence(text: string): string {
+  const match = /^.*?[.!?](?=\s|$)/.exec(text.trim());
+  return (match ? match[0] : text.trim()).trim();
+}
+
+/**
+ * The deterministic drafted edit: never changes the curated level, appends one
+ * cited sentence from the signal's summary to the human-written note. Grounded by
+ * construction — every word is either already curated or quoted from a validated
+ * enrichment, and the citation resolves to the driving signal.
+ */
+export function buildDeterministicDraft(
+  cell: MatrixCell | undefined,
+  signalId: number,
+  signalSummary: string,
+): MatrixCell {
+  const sentence = `${firstSentence(signalSummary)} [#${signalId}]`;
+  if (!cell) return { level: 'info', note: sentence };
+  return { level: cell.level, note: `${cell.note} — ${sentence}` };
 }
 
 /**
@@ -131,6 +170,7 @@ export function suggestMatrixUpdates(
   const minImpact = options.minImpact ?? 3;
   const limit = options.limit ?? 8;
 
+  const reviewed = options.reviewedSuggestionIds ?? new Set<string>();
   const bestByCell = new Map<string, MatrixSuggestion>();
   for (const vendor of matrix.vendors) {
     const signals = readSignals(db, { vendor: vendor.name });
@@ -138,6 +178,8 @@ export function suggestMatrixUpdates(
       if (signal.impactScore < minImpact) continue;
       for (const axis of matrix.axes) {
         if (!axis.categories.includes(signal.category)) continue;
+        const suggestionId = suggestionIdFor(vendor.name, axis.id, signal.id);
+        if (reviewed.has(suggestionId)) continue;
         const key = `${vendor.name}::${axis.id}`;
         const score = signalScore(signal.impactScore, signal.publishedAt, now);
         const existing = bestByCell.get(key);
@@ -145,13 +187,16 @@ export function suggestMatrixUpdates(
 
         const cell = axis.cells[vendor.name];
         bestByCell.set(key, {
+          suggestionId,
           vendor: vendor.name,
           axisId: axis.id,
           axisLabel: axis.label,
           currentLevel: cell?.level ?? 'none',
           currentNote: cell?.note ?? '—',
+          proposed: buildDeterministicDraft(cell, signal.id, signal.summary),
           signalId: signal.id,
           signalTitle: signal.title,
+          signalSummary: signal.summary,
           category: signal.category,
           impactScore: signal.impactScore,
           publishedAt: signal.publishedAt,
