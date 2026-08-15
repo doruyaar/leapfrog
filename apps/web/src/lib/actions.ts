@@ -12,14 +12,27 @@ import {
   approveMatrixSuggestion,
   composeBattlecard,
   createDatabase,
+  createSubscription,
+  deleteSubscription,
+  findMatches,
   readComparisonMatrix,
   readReviewedSuggestionIds,
   rejectMatrixSuggestion,
   runMigrations,
   saveBattlecard,
+  sendTestNotification,
+  setSubscriptionEnabled,
   suggestMatrixUpdates,
+  updateSubscription,
+  CATEGORIES,
+  NOTIFY_FREQUENCIES,
+  type Category,
   type Database,
   type MatrixSuggestion,
+  type NotifyFrequency,
+  type SubscriptionFilters,
+  type SubscriptionInput,
+  type TestSendResult,
 } from '@leapfrog/core';
 import { getDb } from './db';
 import { getMatrixSuggestions } from './queries';
@@ -99,4 +112,109 @@ export async function refreshBattlecardAction(formData: FormData): Promise<void>
   }
 
   revalidatePath(`/battlecards/${slug}`);
+}
+
+// --- Notifications (subscriptions) -----------------------------------------
+// User-owned write paths for the /notifications page. Each opens a short-lived
+// writable connection, validates the input server-side, and revalidates the page.
+
+const NOTIFICATIONS_PATH = '/notifications';
+
+function str(value: FormDataEntryValue | null): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function intId(value: FormDataEntryValue | null): number | null {
+  const n = Number.parseInt(typeof value === 'string' ? value : '', 10);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
+/** Split a comma/newline-separated keyword field into a clean list. */
+function parseKeywords(value: string | undefined): string[] {
+  return value ? value.split(/[,\n]/).map((k) => k.trim()).filter(Boolean) : [];
+}
+
+/** Read the filter + delivery fields shared by create and update from a form. */
+function readSubscriptionInput(formData: FormData): SubscriptionInput | null {
+  const email = str(formData.get('email'));
+  if (!email) return null;
+
+  const frequencyRaw = str(formData.get('frequency')) as NotifyFrequency | undefined;
+  const frequency = NOTIFY_FREQUENCIES.includes(frequencyRaw as NotifyFrequency)
+    ? (frequencyRaw as NotifyFrequency)
+    : 'immediate';
+
+  const categories = formData
+    .getAll('categories')
+    .map(String)
+    .filter((c): c is Category => (CATEGORIES as readonly string[]).includes(c));
+
+  const impactRaw = str(formData.get('impact'));
+  const minImpact = impactRaw ? Number.parseInt(impactRaw, 10) : null;
+
+  return {
+    email,
+    label: str(formData.get('label')),
+    frequency,
+    vendors: formData.getAll('vendors').map(String),
+    categories,
+    keywords: parseKeywords(str(formData.get('keywords'))),
+    minImpact: Number.isFinite(minImpact) ? minImpact : null,
+  };
+}
+
+/** Create a new subscription from the form. */
+export async function createSubscriptionAction(formData: FormData): Promise<void> {
+  const input = readSubscriptionInput(formData);
+  if (!input) return;
+  withWriteDb((db) => createSubscription(db, input));
+  revalidatePath(NOTIFICATIONS_PATH);
+}
+
+/** Overwrite an existing subscription's fields. */
+export async function updateSubscriptionAction(formData: FormData): Promise<void> {
+  const id = intId(formData.get('id'));
+  const input = readSubscriptionInput(formData);
+  if (id === null || !input) return;
+  withWriteDb((db) => updateSubscription(db, id, input));
+  revalidatePath(NOTIFICATIONS_PATH);
+}
+
+/** Turn a subscription on or off. */
+export async function toggleSubscriptionAction(formData: FormData): Promise<void> {
+  const id = intId(formData.get('id'));
+  if (id === null) return;
+  const enabled = str(formData.get('enabled')) === '1';
+  withWriteDb((db) => setSubscriptionEnabled(db, id, enabled));
+  revalidatePath(NOTIFICATIONS_PATH);
+}
+
+/** Delete a subscription and its delivery history (cascade). */
+export async function deleteSubscriptionAction(formData: FormData): Promise<void> {
+  const id = intId(formData.get('id'));
+  if (id === null) return;
+  withWriteDb((db) => deleteSubscription(db, id));
+  revalidatePath(NOTIFICATIONS_PATH);
+}
+
+/** How many current signals a set of filters matches — the form's live preview. */
+export async function previewMatchCountAction(
+  filters: SubscriptionFilters,
+): Promise<number> {
+  const db = getDb();
+  return db ? findMatches(db, filters).length : 0;
+}
+
+/** Send a subscription its current matches right now (ignores the delivery ledger). */
+export async function sendTestAction(
+  subscriptionId: number,
+): Promise<TestSendResult | { delivered: false; reason: string }> {
+  const db = createDatabase();
+  runMigrations(db);
+  try {
+    const result = await sendTestNotification(db, subscriptionId);
+    return result ?? { delivered: false, reason: 'subscription not found' };
+  } finally {
+    db.$client.close();
+  }
 }

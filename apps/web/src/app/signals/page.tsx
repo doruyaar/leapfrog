@@ -10,6 +10,7 @@ import {
 import { CATEGORY_COLOR } from '@/lib/format';
 import { firstValue, oneOf, parsePage, type RawSearchParams } from '@/lib/list-params';
 import { SignalCard } from '@/components/signals/signal-card';
+import { SubscribeLink } from '@/components/notifications/subscribe-link';
 import { EmptyState } from '@/components/ui/empty-state';
 import { NoResults } from '@/components/ui/no-results';
 import { ListToolbar, type SelectFilter } from '@/components/ui/list-toolbar';
@@ -99,15 +100,28 @@ export default async function SignalsPage({
 
   return (
     <div className="px-[34px] pb-11 pt-5">
-      <div className="mb-5">
-        <h1 className="flex items-center gap-2.5 text-[26px] font-normal text-ink-strong">
-          <Rss className="size-6 text-accent" strokeWidth={1.7} />
-          Signals
-        </h1>
-        <p className="mt-1 text-[13px] text-ink-dim">
-          Every enriched item in the corpus — search, filter, and sort to find what
-          matters.
-        </p>
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="flex items-center gap-2.5 text-[26px] font-normal text-ink-strong">
+            <Rss className="size-6 text-accent" strokeWidth={1.7} />
+            Signals
+          </h1>
+          <p className="mt-1 text-[13px] text-ink-dim">
+            Every enriched item in the corpus — search, filter, and sort to find what
+            matters.
+          </p>
+        </div>
+        {isFiltered && (
+          <SubscribeLink
+            className="mt-1"
+            vendor={vendor}
+            category={activeCategory}
+            impact={impactMin}
+            keyword={q}
+          >
+            Subscribe to these results
+          </SubscribeLink>
+        )}
       </div>
 
       {!isFiltered && result.total === 0 ? (

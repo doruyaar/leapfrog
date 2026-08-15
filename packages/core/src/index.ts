@@ -12,6 +12,7 @@ export * from './enrich/index.js';
 export * from './ingest/index.js';
 export * from './matrix/index.js';
 export * from './normalize/index.js';
+export * from './notify/index.js';
 export * from './query/index.js';
 export * from './retrieve/index.js';
 export * from './seed/index.js';

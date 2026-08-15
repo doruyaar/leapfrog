@@ -29,6 +29,14 @@ export type Category = (typeof CATEGORIES)[number];
 export const ENRICHMENT_STATUSES = ['ok', 'quarantined'] as const;
 export type EnrichmentStatus = (typeof ENRICHMENT_STATUSES)[number];
 
+/** How often a subscription is allowed to interrupt someone. */
+export const NOTIFY_FREQUENCIES = ['immediate', 'daily', 'weekly'] as const;
+export type NotifyFrequency = (typeof NOTIFY_FREQUENCIES)[number];
+
+/** Delivery channels a subscription can use. Only `email` ships today. */
+export const NOTIFY_CHANNELS = ['email'] as const;
+export type NotifyChannel = (typeof NOTIFY_CHANNELS)[number];
+
 const createdAt = integer('created_at', { mode: 'timestamp_ms' })
   .notNull()
   .default(sql`(unixepoch() * 1000)`);
@@ -352,6 +360,70 @@ export const battlecards = sqliteTable(
   (t) => [uniqueIndex('battlecards_vendor_unq').on(t.vendor)],
 );
 
+/**
+ * A saved notification rule (GAP-PLAN: proactive delivery). One row = one email
+ * subscription with a set of AND-combined filters. Empty filter arrays / a null
+ * `min_impact` mean "any", so a bare rule notifies on everything shown. Not derived —
+ * this is user-owned state, edited from the web app, read by the `notify` worker.
+ */
+export const subscriptions = sqliteTable(
+  'subscriptions',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    /** Where the digest is delivered. */
+    email: text('email').notNull(),
+    /** Human-readable name for the rule, e.g. "Sonatype security, high impact". */
+    label: text('label').notNull(),
+    enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+    channel: text('channel', { enum: NOTIFY_CHANNELS }).notNull().default('email'),
+    frequency: text('frequency', { enum: NOTIFY_FREQUENCIES })
+      .notNull()
+      .default('immediate'),
+    /** Vendors to match, JSON string array. Empty = any vendor. */
+    vendors: text('vendors').notNull().default('[]'),
+    /** Categories to match, JSON string array. Empty = any category. */
+    categories: text('categories').notNull().default('[]'),
+    /** Keywords to match against title/summary/why-it-matters, JSON array. Empty = any. */
+    keywords: text('keywords').notNull().default('[]'),
+    /** Only notify at or above this impact (1–5). Null = any impact. */
+    minImpact: integer('min_impact'),
+    /** When this rule last produced a delivery, for display. */
+    lastNotifiedAt: integer('last_notified_at', { mode: 'timestamp_ms' }),
+    createdAt,
+  },
+  (t) => [index('subscriptions_enabled_idx').on(t.enabled)],
+);
+
+/**
+ * The idempotency ledger for notifications: one row per (subscription, item) that has
+ * already been emailed, so re-running `worker notify` never double-sends. Mirrors the
+ * "every stage is safe to re-run" contract the pipeline stages hold.
+ */
+export const notificationDeliveries = sqliteTable(
+  'notification_deliveries',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    subscriptionId: integer('subscription_id')
+      .notNull()
+      .references(() => subscriptions.id, { onDelete: 'cascade' }),
+    /** The delivered item's id (a `raw_items.id` for `signal`). */
+    itemId: integer('item_id').notNull(),
+    /** What kind of item was delivered — `signal` today. */
+    itemKind: text('item_kind').notNull().default('signal'),
+    sentAt: integer('sent_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (t) => [
+    uniqueIndex('notification_deliveries_unq').on(
+      t.subscriptionId,
+      t.itemId,
+      t.itemKind,
+    ),
+    index('notification_deliveries_subscription_idx').on(t.subscriptionId),
+  ],
+);
+
 export type Source = typeof sources.$inferSelect;
 export type NewSource = typeof sources.$inferInsert;
 export type RawItem = typeof rawItems.$inferSelect;
@@ -371,3 +443,7 @@ export type NewChangeEvent = typeof changeEvents.$inferInsert;
 export type AssetRevision = typeof assetRevisions.$inferSelect;
 export type NewAssetRevision = typeof assetRevisions.$inferInsert;
 export type StoredBattlecard = typeof battlecards.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;
+export type NotificationDelivery = typeof notificationDeliveries.$inferSelect;
+export type NewNotificationDelivery = typeof notificationDeliveries.$inferInsert;

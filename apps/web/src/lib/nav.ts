@@ -1,5 +1,6 @@
 import {
   ArrowRightLeft,
+  Bell,
   FileText,
   Rss,
   ShieldHalf,
@@ -24,6 +25,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Comparison', href: '/comparison', icon: Table2 },
   { label: 'Battlecards', href: '/battlecards', icon: ShieldHalf },
   { label: 'Ask', href: '/ask', icon: Sparkles },
+  { label: 'Notifications', href: '/notifications', icon: Bell },
 ];
 
 /** The nav entry that owns a pathname: exact match for `/`, prefix match elsewhere. */

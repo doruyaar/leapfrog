@@ -1,119 +1,273 @@
 {
   "focusVendor": "JFrog",
   "vendors": [
-    { "name": "JFrog", "slug": "jfrog" },
-    { "name": "Sonatype", "slug": "sonatype" },
-    { "name": "GitLab", "slug": "gitlab" },
-    { "name": "GitHub", "slug": "github" },
-    { "name": "Docker", "slug": "docker" },
-    { "name": "Cloudsmith", "slug": "cloudsmith" }
+    {
+      "name": "JFrog",
+      "slug": "jfrog"
+    },
+    {
+      "name": "Sonatype",
+      "slug": "sonatype"
+    },
+    {
+      "name": "GitLab",
+      "slug": "gitlab"
+    },
+    {
+      "name": "GitHub",
+      "slug": "github"
+    },
+    {
+      "name": "Docker",
+      "slug": "docker"
+    },
+    {
+      "name": "Cloudsmith",
+      "slug": "cloudsmith"
+    }
   ],
   "axes": [
     {
       "id": "formats",
       "label": "Package formats",
       "description": "Breadth of supported artifact and package types.",
-      "categories": ["Product", "Ecosystem"],
+      "categories": [
+        "Product",
+        "Ecosystem"
+      ],
       "cells": {
-        "JFrog": { "level": "strong", "note": "30+ formats, universal repository" },
-        "Sonatype": { "level": "strong", "note": "Broad format coverage in Nexus" },
+        "JFrog": {
+          "level": "strong",
+          "note": "30+ formats, universal repository"
+        },
+        "Sonatype": {
+          "level": "strong",
+          "note": "Broad format coverage in Nexus"
+        },
         "GitLab": {
           "level": "partial",
           "note": "Package registry: npm, Maven, PyPI, etc."
         },
         "GitHub": {
           "level": "partial",
-          "note": "Packages: npm, Maven, NuGet, containers"
+          "note": "Packages: npm, Maven, NuGet, containers — GitHub now prioritizes license metadata from canonical package registries (npmjs.org, PyPI, Maven Central, etc.) over ClearlyDefined, cutting missing licenses from 45% to 24% across 170 million packages and adding version-range tracking for license history. [#115]"
         },
-        "Docker": { "level": "none", "note": "OCI container images only" },
-        "Cloudsmith": { "level": "strong", "note": "Many formats, fully managed" }
+        "Docker": {
+          "level": "none",
+          "note": "OCI container images only"
+        },
+        "Cloudsmith": {
+          "level": "strong",
+          "note": "Many formats, fully managed"
+        }
       }
     },
     {
       "id": "security",
       "label": "Vulnerability scanning",
       "description": "Native scanning of artifacts and dependencies for CVEs.",
-      "categories": ["Security"],
+      "categories": [
+        "Security"
+      ],
       "cells": {
-        "JFrog": { "level": "strong", "note": "Xray deep dependency scanning" },
-        "Sonatype": { "level": "strong", "note": "Lifecycle / IQ policy enforcement" },
+        "JFrog": {
+          "level": "strong",
+          "note": "Xray deep dependency scanning"
+        },
+        "Sonatype": {
+          "level": "strong",
+          "note": "Lifecycle / IQ policy enforcement — A critical (CVSS 9.8) path-traversal flaw in Nexus Repository Manager 3 is being actively exploited to read stored credentials; Sonatype shipped 3.77.2 as the fix. [#1]"
+        },
         "GitLab": {
           "level": "strong",
           "note": "Built-in SAST, DAST, dependency scanning"
         },
-        "GitHub": { "level": "strong", "note": "Advanced Security + Dependabot" },
-        "Docker": { "level": "partial", "note": "Docker Scout image analysis" },
-        "Cloudsmith": { "level": "partial", "note": "Scanning via integrations" }
+        "GitHub": {
+          "level": "strong",
+          "note": "Advanced Security + Dependabot"
+        },
+        "Docker": {
+          "level": "partial",
+          "note": "Docker Scout image analysis"
+        },
+        "Cloudsmith": {
+          "level": "partial",
+          "note": "Scanning via integrations"
+        }
       }
     },
     {
       "id": "sbom",
       "label": "SBOM & provenance",
       "description": "SBOM generation, signing, and build provenance/attestations.",
-      "categories": ["Security", "Product"],
+      "categories": [
+        "Security",
+        "Product"
+      ],
       "cells": {
-        "JFrog": { "level": "strong", "note": "SBOM export, evidence, signing" },
-        "Sonatype": { "level": "strong", "note": "CycloneDX SBOM + policy" },
-        "GitLab": { "level": "strong", "note": "CycloneDX SBOM in pipelines" },
-        "GitHub": { "level": "strong", "note": "Dependency graph + SBOM export" },
-        "Docker": { "level": "partial", "note": "Scout SBOM for images" },
-        "Cloudsmith": { "level": "partial", "note": "Provenance metadata on packages" }
+        "JFrog": {
+          "level": "strong",
+          "note": "SBOM export, evidence, signing"
+        },
+        "Sonatype": {
+          "level": "strong",
+          "note": "CycloneDX SBOM + policy — A critical (CVSS 9.8) path-traversal flaw in Nexus Repository Manager 3 is being actively exploited to read stored credentials; Sonatype shipped 3.77.2 as the fix. [#1]"
+        },
+        "GitLab": {
+          "level": "strong",
+          "note": "CycloneDX SBOM in pipelines"
+        },
+        "GitHub": {
+          "level": "strong",
+          "note": "Dependency graph + SBOM export — GitHub now prioritizes license metadata from canonical package registries (npmjs.org, PyPI, Maven Central, etc.) over ClearlyDefined, cutting missing licenses from 45% to 24% across 170 million packages and adding version-range tracking for license history. [#115]"
+        },
+        "Docker": {
+          "level": "partial",
+          "note": "Scout SBOM for images"
+        },
+        "Cloudsmith": {
+          "level": "partial",
+          "note": "Provenance metadata on packages"
+        }
       }
     },
     {
       "id": "registry",
       "label": "Container / OCI registry",
       "description": "First-class hosting for container and OCI artifacts.",
-      "categories": ["Product"],
+      "categories": [
+        "Product"
+      ],
       "cells": {
-        "JFrog": { "level": "strong", "note": "Docker + OCI in Artifactory" },
-        "Sonatype": { "level": "partial", "note": "Docker registry via Nexus" },
-        "GitLab": { "level": "strong", "note": "Integrated container registry" },
-        "GitHub": { "level": "strong", "note": "GitHub Container Registry (GHCR)" },
-        "Docker": { "level": "strong", "note": "Docker Hub, the default registry" },
-        "Cloudsmith": { "level": "strong", "note": "Multi-format incl. OCI" }
+        "JFrog": {
+          "level": "strong",
+          "note": "Docker + OCI in Artifactory"
+        },
+        "Sonatype": {
+          "level": "partial",
+          "note": "Docker registry via Nexus"
+        },
+        "GitLab": {
+          "level": "strong",
+          "note": "Integrated container registry"
+        },
+        "GitHub": {
+          "level": "strong",
+          "note": "GitHub Container Registry (GHCR) — GitHub now prioritizes license metadata from canonical package registries (npmjs.org, PyPI, Maven Central, etc.) over ClearlyDefined, cutting missing licenses from 45% to 24% across 170 million packages and adding version-range tracking for license history. [#115]"
+        },
+        "Docker": {
+          "level": "strong",
+          "note": "Docker Hub, the default registry"
+        },
+        "Cloudsmith": {
+          "level": "strong",
+          "note": "Multi-format incl. OCI"
+        }
       }
     },
     {
       "id": "cicd",
       "label": "CI/CD integration",
       "description": "Native pipelines or first-party CI/CD tooling.",
-      "categories": ["Product", "Ecosystem"],
+      "categories": [
+        "Product",
+        "Ecosystem"
+      ],
       "cells": {
-        "JFrog": { "level": "strong", "note": "JFrog CLI + Pipelines" },
-        "Sonatype": { "level": "strong", "note": "Plugins across major CI systems" },
-        "GitLab": { "level": "strong", "note": "Native GitLab CI/CD" },
-        "GitHub": { "level": "strong", "note": "GitHub Actions" },
-        "Docker": { "level": "partial", "note": "Build/Buildx integrations" },
-        "Cloudsmith": { "level": "strong", "note": "CI integrations + API" }
+        "JFrog": {
+          "level": "strong",
+          "note": "JFrog CLI + Pipelines"
+        },
+        "Sonatype": {
+          "level": "strong",
+          "note": "Plugins across major CI systems"
+        },
+        "GitLab": {
+          "level": "strong",
+          "note": "Native GitLab CI/CD"
+        },
+        "GitHub": {
+          "level": "strong",
+          "note": "GitHub Actions"
+        },
+        "Docker": {
+          "level": "partial",
+          "note": "Build/Buildx integrations"
+        },
+        "Cloudsmith": {
+          "level": "strong",
+          "note": "CI integrations + API"
+        }
       }
     },
     {
       "id": "deployment",
       "label": "SaaS + self-hosted",
       "description": "Availability of both managed cloud and self-managed deployment.",
-      "categories": ["Business", "Product"],
+      "categories": [
+        "Business",
+        "Product"
+      ],
       "cells": {
-        "JFrog": { "level": "strong", "note": "SaaS + self-hosted, air-gapped" },
-        "Sonatype": { "level": "strong", "note": "SaaS + self-managed" },
-        "GitLab": { "level": "strong", "note": "SaaS + self-managed" },
-        "GitHub": { "level": "info", "note": "SaaS + Enterprise Server" },
-        "Docker": { "level": "info", "note": "Primarily SaaS (Hub)" },
-        "Cloudsmith": { "level": "info", "note": "SaaS-only" }
+        "JFrog": {
+          "level": "strong",
+          "note": "SaaS + self-hosted, air-gapped"
+        },
+        "Sonatype": {
+          "level": "strong",
+          "note": "SaaS + self-managed"
+        },
+        "GitLab": {
+          "level": "strong",
+          "note": "SaaS + self-managed"
+        },
+        "GitHub": {
+          "level": "info",
+          "note": "SaaS + Enterprise Server"
+        },
+        "Docker": {
+          "level": "info",
+          "note": "Primarily SaaS (Hub)"
+        },
+        "Cloudsmith": {
+          "level": "info",
+          "note": "SaaS-only"
+        }
       }
     },
     {
       "id": "pricing",
       "label": "Pricing model",
       "description": "How the product is packaged and billed.",
-      "categories": ["Pricing", "Business"],
+      "categories": [
+        "Pricing",
+        "Business"
+      ],
       "cells": {
-        "JFrog": { "level": "info", "note": "Subscription tiers (Pro→Enterprise)" },
-        "Sonatype": { "level": "info", "note": "Quote-based, per component/seat" },
-        "GitLab": { "level": "info", "note": "Per-user tiers (Free→Ultimate)" },
-        "GitHub": { "level": "info", "note": "Per-user + usage (Actions/storage)" },
-        "Docker": { "level": "info", "note": "Per-seat Hub tiers" },
-        "Cloudsmith": { "level": "info", "note": "Usage-based (storage/transfer)" }
+        "JFrog": {
+          "level": "info",
+          "note": "Subscription tiers (Pro→Enterprise)"
+        },
+        "Sonatype": {
+          "level": "info",
+          "note": "Quote-based, per component/seat"
+        },
+        "GitLab": {
+          "level": "info",
+          "note": "Per-user tiers (Free→Ultimate)"
+        },
+        "GitHub": {
+          "level": "info",
+          "note": "Per-user + usage (Actions/storage)"
+        },
+        "Docker": {
+          "level": "info",
+          "note": "Per-seat Hub tiers"
+        },
+        "Cloudsmith": {
+          "level": "info",
+          "note": "Usage-based (storage/transfer)"
+        }
       }
     }
   ]
