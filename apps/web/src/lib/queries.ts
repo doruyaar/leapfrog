@@ -24,6 +24,9 @@ import {
   readMatrixEditModelConfig,
   readReviewedSuggestionIds,
   readStoredBattlecard,
+  listSubscriptions,
+  findMatches,
+  CATEGORIES,
   FOCUS_VENDOR,
   type Battlecard,
   type BriefItem,
@@ -41,6 +44,8 @@ import {
   type SignalSort,
   type SignalSummary,
   type SortDir,
+  type SubscriptionFilters,
+  type SubscriptionView,
   type VendorSummary,
 } from '@leapfrog/core';
 import { getDb } from './db';
@@ -398,6 +403,28 @@ export function getCorroboration(rawItemId: number): Corroboration | null {
   return db ? corroborateSignal(db, rawItemId) : null;
 }
 
+/** Every saved subscription, newest first. Empty when there is no database yet. */
+export function getSubscriptions(): SubscriptionView[] {
+  const db = getDb();
+  return db ? listSubscriptions(db) : [];
+}
+
+/** The choices the subscription form offers: tracked vendors and the fixed categories. */
+export interface SubscriptionFacets {
+  vendors: string[];
+  categories: readonly Category[];
+}
+
+export function getSubscriptionFacets(): SubscriptionFacets {
+  return { vendors: getVendors().map((v) => v.vendor), categories: CATEGORIES };
+}
+
+/** How many current signals a set of filters would match — the form's live preview. */
+export function getMatchPreviewCount(filters: SubscriptionFilters): number {
+  const db = getDb();
+  return db ? findMatches(db, filters).length : 0;
+}
+
 export { FOCUS_VENDOR };
 export type {
   Battlecard,
@@ -415,5 +442,7 @@ export type {
   SignalSort,
   SignalSummary,
   SortDir,
+  SubscriptionFilters,
+  SubscriptionView,
   VendorSummary,
 };

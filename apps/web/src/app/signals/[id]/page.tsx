@@ -11,6 +11,7 @@ import { formatDate } from '@/lib/format';
 import { CategoryBadge, ImpactBadge, VendorMark } from '@/components/signals/badges';
 import { CorroborationPanel } from '@/components/signals/corroboration-badge';
 import { StateChangeBadge } from '@/components/signals/signal-card';
+import { SubscribeLink } from '@/components/notifications/subscribe-link';
 import { EmptyState } from '@/components/ui/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -85,6 +86,15 @@ export default async function SignalDetailPage({
             <span className="text-[13px] text-ink">{signal.vendor ?? 'Market-wide'}</span>
             {signal.author && (
               <span className="text-[12px] text-ink-faint">· by {signal.author}</span>
+            )}
+            {signal.vendor ? (
+              <SubscribeLink className="ml-auto" vendor={signal.vendor}>
+                Notify me about {signal.vendor}
+              </SubscribeLink>
+            ) : (
+              <SubscribeLink className="ml-auto" category={signal.category}>
+                Notify me about {signal.category} signals
+              </SubscribeLink>
             )}
           </div>
         </div>

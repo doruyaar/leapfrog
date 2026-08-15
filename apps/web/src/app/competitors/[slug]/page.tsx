@@ -8,6 +8,7 @@ import { VendorMark } from '@/components/signals/badges';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CategoryFilter } from '@/components/competitors/category-filter';
 import { VendorTimeline } from '@/components/competitors/vendor-timeline';
+import { SubscribeLink } from '@/components/notifications/subscribe-link';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,6 +90,14 @@ export default async function CompetitorPage({
             {relativeAge(vendor.latestAt)})
           </p>
         </div>
+        <SubscribeLink
+          className="ml-auto mt-1"
+          variant="solid"
+          vendor={vendor.vendor}
+          label={`${vendor.vendor} updates`}
+        >
+          Get email alerts
+        </SubscribeLink>
       </div>
 
       <div className="mb-5">

@@ -12,6 +12,7 @@
     "diff": "tsx src/index.ts diff",
     "embed": "tsx src/index.ts embed",
     "brief": "tsx src/index.ts brief",
+    "notify": "tsx src/index.ts notify",
     "ask": "tsx src/index.ts ask",
     "battlecard": "tsx src/index.ts battlecard",
     "eval": "tsx src/index.ts eval",

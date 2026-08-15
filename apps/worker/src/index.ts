@@ -9,6 +9,7 @@ import { runEnrichCommand } from './commands/enrich.js';
 import { runEvalCommand } from './commands/eval.js';
 import { runFetchCommand } from './commands/fetch-sources.js';
 import { runIngestCommand } from './commands/ingest.js';
+import { runNotifyCommand } from './commands/notify.js';
 import { runSeedCommand } from './commands/seed.js';
 
 const USAGE = `${greet()}
@@ -23,6 +24,8 @@ Commands:
   diff      Detect state changes: new vs. update vs. re-phrasing. No key needed. Safe to repeat.
   embed     Chunk and embed enriched items into the retrieval index. Safe to repeat.
   brief     Compose and store today's ranked, cited brief. Safe to repeat.
+  notify    Email each subscription its new matching signals. No key needed (writes .eml
+            to data/outbox); RESEND_API_KEY delivers to a real inbox. Safe to repeat.
   ask       Answer a question with hybrid RAG and grounded citations.
   battlecard Compose, store, and export a competitor battlecard as Markdown.
   eval      Score the golden datasets (change classification). No key needed.
@@ -50,6 +53,11 @@ Options (brief):
   --top <n>                 Number of signals in the brief (default 8)
   --notify                  Push impact >= 4 signals to SLACK_WEBHOOK_URL if set
 
+Options (notify):
+  --test <id>               Send a one-off test email for subscription <id> (ignores the
+                            delivery ledger; falls back to a sample when nothing matches)
+  --base-url <url>          Origin for email deep links (default APP_BASE_URL or localhost)
+
 Options (ask):
   --q <text>                The question to answer (required)
   --vendor <name>           Restrict retrieval to one vendor
@@ -59,13 +67,17 @@ Options (battlecard):
   --vendor <name>           Competitor to compose the card against (required)
   --out <file.md>           Write Markdown to a file instead of stdout
 
-Options for "seed", "ingest", "enrich", "diff", "embed", and "brief":
+Options for "seed", "ingest", "enrich", "diff", "embed", "brief", and "notify":
   --db <path>               SQLite file to use (default data/leapfrog.sqlite)
 
 Environment:
   LEAPFROG_DB_PATH          Default SQLite file location
   GITHUB_TOKEN              Raises the GitHub API limit from 60 to 5,000 requests/hour
   NVD_API_KEY               Raises the NVD limit from 5 to 50 requests/30s
+  RESEND_API_KEY            Deliver "notify" emails to a real inbox; unset = .eml outbox
+  NOTIFY_EMAIL_FROM         From address for notifications (default onboarding@resend.dev)
+  NOTIFY_OUTBOX_DIR         Where demo-mode .eml files are written (default data/outbox)
+  APP_BASE_URL              Origin used for email deep links (default http://localhost:3000)
   OPENROUTER_API_KEY        Required for "enrich"; without it, use demo-mode seed data
   OPENROUTER_ENRICH_MODEL   Enrichment model slug (default openai/gpt-4o-mini)
   OPENROUTER_DIFF_MODEL     Diff model slug (defaults to the enrich model; optional — diff runs key-free)
@@ -96,6 +108,8 @@ async function main(argv: string[]): Promise<number> {
       return runEmbedCommand(rest);
     case 'brief':
       return runBriefCommand(rest);
+    case 'notify':
+      return runNotifyCommand(rest);
     case 'ask':
       return runAskCommand(rest);
     case 'battlecard':
