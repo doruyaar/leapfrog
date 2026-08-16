@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Send, Sparkles, ShieldAlert } from 'lucide-react';
 import { CitedText } from '@/components/signals/cited-text';
 import { VendorMark } from '@/components/signals/badges';
@@ -39,6 +40,8 @@ export function AskChat() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const didAutoAsk = useRef(false);
 
   async function ask(question: string) {
     const q = question.trim();
@@ -85,6 +88,16 @@ export function AskChat() {
       );
     }
   }
+
+  // Arriving from the global search palette with `?q=…` asks the question straight away.
+  useEffect(() => {
+    if (didAutoAsk.current) return;
+    const q = searchParams.get('q')?.trim();
+    if (q) {
+      didAutoAsk.current = true;
+      void ask(q);
+    }
+  }, []);
 
   return (
     <div className="flex h-full min-h-0 flex-col border border-line bg-card">
@@ -139,7 +152,7 @@ function Welcome({ onPick }: { onPick: (q: string) => void }) {
       <Sparkles className="size-8 text-accent" strokeWidth={1.6} />
       <h2 className="mt-3 text-[20px] text-ink-strong">Ask LeapFrog</h2>
       <p className="mt-2 max-w-md text-[13.5px] text-ink-dim">
-        Grounded answers over the tracked corpus. Every claim cites its source signal —
+        Grounded answers over the tracked corpus. Every claim cites its source insight —
         and if the answer isn&apos;t in the sources, LeapFrog says so instead of guessing.
       </p>
       <div className="mt-6 grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -207,7 +220,7 @@ function AssistantTurn({ turn }: { turn: Turn }) {
                 </span>
                 <VendorMark vendor={c.vendor} className="size-[18px] text-[9px]" />
                 <a
-                  href={`/signals/${c.id}`}
+                  href={`/insights/${c.id}`}
                   className="truncate text-[12.5px] text-ink hover:text-accent"
                 >
                   {c.title}

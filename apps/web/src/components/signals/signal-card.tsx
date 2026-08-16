@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRightLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowRightLeft } from 'lucide-react';
 import type { Category } from '@leapfrog/core';
 import type { Corroboration } from '@/lib/queries';
 import { CATEGORY_COLOR, formatDate, relativeAge } from '@/lib/format';
@@ -48,8 +48,8 @@ export function SignalCard({
 }) {
   return (
     <Link
-      href={`/signals/${signal.id}`}
-      className="group relative flex flex-col gap-3 border border-line bg-card p-4 transition-shadow hover:shadow-[0_2px_12px_rgba(0,0,0,0.10)]"
+      href={`/insights/${signal.id}`}
+      className="group flex flex-col gap-3 border border-line bg-card p-4 transition-shadow hover:shadow-[0_2px_12px_rgba(0,0,0,0.10)]"
       style={{ borderLeft: `3px solid ${CATEGORY_COLOR[signal.category]}` }}
     >
       <div className="flex items-center gap-2.5">
@@ -93,10 +93,6 @@ export function SignalCard({
           <span className="font-medium text-accent">Why it matters — </span>
           {signal.whyItMatters}
         </p>
-      </div>
-
-      <div className="pointer-events-none absolute right-3 top-3 text-ink-faint opacity-0 transition-opacity group-hover:opacity-100">
-        <ArrowUpRight className="size-4" />
       </div>
 
       <span className="sr-only">{formatDate(signal.publishedAt)}</span>

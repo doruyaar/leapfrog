@@ -18,8 +18,8 @@ export default function BattlecardsPage() {
           Battlecards
         </h1>
         <p className="mt-1 text-[13px] text-ink-dim">
-          {FOCUS_VENDOR} vs. each competitor — composed from the comparison matrix and the
-          live corpus, exportable to Markdown.
+          {FOCUS_VENDOR} vs. each competitor — composed from the competitive matrix and
+          the live corpus, exportable to Markdown.
         </p>
       </div>
 
@@ -35,7 +35,9 @@ export default function BattlecardsPage() {
               <div className="text-[14px] font-semibold text-ink-strong group-hover:text-accent">
                 {FOCUS_VENDOR} vs. {vendor.name}
               </div>
-              <div className="text-[11px] text-ink-faint">Open battlecard</div>
+              <div className="text-[11px] text-ink-faint">
+                {vendor.onMatrix ? 'Open battlecard' : 'Signals-based · not on matrix'}
+              </div>
             </div>
             <ArrowUpRight className="ml-auto size-4 text-ink-faint opacity-0 transition-opacity group-hover:opacity-100" />
           </Link>

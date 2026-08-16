@@ -4,6 +4,7 @@ import { runMigrations } from '../db/migrate.js';
 import { enrichedItems, rawItems, sources, type Category } from '../db/schema.js';
 import {
   categoryBreakdown,
+  isTrackedVendor,
   readVendorBySlug,
   readVendors,
   vendorSlug,
@@ -150,6 +151,30 @@ describe('readVendors', () => {
     await seedSignal(db, { title: 'x', enrichedVendor: 'JFrog' });
     expect(readVendorBySlug(db, 'jfrog')?.vendor).toBe('JFrog');
     expect(readVendorBySlug(db, 'nope')).toBeNull();
+  });
+
+  it('drops vendors outside the tracked competitor set', async () => {
+    // A curated competitor and the focus vendor stay; an untracked company (e.g. named in
+    // a neutral feed under live ingest) never joins the roster.
+    await seedSignal(db, { title: 'tracked', enrichedVendor: 'Sonatype' });
+    await seedSignal(db, { title: 'focus', enrichedVendor: 'JFrog' });
+    await seedSignal(db, { title: 'off-roster', enrichedVendor: 'HashiCorp' });
+
+    expect(readVendors(db).map((v) => v.vendor).sort()).toEqual(['JFrog', 'Sonatype']);
+  });
+});
+
+describe('isTrackedVendor', () => {
+  it('accepts the focus vendor and curated competitors, case-insensitively', () => {
+    expect(isTrackedVendor('JFrog')).toBe(true);
+    expect(isTrackedVendor('sonatype')).toBe(true);
+    expect(isTrackedVendor('AWS')).toBe(true);
+  });
+
+  it('rejects companies outside the tracked set', () => {
+    expect(isTrackedVendor('HashiCorp')).toBe(false);
+    expect(isTrackedVendor('Google')).toBe(false);
+    expect(isTrackedVendor('')).toBe(false);
   });
 });
 

@@ -19,10 +19,10 @@ export type NavItem = { label: string; href: string; icon: LucideIcon };
  */
 export const NAV_ITEMS: NavItem[] = [
   { label: "Today's Brief", href: '/', icon: FileText },
-  { label: 'Signals', href: '/signals', icon: Rss },
+  { label: 'Insights', href: '/insights', icon: Rss },
   { label: 'Changes', href: '/changes', icon: ArrowRightLeft },
   { label: 'Competitors', href: '/competitors', icon: Swords },
-  { label: 'Comparison', href: '/comparison', icon: Table2 },
+  { label: 'Competitive Matrix', href: '/matrix', icon: Table2 },
   { label: 'Battlecards', href: '/battlecards', icon: ShieldHalf },
   { label: 'Ask', href: '/ask', icon: Sparkles },
   { label: 'Notifications', href: '/notifications', icon: Bell },

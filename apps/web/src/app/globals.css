@@ -94,6 +94,9 @@
 html,
 body {
   height: 100%;
+  /* Both need the canvas fill so an overscroll "rubber-band" bounce at the
+   * bottom of the content never reveals a white strip behind the app. */
+  background-color: var(--canvas);
 }
 
 body {
@@ -101,7 +104,6 @@ body {
   font-family: var(--font-sans);
   font-size: 13px;
   line-height: 1.45;
-  background-color: var(--canvas);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }

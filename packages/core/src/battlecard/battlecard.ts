@@ -77,10 +77,31 @@ export interface ComposeBattlecardOptions {
 export function buildExtractiveSummary(
   card: Pick<
     Battlecard,
-    'vendor' | 'focusVendor' | 'ourStrengths' | 'theirStrengths' | 'recentSignals'
+    | 'vendor'
+    | 'focusVendor'
+    | 'ourStrengths'
+    | 'theirStrengths'
+    | 'parity'
+    | 'recentSignals'
   >,
 ): string {
-  const { focusVendor, vendor, ourStrengths, theirStrengths, recentSignals } = card;
+  const { focusVendor, vendor, ourStrengths, theirStrengths, parity, recentSignals } =
+    card;
+  const latestMove = recentSignals[0]
+    ? ` Latest tracked move: ${recentSignals[0].summary} [#${recentSignals[0].id}]`
+    : '';
+
+  // A competitor with no curated matrix coverage (not on the grid yet): position from the
+  // live corpus alone rather than inventing a matrix comparison we do not hold.
+  if (ourStrengths.length + theirStrengths.length + parity.length === 0) {
+    const n = recentSignals.length;
+    const basis =
+      n === 0
+        ? `no tracked signals for ${vendor} yet`
+        : `${n} tracked ${n === 1 ? 'signal' : 'signals'}`;
+    return `${vendor} isn't on the ${focusVendor} comparison matrix yet — positioning here is based on ${basis}.${latestMove}`.trim();
+  }
+
   const lead =
     `Against ${vendor}, ${focusVendor} leads on ${ourStrengths.length} ` +
     `axis${ourStrengths.length === 1 ? '' : 'es'}` +
@@ -97,10 +118,7 @@ export function buildExtractiveSummary(
         .map((e) => e.axisLabel)
         .join(', ')}.`
     : ` ${vendor} shows no clearly differentiated axis in our matrix.`;
-  const latest = recentSignals[0]
-    ? ` Latest tracked move: ${recentSignals[0].summary} [#${recentSignals[0].id}]`
-    : '';
-  return `${lead}${theirs}${latest}`.trim();
+  return `${lead}${theirs}${latestMove}`.trim();
 }
 
 function buildTalkingPoints(card: {
@@ -136,9 +154,11 @@ function buildTalkingPoints(card: {
 }
 
 /**
- * Compose (but do not persist) a battlecard for `vendor`. Returns `null` when the vendor
- * is not a competitor column in the matrix or is the focus vendor itself. Re-running
- * recomputes from the current corpus — that is the "refresh" in the plan.
+ * Compose (but do not persist) a battlecard for `vendor`. Any tracked competitor can get
+ * a card: a matrix column contributes the head-to-head axis edges, and a competitor not
+ * (yet) on the matrix still gets a corpus-only card from its recent signals. Returns
+ * `null` only for the focus vendor itself or a vendor we have neither a matrix column nor
+ * any tracked signal for. Re-running recomputes from the current corpus — the "refresh".
  */
 export async function composeBattlecard(
   db: Database,
@@ -151,8 +171,10 @@ export async function composeBattlecard(
   const column = matrix.vendors.find(
     (v) => v.name.toLowerCase() === vendor.toLowerCase(),
   );
-  if (!column || column.name === focusVendor) return null;
-  const target = column.name;
+  // Prefer the matrix's canonical spelling; fall back to the caller's vendor name for
+  // competitors that are tracked in the corpus but not on the curated grid.
+  const target = column?.name ?? vendor;
+  if (target.toLowerCase() === focusVendor.toLowerCase()) return null;
 
   const ourStrengths: BattlecardEdge[] = [];
   const theirStrengths: BattlecardEdge[] = [];
@@ -185,6 +207,10 @@ export async function composeBattlecard(
     .sort((a, b) => b.score - a.score)
     .slice(0, options.maxSignals ?? 5)
     .map(({ signal }) => signal);
+
+  // A vendor that is neither on the matrix nor anywhere in the corpus has nothing to
+  // stand on — treat it as unknown rather than emitting an empty card.
+  if (!column && ranked.length === 0) return null;
 
   const recentSignals: BattlecardSignalRef[] = ranked.map((s) => ({
     id: s.id,

@@ -23,7 +23,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const signal = getSignal(Number(id));
-  return { title: signal ? signal.title : 'Signal' };
+  return { title: signal ? signal.title : 'Insight' };
 }
 
 function Chip({ children }: { children: React.ReactNode }) {
@@ -47,8 +47,8 @@ export default async function SignalDetailPage({
       <div className="px-[34px] pb-11 pt-5">
         <BackLink />
         <EmptyState
-          title="Signal not found"
-          hint="This signal is not in the current corpus. It may not have been seeded, or it was quarantined during enrichment."
+          title="Insight not found"
+          hint="This insight is not in the current corpus. It may not have been seeded, or it was quarantined during enrichment."
           command="npm run seed"
         />
       </div>
@@ -93,7 +93,7 @@ export default async function SignalDetailPage({
               </SubscribeLink>
             ) : (
               <SubscribeLink className="ml-auto" category={signal.category}>
-                Notify me about {signal.category} signals
+                Notify me about {signal.category} insights
               </SubscribeLink>
             )}
           </div>
@@ -192,7 +192,7 @@ export default async function SignalDetailPage({
                   {related.map((r) => (
                     <li key={r.id}>
                       <Link
-                        href={`/signals/${r.id}`}
+                        href={`/insights/${r.id}`}
                         className="block text-[12.5px] leading-snug text-ink hover:text-accent"
                       >
                         {r.title}

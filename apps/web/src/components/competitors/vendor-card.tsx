@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
 import type { VendorSummary } from '@/lib/queries';
 import { CATEGORY_COLOR, impactColor, relativeAge } from '@/lib/format';
 import { VendorMark } from '@/components/signals/badges';
@@ -35,7 +34,7 @@ export function VendorCard({
             )}
           </div>
           <div className="text-[11px] text-ink-faint">
-            {vendor.signalCount} signal{vendor.signalCount === 1 ? '' : 's'} ·{' '}
+            {vendor.signalCount} insight{vendor.signalCount === 1 ? '' : 's'} ·{' '}
             {relativeAge(vendor.latestAt)}
           </div>
         </div>
@@ -64,10 +63,6 @@ export function VendorCard({
             {category}
           </span>
         ))}
-      </div>
-
-      <div className="pointer-events-none absolute right-3 top-3 text-ink-faint opacity-0 transition-opacity group-hover:opacity-100">
-        <ArrowUpRight className="size-4" />
       </div>
     </Link>
   );

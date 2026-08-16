@@ -1,5 +1,6 @@
 import type { Category } from '@leapfrog/core';
 import { CATEGORY_COLOR, impactColor, impactLabel, vendorInitials } from '@/lib/format';
+import { vendorLogo } from '@/lib/vendor-logos';
 import { cn } from '@/lib/utils';
 
 /** Category pill with a colour dot — the same colour used for card accents. */
@@ -39,7 +40,11 @@ export function ImpactBadge({
   );
 }
 
-/** Two-letter vendor mark; neutral chrome fill so category colour stays meaningful. */
+/**
+ * Vendor mark: the company's brand logo on its brand colour when we have one,
+ * otherwise a two-letter initial on neutral chrome fill (so the category colour
+ * stays meaningful for vendors without a bundled logo).
+ */
 export function VendorMark({
   vendor,
   className,
@@ -47,6 +52,21 @@ export function VendorMark({
   vendor: string | null;
   className?: string;
 }) {
+  const logo = vendorLogo(vendor);
+  if (logo) {
+    return (
+      <span
+        className={cn(
+          'grid size-[30px] shrink-0 place-items-center overflow-hidden rounded-[4px]',
+          className,
+        )}
+        style={{ backgroundColor: logo.bg }}
+        title={logo.title}
+      >
+        {logo.node}
+      </span>
+    );
+  }
   return (
     <span
       className={cn(

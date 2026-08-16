@@ -56,7 +56,7 @@ export default async function BattlecardPage({
         <BackLink />
         <EmptyState
           title="Battlecard unavailable"
-          hint="Either this competitor is not in the comparison matrix, or the corpus is empty. Load the demo snapshot and try again."
+          hint="Either this competitor is not in the competitive matrix, or the corpus is empty. Load the demo snapshot and try again."
           command="npm run seed"
         />
       </div>
@@ -82,7 +82,7 @@ export default async function BattlecardPage({
           </h1>
           <p className="mt-1 text-[13px] text-ink-dim">
             {view.stored ? 'Generated' : 'Composed live'} {formatDate(card.generatedAt)} (
-            {relativeAge(card.generatedAt)}) · {card.recentSignals.length} tracked signal
+            {relativeAge(card.generatedAt)}) · {card.recentSignals.length} tracked insight
             {card.recentSignals.length === 1 ? '' : 's'}
           </p>
         </div>
@@ -93,7 +93,7 @@ export default async function BattlecardPage({
         <div className="mb-6 flex items-center justify-between gap-4 border border-[#d9a521]/50 bg-[#d9a521]/10 px-5 py-3.5">
           <p className="text-[13.5px] text-ink">
             <span className="font-semibold">
-              {view.newSignals} new signal{view.newSignals === 1 ? '' : 's'}
+              {view.newSignals} new insight{view.newSignals === 1 ? '' : 's'}
             </span>{' '}
             since this card was generated — the card below may be stale.
           </p>
@@ -175,14 +175,14 @@ export default async function BattlecardPage({
         </h2>
         {card.recentSignals.length === 0 ? (
           <p className="border border-dashed border-line px-4 py-6 text-center text-[13px] text-ink-faint">
-            No tracked signals for {card.vendor} yet.
+            No tracked insights for {card.vendor} yet.
           </p>
         ) : (
           <ul className="space-y-2">
             {card.recentSignals.map((signal) => (
               <li key={signal.id}>
                 <Link
-                  href={`/signals/${signal.id}`}
+                  href={`/insights/${signal.id}`}
                   className="group flex items-start gap-3 border border-line bg-card px-4 py-3 transition-colors hover:border-accent"
                 >
                   <span className="mt-0.5 rounded-[3px] bg-canvas px-1.5 text-[11px] font-medium text-ink-faint">

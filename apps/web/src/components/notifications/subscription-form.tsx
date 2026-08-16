@@ -8,7 +8,7 @@ import type { SubscriptionFacets } from '@/lib/queries';
 import { createSubscriptionAction, previewMatchCountAction } from '@/lib/actions';
 import { CATEGORY_COLOR } from '@/lib/format';
 
-/** Impact floor options — mirrors the Signals feed's threshold filter. */
+/** Impact floor options — mirrors the Insights feed's threshold filter. */
 const IMPACT_OPTIONS = [
   { value: '', label: 'Any impact' },
   { value: '2', label: 'Low (2+)' },
@@ -48,8 +48,8 @@ export interface SubscriptionFormInitial {
 
 /**
  * Build a subscription rule. Every field carries a permanent label (never a
- * placeholder-as-label), the choices reuse the same vocabulary as the Signals feed, and a
- * live "matches N signals" line gives the rule a scent before it is saved. An empty rule is
+ * placeholder-as-label), the choices reuse the same vocabulary as the Insights feed, and a
+ * live "matches N insights" line gives the rule a scent before it is saved. An empty rule is
  * valid and matches everything — so the fastest path is: type an email, pick a threshold,
  * save. `initial` lets a "subscribe to this" link elsewhere in the app land here with the
  * relevant filters already selected.
@@ -226,7 +226,7 @@ export function SubscriptionForm({
           ) : (
             <>
               Matches <strong className="text-ink-strong tabular-nums">{count}</strong>{' '}
-              current signal{count === 1 ? '' : 's'}.
+              current insight{count === 1 ? '' : 's'}.
             </>
           )}
         </p>

@@ -9,6 +9,7 @@
  */
 import type { Database } from '../db/client.js';
 import type { Category } from '../db/schema.js';
+import { FOCUS_VENDOR, TRACKED_COMPETITORS } from '../ingest/catalog.js';
 import { readSignals, type SignalSummary } from './signals.js';
 
 /** One tracked competitor, summarised for the index grid. */
@@ -40,6 +41,24 @@ export function vendorSlugMatches(vendor: string, slug: string): boolean {
   return vendorSlug(vendor) === slug.toLowerCase();
 }
 
+/**
+ * Slugs of every company the product surfaces: the focus vendor plus its tracked
+ * competitors ({@link TRACKED_COMPETITORS}). Matching by slug tolerates spelling and
+ * casing drift in enriched vendor names ("jfrog", "JFrog").
+ */
+const TRACKED_SLUGS = new Set(
+  [FOCUS_VENDOR, ...TRACKED_COMPETITORS].map(vendorSlug),
+);
+
+/**
+ * True when a vendor is one the product tracks — the focus vendor or a curated
+ * competitor. Vendors outside this set (e.g. companies name-dropped in a neutral feed
+ * under live ingest) are never surfaced as competitors.
+ */
+export function isTrackedVendor(vendor: string): boolean {
+  return TRACKED_SLUGS.has(vendorSlug(vendor));
+}
+
 interface VendorAccumulator {
   vendor: string;
   signalCount: number;
@@ -50,9 +69,10 @@ interface VendorAccumulator {
 }
 
 /**
- * The competitor roster, derived from shown signals. Vendors are ordered by signal
- * volume, then recency — the busiest competitors surface first. Empty before `npm run
- * seed` (no signals ⇒ no vendors).
+ * The competitor roster, derived from shown signals and capped to the tracked set
+ * ({@link isTrackedVendor}) so only JFrog and its curated competitors ever appear.
+ * Vendors are ordered by signal volume, then recency — the busiest competitors surface
+ * first. Empty before `npm run seed` (no signals ⇒ no vendors).
  */
 export function readVendors(db: Database): VendorSummary[] {
   // Newest-first, so the first signal seen per vendor is its latest.
@@ -60,7 +80,9 @@ export function readVendors(db: Database): VendorSummary[] {
   const byVendor = new Map<string, VendorAccumulator>();
 
   for (const signal of signals) {
-    if (!signal.vendor) continue;
+    // Only surface the focus vendor and its curated competitors — live ingest can attach
+    // arbitrary vendor names, but the competitor roster stays the tracked set.
+    if (!signal.vendor || !isTrackedVendor(signal.vendor)) continue;
     let acc = byVendor.get(signal.vendor);
     if (!acc) {
       acc = {

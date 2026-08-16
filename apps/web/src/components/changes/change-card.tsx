@@ -87,7 +87,7 @@ export function ChangeCard({ event }: { event: ChangeEventSummary }) {
 
       <div className="mt-3 flex items-center justify-between gap-3 border-t border-line-soft pt-2.5">
         <Link
-          href={`/signals/${event.triggerItemId}`}
+          href={`/insights/${event.triggerItemId}`}
           className="group inline-flex min-w-0 items-center gap-1 text-[12.5px] font-medium text-ink hover:text-accent"
         >
           <span className="truncate">{event.triggerTitle}</span>
@@ -124,7 +124,7 @@ export function FilteredChangesRow({ events }: { events: ChangeEventSummary[] })
         {events.map((event) => (
           <li key={event.id} className="text-[12.5px] leading-snug">
             <Link
-              href={`/signals/${event.triggerItemId}`}
+              href={`/insights/${event.triggerItemId}`}
               className="font-medium text-ink-dim hover:text-accent"
             >
               {event.triggerTitle}

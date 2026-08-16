@@ -16,10 +16,10 @@ import { NoResults } from '@/components/ui/no-results';
 import { ListToolbar, type SelectFilter } from '@/components/ui/list-toolbar';
 import { Pagination } from '@/components/ui/pagination';
 
-export const metadata: Metadata = { title: 'Signals' };
+export const metadata: Metadata = { title: 'Insights' };
 export const dynamic = 'force-dynamic';
 
-const BASE_PATH = '/signals';
+const BASE_PATH = '/insights';
 
 /** Sort menu: each value encodes `key:dir`; the first is the URL-less default. */
 const SORT_OPTIONS = [
@@ -104,11 +104,11 @@ export default async function SignalsPage({
         <div>
           <h1 className="flex items-center gap-2.5 text-[26px] font-normal text-ink-strong">
             <Rss className="size-6 text-accent" strokeWidth={1.7} />
-            Signals
+            Insights
           </h1>
           <p className="mt-1 text-[13px] text-ink-dim">
-            Every enriched item in the corpus — search, filter, and sort to find what
-            matters.
+            Every enriched, scored item in the corpus — search, filter, and sort to find
+            what matters.
           </p>
         </div>
         {isFiltered && (
@@ -126,14 +126,14 @@ export default async function SignalsPage({
 
       {!isFiltered && result.total === 0 ? (
         <EmptyState
-          title="No signals yet"
+          title="No insights yet"
           hint="Load the demo snapshot to populate the feed. No API key needed."
           command="npm run seed"
         />
       ) : (
         <>
           <ListToolbar
-            noun="signal"
+            noun="insight"
             filters={filters}
             sort={{
               options: SORT_OPTIONS,
@@ -153,7 +153,7 @@ export default async function SignalsPage({
           />
 
           {result.total === 0 ? (
-            <NoResults noun="signal" resetHref={BASE_PATH} />
+            <NoResults noun="insight" resetHref={BASE_PATH} />
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {result.items.map((signal) => (
@@ -170,7 +170,7 @@ export default async function SignalsPage({
             from={result.from}
             to={result.to}
             total={result.total}
-            noun="signal"
+            noun="insight"
           />
         </>
       )}

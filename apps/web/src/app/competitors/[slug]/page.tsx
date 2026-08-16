@@ -59,7 +59,7 @@ export default async function CompetitorPage({
         <BackLink />
         <EmptyState
           title="Competitor not found"
-          hint="This vendor has no signals in the current corpus. It may not have been seeded yet."
+          hint="This vendor has no insights in the current corpus. It may not have been seeded yet."
           command="npm run seed"
         />
       </div>
@@ -85,7 +85,7 @@ export default async function CompetitorPage({
             )}
           </h1>
           <p className="mt-1 text-[13px] text-ink-dim">
-            {vendor.signalCount} tracked signal{vendor.signalCount === 1 ? '' : 's'} ·
+            {vendor.signalCount} tracked insight{vendor.signalCount === 1 ? '' : 's'} ·
             peak impact {vendor.maxImpact} · latest {formatDate(vendor.latestAt)} (
             {relativeAge(vendor.latestAt)})
           </p>

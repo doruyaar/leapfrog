@@ -23,7 +23,7 @@ export function CitedText({ text, className }: { text: string; className?: strin
     nodes.push(
       <Link
         key={`cite-${match.index}`}
-        href={`/signals/${id}`}
+        href={`/insights/${id}`}
         className="mx-0.5 inline-flex items-center rounded-[3px] bg-accent-soft px-1.5 align-baseline text-[11px] font-medium text-accent hover:underline"
       >
         #{id}

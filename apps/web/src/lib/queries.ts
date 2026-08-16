@@ -16,6 +16,7 @@ import {
   countSignalsSince,
   createOpenRouterMatrixDrafter,
   draftMatrixEdits,
+  explainMatrix,
   MissingApiKeyError,
   readChangeEventForItem,
   readChangeEvents,
@@ -31,10 +32,13 @@ import {
   type Battlecard,
   type BriefItem,
   type Category,
+  type CellLevel,
   type ChangeEventSummary,
   type ChangeKind,
   type ChangeSort,
   type ComparisonMatrix,
+  type ConfidenceFactors,
+  type ConfidenceLevel,
   type Corroboration,
   type Dimension,
   type ListSignalsOptions,
@@ -253,18 +257,119 @@ export function getMatrixCellAudit(): Map<string, MatrixCellAudit> {
   return db ? readMatrixCellAudit(db) : new Map();
 }
 
-/** A competitor the platform can build a battlecard against (matrix columns minus focus). */
-export interface BattlecardVendor {
-  name: string;
-  slug: string;
+/** One supporting signal behind a rating, serialized for a client component. */
+export interface EvidenceView {
+  id: number;
+  title: string;
+  summary: string;
+  vendor: string | null;
+  category: Category;
+  impactScore: number;
+  /** ISO date, or `null` when undated. */
+  publishedAt: string | null;
+  sourceName: string;
+  tier: 'primary' | 'secondary';
 }
 
-/** The competitors a battlecard can be composed for — every matrix column but the focus. */
-export function getBattlecardVendors(): BattlecardVendor[] {
+/**
+ * The "why this rating" view of one matrix cell, serialized (dates → ISO strings) so
+ * it can cross the server→client boundary into the interactive cell popover.
+ */
+export interface CellExplainabilityView {
+  vendor: string;
+  axisId: string;
+  axisLabel: string;
+  level: CellLevel;
+  note: string;
+  evidence: EvidenceView[];
+  evidenceCount: number;
+  confidence: ConfidenceLevel;
+  confidenceFactors: ConfidenceFactors;
+  lastUpdatedAt: string | null;
+  lastUpdatedSignalId: number | null;
+}
+
+/**
+ * Explainability for every matrix cell, keyed by `vendor::axisId`: the supporting
+ * evidence, a derived confidence indication, and when an approved edit last touched
+ * the cell. Serialized to plain JSON for the client-side cell popover.
+ */
+export function getMatrixExplainability(
+  matrix: ComparisonMatrix,
+): Record<string, CellExplainabilityView> {
+  const db = getDb();
+  if (!db) return {};
+
+  const out: Record<string, CellExplainabilityView> = {};
+  for (const [key, cell] of explainMatrix(db, matrix)) {
+    out[key] = {
+      vendor: cell.vendor,
+      axisId: cell.axisId,
+      axisLabel: cell.axisLabel,
+      level: cell.level,
+      note: cell.note,
+      evidence: cell.evidence.map((e) => ({
+        id: e.id,
+        title: e.title,
+        summary: e.summary,
+        vendor: e.vendor,
+        category: e.category,
+        impactScore: e.impactScore,
+        publishedAt: e.publishedAt?.toISOString() ?? null,
+        sourceName: e.sourceName,
+        tier: e.tier,
+      })),
+      evidenceCount: cell.evidenceCount,
+      confidence: cell.confidence,
+      confidenceFactors: cell.confidenceFactors,
+      lastUpdatedAt: cell.lastUpdatedAt?.toISOString() ?? null,
+      lastUpdatedSignalId: cell.lastUpdatedSignalId,
+    };
+  }
+  return out;
+}
+
+/** A competitor company the platform can surface (matrix column or battlecard target). */
+export interface CompetitorCompany {
+  name: string;
+  slug: string;
+  /** True when the company is on the curated matrix (so it has rated axis cells). */
+  onMatrix: boolean;
+}
+
+/**
+ * Every tracked competitor company, the curated matrix columns first (they carry rated
+ * cells / battlecard edges), then any other competitor from the corpus. The focus vendor
+ * is never included. Deduplicated by slug. Powers both the matrix company picker and the
+ * battlecard roster.
+ */
+export function getCompetitorCompanies(): CompetitorCompany[] {
   const matrix = readComparisonMatrix();
-  return matrix.vendors
-    .filter((v) => v.name !== matrix.focusVendor)
-    .map((v) => ({ name: v.name, slug: v.slug }));
+  const focus = matrix.focusVendor.toLowerCase();
+
+  const bySlug = new Map<string, CompetitorCompany>();
+  for (const v of matrix.vendors) {
+    if (v.name.toLowerCase() === focus) continue;
+    bySlug.set(v.slug, { name: v.name, slug: v.slug, onMatrix: true });
+  }
+
+  const db = getDb();
+  if (db) {
+    for (const v of readVendors(db)) {
+      if (v.vendor.toLowerCase() === focus || bySlug.has(v.slug)) continue;
+      bySlug.set(v.slug, { name: v.vendor, slug: v.slug, onMatrix: false });
+    }
+  }
+
+  return [...bySlug.values()];
+}
+
+/** @deprecated Prefer {@link CompetitorCompany}. */
+export type BattlecardVendor = CompetitorCompany;
+
+/** The competitors a battlecard can be composed for — every tracked competitor. */
+export function getBattlecardVendors(): CompetitorCompany[] {
+  return getCompetitorCompanies();
 }
 
 /** A battlecard plus its Markdown export, or `null` for an unknown vendor / no data. */
@@ -284,23 +389,30 @@ export interface BattlecardView {
  */
 export async function getBattlecard(slug: string): Promise<BattlecardView | null> {
   const matrix = readComparisonMatrix();
-  const column = matrix.vendors.find((v) => v.slug === slug.toLowerCase());
-  if (!column || column.name === matrix.focusVendor) return null;
-
   const db = getDb();
   if (!db) return null;
 
-  const stored = readStoredBattlecard(db, column.name);
+  const column = matrix.vendors.find((v) => v.slug === slug.toLowerCase());
+  if (column && column.name === matrix.focusVendor) return null;
+
+  // Matrix columns keep their curated spelling; other competitors resolve from the corpus
+  // so battlecards exist for every tracked vendor, not just those on the grid.
+  const vendorName = column?.name ?? readVendorBySlug(db, slug)?.vendor ?? null;
+  if (!vendorName || vendorName.toLowerCase() === matrix.focusVendor.toLowerCase()) {
+    return null;
+  }
+
+  const stored = readStoredBattlecard(db, vendorName);
   if (stored) {
     return {
       card: stored.card,
       markdown: toMarkdown(stored.card),
       stored: true,
-      newSignals: countSignalsSince(db, column.name, stored.generatedAt),
+      newSignals: countSignalsSince(db, vendorName, stored.generatedAt),
     };
   }
 
-  const card = await composeBattlecard(db, column.name, { matrix });
+  const card = await composeBattlecard(db, vendorName, { matrix });
   if (!card) return null;
   return { card, markdown: toMarkdown(card), stored: false, newSignals: 0 };
 }
@@ -430,10 +542,13 @@ export type {
   Battlecard,
   BriefItem,
   Category,
+  CellLevel,
   ChangeEventSummary,
   ChangeKind,
   ChangeSort,
   ComparisonMatrix,
+  ConfidenceFactors,
+  ConfidenceLevel,
   Corroboration,
   Dimension,
   MatrixCellAudit,
