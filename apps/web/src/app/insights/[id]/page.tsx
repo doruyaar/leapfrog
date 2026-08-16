@@ -7,7 +7,7 @@ import {
   getRelatedSignals,
   getSignal,
 } from '@/lib/queries';
-import { formatDate } from '@/lib/format';
+import { formatDate, impactColor, impactLabel } from '@/lib/format';
 import { CategoryBadge, ImpactBadge, VendorMark } from '@/components/signals/badges';
 import { CorroborationPanel } from '@/components/signals/corroboration-badge';
 import { StateChangeBadge } from '@/components/signals/signal-card';
@@ -142,9 +142,24 @@ export default async function SignalDetailPage({
             <Section title="Summary" />
             <p className="text-[14px] leading-relaxed text-ink">{signal.summary}</p>
             {signal.rationale && (
-              <p className="mt-2 text-[12.5px] italic text-ink-dim">
-                Impact rationale: {signal.rationale}
-              </p>
+              <div
+                className="mt-3 border-l-[3px] px-4 py-3"
+                style={{
+                  borderColor: impactColor(signal.impactScore),
+                  backgroundColor: `${impactColor(signal.impactScore)}14`,
+                }}
+              >
+                <div
+                  className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider"
+                  style={{ color: impactColor(signal.impactScore) }}
+                >
+                  <ImpactBadge score={signal.impactScore} />
+                  Impact rationale — {impactLabel(signal.impactScore)}
+                </div>
+                <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink">
+                  {signal.rationale}
+                </p>
+              </div>
             )}
 
             <Section title="Source content" />
