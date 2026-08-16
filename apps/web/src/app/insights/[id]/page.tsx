@@ -12,6 +12,7 @@ import { CategoryBadge, ImpactBadge, VendorMark } from '@/components/signals/bad
 import { CorroborationPanel } from '@/components/signals/corroboration-badge';
 import { StateChangeBadge } from '@/components/signals/signal-card';
 import { SubscribeLink } from '@/components/notifications/subscribe-link';
+import { TalkAboutButton } from '@/components/ask/talk-about-button';
 import { EmptyState } from '@/components/ui/empty-state';
 
 export const dynamic = 'force-dynamic';
@@ -63,6 +64,17 @@ export default async function SignalDetailPage({
     (changeEvent.kind === 'new' || changeEvent.kind === 'update') &&
     changeEvent.materiality >= 4;
 
+  // What the assistant is scoped to when the user hits "Talk about it" on this insight.
+  // `focusId` pins this signal server-side so it is always answerable.
+  const chatContext = {
+    label: signal.title,
+    preamble:
+      `The user is asking about insight #${signal.id}: "${signal.title}" ` +
+      `(${signal.vendor ?? 'market-wide'}, ${signal.category}, impact ` +
+      `${signal.impactScore}/10). Why it matters: ${signal.whyItMatters}`,
+    focusId: signal.id,
+  };
+
   return (
     <div className="px-[34px] pb-11 pt-5">
       <BackLink />
@@ -77,6 +89,7 @@ export default async function SignalDetailPage({
               {signal.sourceName} · {signal.sourceKind.toUpperCase()} ·{' '}
               {formatDate(signal.publishedAt)}
             </span>
+            <TalkAboutButton context={chatContext} className="ml-auto" />
           </div>
           <h1 className="text-[24px] font-normal leading-snug text-ink-strong">
             {signal.title}
@@ -101,9 +114,14 @@ export default async function SignalDetailPage({
 
         <div className="grid grid-cols-1 gap-7 px-7 py-6 lg:grid-cols-[1fr_260px]">
           <div className="min-w-0">
-            <div className="border-l-2 border-accent bg-accent-soft px-4 py-3">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-accent">
+            <div className="group/talk border-l-2 border-accent bg-accent-soft px-4 py-3">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-accent">
                 Why it matters
+                <TalkAboutButton
+                  context={chatContext}
+                  revealOnHover
+                  className="ml-auto tracking-normal normal-case"
+                />
               </div>
               <p className="mt-1 text-[14px] leading-relaxed text-ink">
                 {signal.whyItMatters}
@@ -143,7 +161,7 @@ export default async function SignalDetailPage({
             <p className="text-[14px] leading-relaxed text-ink">{signal.summary}</p>
             {signal.rationale && (
               <div
-                className="mt-3 border-l-[3px] px-4 py-3"
+                className="group/talk mt-3 border-l-[3px] px-4 py-3"
                 style={{
                   borderColor: impactColor(signal.impactScore),
                   backgroundColor: `${impactColor(signal.impactScore)}14`,
@@ -155,6 +173,11 @@ export default async function SignalDetailPage({
                 >
                   <ImpactBadge score={signal.impactScore} />
                   Impact rationale — {impactLabel(signal.impactScore)}
+                  <TalkAboutButton
+                    context={chatContext}
+                    revealOnHover
+                    className="ml-auto tracking-normal normal-case"
+                  />
                 </div>
                 <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink">
                   {signal.rationale}

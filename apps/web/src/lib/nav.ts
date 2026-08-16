@@ -4,7 +4,6 @@ import {
   FileText,
   Rss,
   ShieldHalf,
-  Sparkles,
   Swords,
   Table2,
   type LucideIcon,
@@ -24,7 +23,6 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Competitors', href: '/competitors', icon: Swords },
   { label: 'Competitive Matrix', href: '/matrix', icon: Table2 },
   { label: 'Battlecards', href: '/battlecards', icon: ShieldHalf },
-  { label: 'Ask', href: '/ask', icon: Sparkles },
   { label: 'Notifications', href: '/notifications', icon: Bell },
 ];
 

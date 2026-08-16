@@ -12,6 +12,7 @@ export {
   REFUSAL_MESSAGE,
   type AnswerModel,
   type AskAnswer,
+  type AskContext,
   type AskOptions,
   type Citation,
 } from './answer.js';

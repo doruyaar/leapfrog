@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { GlobalSearch } from '@/components/chrome/global-search';
 import { ThemeToggle } from '@/components/chrome/theme-toggle';
+import { ChatToggle } from '@/components/ask/chat-toggle';
 
 export function TopBar() {
   return (
@@ -17,6 +18,7 @@ export function TopBar() {
       <GlobalSearch />
 
       <div className="ml-auto flex shrink-0 items-center gap-3.5 pr-4">
+        <ChatToggle />
         <ThemeToggle />
       </div>
     </header>

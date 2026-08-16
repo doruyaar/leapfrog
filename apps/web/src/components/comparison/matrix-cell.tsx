@@ -130,7 +130,6 @@ function CellPopover({
   // focus back mid-scroll.
   useEffect(() => {
     panelRef.current?.focus();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

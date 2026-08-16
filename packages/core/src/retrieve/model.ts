@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_OPENROUTER_BASE_URL, MissingApiKeyError } from '../enrich/client.js';
 import { fetchWithRetry, type HttpOptions } from '../ingest/http.js';
-import { ASK_PROMPT_VERSION, type AnswerModel } from './answer.js';
+import { ASK_PROMPT_VERSION, type AnswerModel, type AskContext } from './answer.js';
 import type { RetrievedPassage } from './hybrid.js';
 
 export const DEFAULT_CHAT_MODEL = 'openai/gpt-4o';
@@ -95,9 +95,16 @@ export function createOpenRouterAnswerModel(
   return {
     model: config.model,
     promptVersion: ASK_PROMPT_VERSION,
-    async answer(query: string, passages: RetrievedPassage[]): Promise<string> {
+    async answer(
+      query: string,
+      passages: RetrievedPassage[],
+      context?: AskContext,
+    ): Promise<string> {
       const template = loadAskPrompt();
+      // The focus note tells the model what "it" refers to; empty when unscoped.
+      const focus = context ? `Focus: ${context.preamble}\n\n` : '';
       const user = template.user
+        .replace('{{FOCUS}}', focus)
         .replace('{{CONTEXT}}', formatContext(passages))
         .replace('{{QUESTION}}', query);
 
