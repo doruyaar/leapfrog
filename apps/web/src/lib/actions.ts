@@ -131,7 +131,12 @@ function intId(value: FormDataEntryValue | null): number | null {
 
 /** Split a comma/newline-separated keyword field into a clean list. */
 function parseKeywords(value: string | undefined): string[] {
-  return value ? value.split(/[,\n]/).map((k) => k.trim()).filter(Boolean) : [];
+  return value
+    ? value
+        .split(/[,\n]/)
+        .map((k) => k.trim())
+        .filter(Boolean)
+    : [];
 }
 
 /** Read the filter + delivery fields shared by create and update from a form. */

@@ -52,10 +52,30 @@ Sources → Ingest → Normalize/Dedupe → LLM Enrich → Index (BM25 + vectors
   latest corpus, with sources footnoted.
 
 ### Tracked vendors (initial set)
-Vendors in artifact management, package registries, and supply-chain security:
-Sonatype (Nexus), GitLab, GitHub (Packages + Advanced Security), Docker (Hub), Cloudsmith,
-AWS CodeArtifact / Azure Artifacts, plus security-adjacent Snyk and Chainguard. The set —
-and which one is the focus vendor — is configurable in the UI.
+JFrog is the configurable **focus vendor**; the initial set is the **ten competitors in
+real head-to-head competition with JFrog** across artifact management, registries, and
+software-supply-chain security:
+
+| Competitor | Why it competes with JFrog |
+|---|---|
+| **Sonatype** (Nexus + Lifecycle) | The most direct universal-artifact + governance rival |
+| **GitHub** (Packages / GHCR + Advanced Security) | CI-bundled registry, Microsoft-backed |
+| **GitLab** (Package / Container Registry) | Integrated DevSecOps platform with a built-in registry |
+| **AWS** (CodeArtifact + ECR) | Cloud-native registry camp |
+| **Microsoft / Azure** (Azure Artifacts + ACR) | Cloud-native registry camp |
+| **Docker** (Docker Hub) | The default public container registry |
+| **Cloudsmith** | Universal SaaS artifact management |
+| **Harbor** | CNCF self-hosted OCI registry |
+| **Snyk** | Developer / supply-chain security — competes with Xray |
+| **Chainguard** | Secure container images / supply-chain security |
+
+The set — and which vendor is the focus — is seed configuration (rows in the `sources`
+table / `packages/core/src/ingest/catalog.ts`), not hard-coded logic. A competitor
+surfaces on the Competitors page once it has intelligence in the corpus, so the visible
+roster is a subset of the tracked set until every vendor has a signal. The comparison
+matrix (`data/matrix/comparison.json`) is a curated capability deep-dive on the universal
+artifact-management platforms among these; security-only and cloud-suite competitors are
+tracked for signals without appearing in that head-to-head grid.
 
 ### Sources (all free & legal)
 - RSS/Atom: vendor blogs, release-note feeds, The Register/InfoQ/DevClass tags

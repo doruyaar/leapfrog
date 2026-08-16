@@ -113,7 +113,10 @@ export function SubscriptionForm({
             className="w-full rounded-md border border-field-line bg-field px-3 py-2 text-[13px] text-ink-strong placeholder:text-ink-faint outline-none focus:border-accent"
           />
         </Field>
-        <Field label="Name" hint="Optional — we'll name it from the filters if you skip it.">
+        <Field
+          label="Name"
+          hint="Optional — we'll name it from the filters if you skip it."
+        >
           <input
             type="text"
             name="label"
@@ -180,7 +183,10 @@ export function SubscriptionForm({
             ))}
           </select>
         </Field>
-        <Field label="Keywords" hint="Comma-separated. Matches title, summary, and why-it-matters.">
+        <Field
+          label="Keywords"
+          hint="Comma-separated. Matches title, summary, and why-it-matters."
+        >
           <input
             type="text"
             name="keywords"
@@ -219,9 +225,8 @@ export function SubscriptionForm({
             'Calculating matches…'
           ) : (
             <>
-              Matches{' '}
-              <strong className="text-ink-strong tabular-nums">{count}</strong> current
-              signal{count === 1 ? '' : 's'}.
+              Matches <strong className="text-ink-strong tabular-nums">{count}</strong>{' '}
+              current signal{count === 1 ? '' : 's'}.
             </>
           )}
         </p>

@@ -81,7 +81,11 @@ describe('runNotifications', () => {
 
   it('emails only the signals matching a subscription', async () => {
     await seedSignal(db, { title: 'Sonatype CVE', vendor: 'Sonatype', impactScore: 5 });
-    await seedSignal(db, { title: 'GitLab pricing', vendor: 'GitLab', category: 'Pricing' });
+    await seedSignal(db, {
+      title: 'GitLab pricing',
+      vendor: 'GitLab',
+      category: 'Pricing',
+    });
     createSubscription(db, {
       email: 'me@example.com',
       vendors: ['Sonatype'],
@@ -127,7 +131,10 @@ describe('runNotifications', () => {
 
   it('skips disabled subscriptions', async () => {
     await seedSignal(db, { title: 'Sonatype CVE', vendor: 'Sonatype', impactScore: 5 });
-    const sub = createSubscription(db, { email: 'me@example.com', vendors: ['Sonatype'] });
+    const sub = createSubscription(db, {
+      email: 'me@example.com',
+      vendors: ['Sonatype'],
+    });
     setSubscriptionEnabled(db, sub.id, false);
 
     const sender = recordingSender();
@@ -151,7 +158,10 @@ describe('sendTestNotification', () => {
 
   it('sends the current matches without writing the ledger', async () => {
     await seedSignal(db, { title: 'Sonatype CVE', vendor: 'Sonatype', impactScore: 5 });
-    const sub = createSubscription(db, { email: 'me@example.com', vendors: ['Sonatype'] });
+    const sub = createSubscription(db, {
+      email: 'me@example.com',
+      vendors: ['Sonatype'],
+    });
 
     const sender = recordingSender();
     const test = await sendTestNotification(db, sub.id, { sender });
@@ -164,8 +174,15 @@ describe('sendTestNotification', () => {
   });
 
   it('falls back to a labelled sample when nothing matches yet', async () => {
-    await seedSignal(db, { title: 'GitLab pricing', vendor: 'GitLab', category: 'Pricing' });
-    const sub = createSubscription(db, { email: 'me@example.com', vendors: ['Sonatype'] });
+    await seedSignal(db, {
+      title: 'GitLab pricing',
+      vendor: 'GitLab',
+      category: 'Pricing',
+    });
+    const sub = createSubscription(db, {
+      email: 'me@example.com',
+      vendors: ['Sonatype'],
+    });
 
     const sender = recordingSender();
     const test = await sendTestNotification(db, sub.id, { sender });

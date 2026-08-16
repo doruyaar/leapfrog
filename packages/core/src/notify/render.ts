@@ -94,7 +94,9 @@ function signalHtml(signal: SignalSummary, baseUrl: string): string {
 }
 
 function signalText(signal: SignalSummary, baseUrl: string): string {
-  const meta = [signal.vendor, signal.category].filter((v): v is string => Boolean(v)).join(' · ');
+  const meta = [signal.vendor, signal.category]
+    .filter((v): v is string => Boolean(v))
+    .join(' · ');
   return [
     `[${signal.impactScore}] ${signal.title}`,
     meta,

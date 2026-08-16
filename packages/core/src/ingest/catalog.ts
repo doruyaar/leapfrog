@@ -1,6 +1,9 @@
 /**
  * The starting source catalog: the feeds, repositories, and CVE queries that cover
- * the focus vendor and its tracked competitors (docs/DESIGN.md §3).
+ * the focus vendor (JFrog) and its ten tracked competitors (docs/DESIGN.md §3):
+ * Sonatype, GitLab, GitHub, Docker, Cloudsmith, Harbor, AWS, Microsoft/Azure, Snyk,
+ * and Chainguard — the vendors in real head-to-head competition with JFrog across
+ * artifact management, registries, and software-supply-chain security.
  *
  * This is seed configuration, not a fixed list — sources are rows in the `sources`
  * table and analysts add or disable them from the admin UI. Every entry here is a
@@ -79,7 +82,7 @@ export const DEFAULT_SOURCES: CatalogSource[] = [
     vendor: 'Microsoft',
   },
 
-  // --- Security-adjacent competitors --------------------------------------
+  // --- Security-adjacent competitors (compete with Xray / supply-chain) ---
   { kind: 'rss', name: 'Snyk Blog', url: 'https://snyk.io/blog/feed/', vendor: 'Snyk' },
   { kind: 'github', name: 'Snyk CLI Releases', url: 'snyk/cli', vendor: 'Snyk' },
   {
@@ -87,12 +90,6 @@ export const DEFAULT_SOURCES: CatalogSource[] = [
     name: 'Chainguard Unchained',
     url: 'https://www.chainguard.dev/unchained/rss.xml',
     vendor: 'Chainguard',
-  },
-  {
-    kind: 'github',
-    name: 'Sigstore Cosign Releases',
-    url: 'sigstore/cosign',
-    vendor: 'Sigstore',
   },
 
   // --- Market coverage (vendor-neutral) -----------------------------------

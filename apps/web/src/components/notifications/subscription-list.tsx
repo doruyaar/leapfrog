@@ -1,9 +1,6 @@
 import { Power, Trash2 } from 'lucide-react';
 import { describeSubscription, type SubscriptionView } from '@leapfrog/core';
-import {
-  deleteSubscriptionAction,
-  toggleSubscriptionAction,
-} from '@/lib/actions';
+import { deleteSubscriptionAction, toggleSubscriptionAction } from '@/lib/actions';
 import { CATEGORY_COLOR, relativeAge } from '@/lib/format';
 import { TestButton } from './test-button';
 
@@ -14,7 +11,11 @@ const FREQUENCY_LABEL: Record<SubscriptionView['frequency'], string> = {
 };
 
 /** The saved rules, each with its plain-English scope and per-rule controls. */
-export function SubscriptionList({ subscriptions }: { subscriptions: SubscriptionView[] }) {
+export function SubscriptionList({
+  subscriptions,
+}: {
+  subscriptions: SubscriptionView[];
+}) {
   if (subscriptions.length === 0) {
     return (
       <p className="border border-dashed border-line px-4 py-8 text-center text-[13px] text-ink-faint">

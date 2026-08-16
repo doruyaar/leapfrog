@@ -1,0 +1,67 @@
+# Local "separated services" deployment: the web server and the pipeline worker are
+# two independent containers built from the same image, sharing one Docker volume that
+# holds the SQLite store. This mirrors the intended cloud architecture (compute
+# decoupled from serving) on a laptop — `docker compose up` and open http://localhost:3000.
+#
+# Note the coupling this makes explicit: both services share ONE SQLite file. It works
+# here because a local Docker volume is a real local filesystem (WAL + busy_timeout
+# handle the single-writer case). It is also exactly why true horizontal scale-out
+# means moving to Postgres+pgvector (docs/DESIGN.md §4).
+
+services:
+  web:
+    build: .
+    image: leapfrog
+    command: ['sh', 'docker/entrypoint-web.sh']
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: '3000'
+      LEAPFROG_DB_PATH: /data/leapfrog.sqlite
+      RUN_SCHEDULER: '0' # the dedicated worker service owns scheduling here
+      XDG_CACHE_HOME: /data/.cache
+      TRANSFORMERS_CACHE: /data/.cache
+      HF_HOME: /data/.cache
+      # Password-protect the local URL by exporting these before `docker compose up`.
+      DEMO_USER: ${DEMO_USER:-}
+      DEMO_PASS: ${DEMO_PASS:-}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+    volumes:
+      - leapfrog-data:/data
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  worker:
+    build: .
+    image: leapfrog
+    command: ['sh', 'docker/entrypoint-worker.sh']
+    depends_on:
+      - web
+    environment:
+      LEAPFROG_DB_PATH: /data/leapfrog.sqlite
+      SCHEDULE_INTERVAL_SECONDS: ${SCHEDULE_INTERVAL_SECONDS:-21600}
+      XDG_CACHE_HOME: /data/.cache
+      TRANSFORMERS_CACHE: /data/.cache
+      HF_HOME: /data/.cache
+      # Flip to 1 (and supply OPENROUTER_API_KEY) to run the real ingest pipeline.
+      INGEST_LIVE: ${INGEST_LIVE:-0}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      NVD_API_KEY: ${NVD_API_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+    volumes:
+      - leapfrog-data:/data
+
+volumes:
+  leapfrog-data:

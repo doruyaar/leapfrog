@@ -1,0 +1,54 @@
+# Render Blueprint — one-click deploy of LeapFrog as a password-protected demo.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Why a single web service (not web + a separate worker)? A Render persistent disk
+# attaches to exactly ONE service, and the web app must read the SQLite file — so the
+# pipeline scheduler co-locates in the web container (RUN_SCHEDULER=1). This is the
+# same shared-SQLite coupling docker-compose shows locally; Postgres+pgvector is the
+# documented next step to split them (docs/DESIGN.md §4, docs/DEPLOY.md).
+
+services:
+  - type: web
+    name: leapfrog
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter # required for a persistent disk
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: leapfrog-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: LEAPFROG_DB_PATH
+        value: /data/leapfrog.sqlite
+      - key: RUN_SCHEDULER
+        value: '1'
+      - key: SCHEDULE_INTERVAL_SECONDS
+        value: '21600' # every 6 hours
+      - key: INGEST_LIVE
+        value: '0' # set to 1 (and add OPENROUTER_API_KEY) for the live pipeline
+      # Persist the SQLite DB and the cached embedding model on the disk.
+      - key: XDG_CACHE_HOME
+        value: /data/.cache
+      - key: TRANSFORMERS_CACHE
+        value: /data/.cache
+      - key: HF_HOME
+        value: /data/.cache
+      # --- Secrets: set these in the Render dashboard (sync:false = not in git) ---
+      - key: DEMO_USER # Basic-auth username for the shared link
+        sync: false
+      - key: DEMO_PASS # Basic-auth password for the shared link
+        sync: false
+      - key: APP_BASE_URL # e.g. https://leapfrog.onrender.com (for email deep links)
+        sync: false
+      - key: OPENROUTER_API_KEY # only needed when INGEST_LIVE=1
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: NVD_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SLACK_WEBHOOK_URL
+        sync: false

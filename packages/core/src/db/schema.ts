@@ -415,11 +415,7 @@ export const notificationDeliveries = sqliteTable(
       .default(sql`(unixepoch() * 1000)`),
   },
   (t) => [
-    uniqueIndex('notification_deliveries_unq').on(
-      t.subscriptionId,
-      t.itemId,
-      t.itemKind,
-    ),
+    uniqueIndex('notification_deliveries_unq').on(t.subscriptionId, t.itemId, t.itemKind),
     index('notification_deliveries_subscription_idx').on(t.subscriptionId),
   ],
 );

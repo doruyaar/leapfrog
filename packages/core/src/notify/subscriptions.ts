@@ -43,7 +43,8 @@ export interface SubscriptionInput {
 function parseStringArray(json: string): string[] {
   try {
     const value = JSON.parse(json) as unknown;
-    if (Array.isArray(value)) return value.filter((v): v is string => typeof v === 'string');
+    if (Array.isArray(value))
+      return value.filter((v): v is string => typeof v === 'string');
   } catch {
     // A malformed payload yields an empty list rather than a throw.
   }
@@ -194,11 +195,7 @@ export function updateSubscription(
 }
 
 /** Turn a subscription on or off without touching its filters. */
-export function setSubscriptionEnabled(
-  db: Database,
-  id: number,
-  enabled: boolean,
-): void {
+export function setSubscriptionEnabled(db: Database, id: number, enabled: boolean): void {
   db.update(subscriptions).set({ enabled }).where(eq(subscriptions.id, id)).run();
 }
 

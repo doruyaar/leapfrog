@@ -31,10 +31,7 @@
       "id": "formats",
       "label": "Package formats",
       "description": "Breadth of supported artifact and package types.",
-      "categories": [
-        "Product",
-        "Ecosystem"
-      ],
+      "categories": ["Product", "Ecosystem"],
       "cells": {
         "JFrog": {
           "level": "strong",
@@ -66,9 +63,7 @@
       "id": "security",
       "label": "Vulnerability scanning",
       "description": "Native scanning of artifacts and dependencies for CVEs.",
-      "categories": [
-        "Security"
-      ],
+      "categories": ["Security"],
       "cells": {
         "JFrog": {
           "level": "strong",
@@ -100,10 +95,7 @@
       "id": "sbom",
       "label": "SBOM & provenance",
       "description": "SBOM generation, signing, and build provenance/attestations.",
-      "categories": [
-        "Security",
-        "Product"
-      ],
+      "categories": ["Security", "Product"],
       "cells": {
         "JFrog": {
           "level": "strong",
@@ -135,9 +127,7 @@
       "id": "registry",
       "label": "Container / OCI registry",
       "description": "First-class hosting for container and OCI artifacts.",
-      "categories": [
-        "Product"
-      ],
+      "categories": ["Product"],
       "cells": {
         "JFrog": {
           "level": "strong",
@@ -169,10 +159,7 @@
       "id": "cicd",
       "label": "CI/CD integration",
       "description": "Native pipelines or first-party CI/CD tooling.",
-      "categories": [
-        "Product",
-        "Ecosystem"
-      ],
+      "categories": ["Product", "Ecosystem"],
       "cells": {
         "JFrog": {
           "level": "strong",
@@ -204,10 +191,7 @@
       "id": "deployment",
       "label": "SaaS + self-hosted",
       "description": "Availability of both managed cloud and self-managed deployment.",
-      "categories": [
-        "Business",
-        "Product"
-      ],
+      "categories": ["Business", "Product"],
       "cells": {
         "JFrog": {
           "level": "strong",
@@ -239,10 +223,7 @@
       "id": "pricing",
       "label": "Pricing model",
       "description": "How the product is packaged and billed.",
-      "categories": [
-        "Pricing",
-        "Business"
-      ],
+      "categories": ["Pricing", "Business"],
       "cells": {
         "JFrog": {
           "level": "info",

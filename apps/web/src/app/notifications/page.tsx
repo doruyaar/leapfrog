@@ -1,11 +1,7 @@
 import type { Metadata } from 'next';
 import { Bell } from 'lucide-react';
 import { CATEGORIES } from '@leapfrog/core';
-import {
-  getSubscriptionFacets,
-  getSubscriptions,
-  type Category,
-} from '@/lib/queries';
+import { getSubscriptionFacets, getSubscriptions, type Category } from '@/lib/queries';
 import { getDb } from '@/lib/db';
 import { firstValue, oneOf, type RawSearchParams } from '@/lib/list-params';
 import { EmptyState } from '@/components/ui/empty-state';

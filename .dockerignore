@@ -1,0 +1,24 @@
+# Dependencies + build outputs are reinstalled/rebuilt inside the image.
+**/node_modules
+**/dist
+**/.next
+**/*.tsbuildinfo
+
+# Local runtime state — never bake a laptop's database or sent emails into an image.
+data/leapfrog.sqlite
+data/leapfrog.sqlite-*
+data/outbox
+data/*.sqlite
+data/*.sqlite-*
+
+# VCS, env, and misc local artifacts.
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.zip
+npm-debug.log*
+.DS_Store
+Dockerfile
+.dockerignore
