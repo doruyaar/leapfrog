@@ -16,9 +16,16 @@ import { LEVEL_STYLE } from './matrix-visuals';
 export function MatrixTable({
   matrix,
   explain,
+  ratedVendors,
 }: {
   matrix: ComparisonMatrix;
   explain: Record<string, CellExplainabilityView>;
+  /**
+   * Vendor names that have curated ratings. A column not in this set was added to the
+   * grid by the reader (a company we track but haven't rated), so its cells read "not
+   * rated" rather than a misleading "Gap". Defaults to every column being rated.
+   */
+  ratedVendors?: ReadonlySet<string>;
 }) {
   return (
     <div className="overflow-x-auto border border-line bg-card">
@@ -64,6 +71,7 @@ export function MatrixTable({
               </th>
               {matrix.vendors.map((vendor) => {
                 const isFocus = vendor.name === matrix.focusVendor;
+                const isRated = !ratedVendors || ratedVendors.has(vendor.name);
                 const key = `${vendor.name}::${axis.id}`;
                 const detail =
                   explain[key] ?? fallbackDetail(matrix, axis.id, vendor.name);
@@ -75,7 +83,11 @@ export function MatrixTable({
                       isFocus && 'bg-accent-soft/40',
                     )}
                   >
-                    <MatrixCell detail={detail} isFocus={isFocus} />
+                    {isRated ? (
+                      <MatrixCell detail={detail} isFocus={isFocus} />
+                    ) : (
+                      <NotRatedCell />
+                    )}
                   </td>
                 );
               })}
@@ -84,6 +96,22 @@ export function MatrixTable({
         </tbody>
       </table>
     </div>
+  );
+}
+
+/**
+ * A column the reader added that we don't rate on the curated matrix. Shown as an explicit
+ * "not rated" placeholder — never a red "Gap" — so an added company is honestly "no
+ * curated rating yet", not falsely "lacks this capability".
+ */
+function NotRatedCell() {
+  return (
+    <span
+      className="flex w-full items-center justify-center rounded-[4px] px-2 py-1.5 text-[12px] text-ink-faint"
+      title="Not rated on the curated matrix yet"
+    >
+      —
+    </span>
   );
 }
 

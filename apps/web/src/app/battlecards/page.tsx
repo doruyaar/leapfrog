@@ -35,7 +35,9 @@ export default function BattlecardsPage() {
               <div className="text-[14px] font-semibold text-ink-strong group-hover:text-accent">
                 {FOCUS_VENDOR} vs. {vendor.name}
               </div>
-              <div className="text-[11px] text-ink-faint">Open battlecard</div>
+              <div className="text-[11px] text-ink-faint">
+                {vendor.onMatrix ? 'Open battlecard' : 'Signals-based · not on matrix'}
+              </div>
             </div>
             <ArrowUpRight className="ml-auto size-4 text-ink-faint opacity-0 transition-opacity group-hover:opacity-100" />
           </Link>

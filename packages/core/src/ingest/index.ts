@@ -1,7 +1,12 @@
 export { githubAdapter, parseRepo } from './adapters/github.js';
 export { buildQueryUrl, nvdAdapter } from './adapters/nvd.js';
 export { rssAdapter } from './adapters/rss.js';
-export { DEFAULT_SOURCES, FOCUS_VENDOR, type CatalogSource } from './catalog.js';
+export {
+  DEFAULT_SOURCES,
+  FOCUS_VENDOR,
+  TRACKED_COMPETITORS,
+  type CatalogSource,
+} from './catalog.js';
 export {
   DEFAULT_HTTP_DEPS,
   DEFAULT_RETRY_POLICY,

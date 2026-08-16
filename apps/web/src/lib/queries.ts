@@ -329,18 +329,47 @@ export function getMatrixExplainability(
   return out;
 }
 
-/** A competitor the platform can build a battlecard against (matrix columns minus focus). */
-export interface BattlecardVendor {
+/** A competitor company the platform can surface (matrix column or battlecard target). */
+export interface CompetitorCompany {
   name: string;
   slug: string;
+  /** True when the company is on the curated matrix (so it has rated axis cells). */
+  onMatrix: boolean;
 }
 
-/** The competitors a battlecard can be composed for — every matrix column but the focus. */
-export function getBattlecardVendors(): BattlecardVendor[] {
+/**
+ * Every tracked competitor company, the curated matrix columns first (they carry rated
+ * cells / battlecard edges), then any other competitor from the corpus. The focus vendor
+ * is never included. Deduplicated by slug. Powers both the matrix company picker and the
+ * battlecard roster.
+ */
+export function getCompetitorCompanies(): CompetitorCompany[] {
   const matrix = readComparisonMatrix();
-  return matrix.vendors
-    .filter((v) => v.name !== matrix.focusVendor)
-    .map((v) => ({ name: v.name, slug: v.slug }));
+  const focus = matrix.focusVendor.toLowerCase();
+
+  const bySlug = new Map<string, CompetitorCompany>();
+  for (const v of matrix.vendors) {
+    if (v.name.toLowerCase() === focus) continue;
+    bySlug.set(v.slug, { name: v.name, slug: v.slug, onMatrix: true });
+  }
+
+  const db = getDb();
+  if (db) {
+    for (const v of readVendors(db)) {
+      if (v.vendor.toLowerCase() === focus || bySlug.has(v.slug)) continue;
+      bySlug.set(v.slug, { name: v.vendor, slug: v.slug, onMatrix: false });
+    }
+  }
+
+  return [...bySlug.values()];
+}
+
+/** @deprecated Prefer {@link CompetitorCompany}. */
+export type BattlecardVendor = CompetitorCompany;
+
+/** The competitors a battlecard can be composed for — every tracked competitor. */
+export function getBattlecardVendors(): CompetitorCompany[] {
+  return getCompetitorCompanies();
 }
 
 /** A battlecard plus its Markdown export, or `null` for an unknown vendor / no data. */
@@ -360,23 +389,30 @@ export interface BattlecardView {
  */
 export async function getBattlecard(slug: string): Promise<BattlecardView | null> {
   const matrix = readComparisonMatrix();
-  const column = matrix.vendors.find((v) => v.slug === slug.toLowerCase());
-  if (!column || column.name === matrix.focusVendor) return null;
-
   const db = getDb();
   if (!db) return null;
 
-  const stored = readStoredBattlecard(db, column.name);
+  const column = matrix.vendors.find((v) => v.slug === slug.toLowerCase());
+  if (column && column.name === matrix.focusVendor) return null;
+
+  // Matrix columns keep their curated spelling; other competitors resolve from the corpus
+  // so battlecards exist for every tracked vendor, not just those on the grid.
+  const vendorName = column?.name ?? readVendorBySlug(db, slug)?.vendor ?? null;
+  if (!vendorName || vendorName.toLowerCase() === matrix.focusVendor.toLowerCase()) {
+    return null;
+  }
+
+  const stored = readStoredBattlecard(db, vendorName);
   if (stored) {
     return {
       card: stored.card,
       markdown: toMarkdown(stored.card),
       stored: true,
-      newSignals: countSignalsSince(db, column.name, stored.generatedAt),
+      newSignals: countSignalsSince(db, vendorName, stored.generatedAt),
     };
   }
 
-  const card = await composeBattlecard(db, column.name, { matrix });
+  const card = await composeBattlecard(db, vendorName, { matrix });
   if (!card) return null;
   return { card, markdown: toMarkdown(card), stored: false, newSignals: 0 };
 }

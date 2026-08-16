@@ -30,6 +30,7 @@ export {
   readVendorBySlug,
   vendorSlug,
   vendorSlugMatches,
+  isTrackedVendor,
   categoryBreakdown,
   type VendorSummary,
 } from './vendors.js';

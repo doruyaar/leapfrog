@@ -4,6 +4,7 @@ import type { EvidenceView } from '@/lib/queries';
 import { approveSuggestionAction, rejectSuggestionAction } from '@/lib/actions';
 import { formatDate, relativeAge } from '@/lib/format';
 import { CitedText } from '@/components/signals/cited-text';
+import { VendorMark } from '@/components/signals/badges';
 import { ConfidenceBadge, EvidenceList, LevelChip } from './matrix-visuals';
 
 /** Serialize a core evidence signal for the shared {@link EvidenceList}. */
@@ -87,9 +88,13 @@ function RecommendationCard({ suggestion: s }: { suggestion: MatrixSuggestion })
             <Sparkles className="size-3" />
             Recommended update
           </div>
-          <div className="mt-1 text-[15px] leading-snug text-ink-strong">
+          <div className="mt-1 flex items-center gap-1.5 text-[15px] leading-snug text-ink-strong">
             <span className="font-semibold">{s.axisLabel}</span>
-            <span className="text-ink-faint"> · </span>
+            <span className="text-ink-faint">·</span>
+            <VendorMark
+              vendor={s.vendor}
+              className="size-[18px] rounded-[3px] text-[8px]"
+            />
             <span className="font-semibold">{s.vendor}</span>
           </div>
         </div>

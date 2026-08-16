@@ -15,6 +15,30 @@ export type CatalogSource = SourceInput & { vendor: string | null };
 
 export const FOCUS_VENDOR = 'JFrog';
 
+/**
+ * The canonical roster of JFrog's most-related competitors — the only companies the
+ * product surfaces as competitors. Vendor rosters are *derived* from signals
+ * ({@link ../query/vendors.readVendors}), so under live ingest the enrichment model can
+ * name-drop arbitrary companies from neutral feeds; filtering every competitor surface to
+ * this set keeps the roster to the direct rivals a JFrog seller actually cares about,
+ * across artifact management, registries, and software-supply-chain security.
+ *
+ * This is product config, not code: edit the list to change who we track. Keep it to the
+ * ~10–15 vendors in genuine head-to-head competition with JFrog (docs/DESIGN.md §3).
+ */
+export const TRACKED_COMPETITORS = [
+  'Sonatype',
+  'GitLab',
+  'GitHub',
+  'Docker',
+  'Cloudsmith',
+  'Harbor',
+  'AWS',
+  'Microsoft',
+  'Snyk',
+  'Chainguard',
+] as const;
+
 export const DEFAULT_SOURCES: CatalogSource[] = [
   // --- Focus vendor -------------------------------------------------------
   {
