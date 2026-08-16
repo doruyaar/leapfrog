@@ -1,22 +1,37 @@
 import type { ReactNode } from 'react';
 import {
+  siAnthropic,
   siChainguard,
+  siCloudflare,
   siCloudsmith,
+  siCoderabbit,
+  siDatabricks,
+  siDatadog,
   siDocker,
+  siEpicgames,
   siGithub,
   siGitlab,
+  siGoogle,
+  siGrafana,
   siHarbor,
+  siJetbrains,
   siJfrog,
+  siMeta,
+  siMistralai,
+  siNvidia,
   siSnyk,
   siSonatype,
+  siSpacex,
+  siVercel,
   type SimpleIcon,
 } from 'simple-icons';
 
 /**
  * Brand marks for tracked vendors. We source the bulk from `simple-icons` so the
- * demo runs fully offline (no logo CDN, no keys), and hand-roll the two vendors
- * that simple-icons dropped for trademark reasons (AWS, Microsoft) as small,
- * self-contained SVG tiles. Anything unmapped falls back to initials.
+ * demo runs fully offline (no logo CDN, no keys). The handful of vendors that
+ * simple-icons drops for trademark reasons (AWS, Microsoft, and text-only marks
+ * like OpenAI, Oracle, IBM) are hand-rolled as small, self-contained SVG or
+ * typographic tiles. Anything unmapped falls back to initials.
  */
 export type VendorLogo = {
   title: string;
@@ -41,6 +56,26 @@ function glyphLogo(icon: SimpleIcon): VendorLogo {
       >
         <path d={icon.path} />
       </svg>
+    ),
+  };
+}
+
+/**
+ * A brand-coloured typographic tile for vendors simple-icons doesn't ship (mostly
+ * trademark-only wordmarks). A short monogram on the brand colour reads as an
+ * intentional mark rather than the neutral initials fallback.
+ */
+function markLogo(title: string, bg: string, mark: string, fg = '#fff'): VendorLogo {
+  return {
+    title,
+    bg,
+    node: (
+      <span
+        className="text-[11px] font-bold leading-none tracking-tight"
+        style={{ color: fg }}
+      >
+        {mark}
+      </span>
     ),
   };
 }
@@ -89,6 +124,7 @@ const awsLogo: VendorLogo = {
 };
 
 const VENDOR_LOGOS: Record<string, VendorLogo> = {
+  // --- Supply-chain / artifact-management competitors -----------------------
   jfrog: glyphLogo(siJfrog),
   sonatype: glyphLogo(siSonatype),
   gitlab: glyphLogo(siGitlab),
@@ -100,6 +136,30 @@ const VENDOR_LOGOS: Record<string, VendorLogo> = {
   chainguard: glyphLogo(siChainguard),
   microsoft: microsoftLogo,
   aws: awsLogo,
+
+  // --- Wider tech landscape surfaced by the corpus --------------------------
+  anthropic: glyphLogo(siAnthropic),
+  cloudflare: glyphLogo(siCloudflare),
+  coderabbit: glyphLogo(siCoderabbit),
+  databricks: glyphLogo(siDatabricks),
+  datadog: glyphLogo(siDatadog),
+  'epic games': glyphLogo(siEpicgames),
+  google: glyphLogo(siGoogle),
+  grafana: glyphLogo(siGrafana),
+  jetbrains: glyphLogo(siJetbrains),
+  meta: glyphLogo(siMeta),
+  'mistral ai': glyphLogo(siMistralai),
+  nvidia: glyphLogo(siNvidia),
+  spacex: glyphLogo(siSpacex),
+  vercel: glyphLogo(siVercel),
+
+  // --- Trademark-only marks simple-icons doesn't ship -----------------------
+  openai: markLogo('OpenAI', '#000000', 'OAI'),
+  oracle: markLogo('Oracle', '#C74634', 'O'),
+  ibm: markLogo('IBM', '#0530AD', 'IBM'),
+  sigstore: markLogo('Sigstore', '#2A9D8F', 'SS'),
+  rubrik: markLogo('Rubrik', '#00C08B', 'R'),
+  xai: markLogo('xAI', '#000000', 'X'),
 };
 
 /** Look up a vendor's brand mark, or `null` to signal "use initials". */
