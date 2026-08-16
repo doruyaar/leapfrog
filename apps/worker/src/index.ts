@@ -51,6 +51,7 @@ Options (seed):
 Options (brief):
   --date <YYYY-MM-DD>       Day the brief covers (default today)
   --top <n>                 Number of insights in the brief (default 8)
+  --verify-urls             Fetch each source link and mark it verified/unreachable/irrelevant
   --notify                  Push impact >= 4 insights to SLACK_WEBHOOK_URL if set
 
 Options (notify):

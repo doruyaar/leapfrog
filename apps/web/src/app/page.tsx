@@ -3,6 +3,7 @@ import { CalendarDays, Sparkles } from 'lucide-react';
 import { getBrief, getCorroboration, getMaterialChangeIds } from '@/lib/queries';
 import { formatDate } from '@/lib/format';
 import { CitedText } from '@/components/signals/cited-text';
+import { BriefClaims, BriefConflicts } from '@/components/signals/brief-grounding';
 import { SignalCard } from '@/components/signals/signal-card';
 import { EmptyState } from '@/components/ui/empty-state';
 
@@ -60,6 +61,9 @@ export default async function HomePage() {
               Ranked by impact × recency · citations link to the source insight.
             </p>
           </section>
+
+          <BriefConflicts conflicts={brief.conflicts} />
+          <BriefClaims claims={brief.claims} />
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {brief.items.map((item, i) => (

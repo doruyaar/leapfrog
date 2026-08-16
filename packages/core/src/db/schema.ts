@@ -188,6 +188,18 @@ export const briefs = sqliteTable(
     summary: text('summary').notNull(),
     /** Ranked items backing the brief, JSON-encoded. */
     items: text('items').notNull().default('[]'),
+    /**
+     * The summary decomposed into grounded claims, JSON-encoded (`BriefClaim[]`).
+     * Every claim carries the item id it cites and a verbatim quote from that source,
+     * so no conclusion is ever shown without the exact text it rests on.
+     */
+    claims: text('claims').notNull().default('[]'),
+    /**
+     * Unresolved conflicts between sources, JSON-encoded (`BriefConflict[]`). The brief
+     * surfaces contradictions rather than picking a winner — a false certainty is worse
+     * than a labelled disagreement.
+     */
+    conflicts: text('conflicts').notNull().default('[]'),
     model: text('model'),
     promptVersion: text('prompt_version'),
     createdAt,

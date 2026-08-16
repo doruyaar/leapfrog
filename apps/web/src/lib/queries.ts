@@ -30,6 +30,8 @@ import {
   CATEGORIES,
   FOCUS_VENDOR,
   type Battlecard,
+  type BriefClaim,
+  type BriefConflict,
   type BriefItem,
   type Category,
   type CellLevel,
@@ -65,6 +67,10 @@ export interface BriefView {
   date: string;
   summary: string;
   items: BriefItem[];
+  /** The summary decomposed into grounded, quoted, cited claims. */
+  claims: BriefClaim[];
+  /** Unresolved disagreements between sources, surfaced for the reader. */
+  conflicts: BriefConflict[];
   model: string | null;
   /** True when the brief was composed on the fly (no stored brief yet). */
   live: boolean;
@@ -85,6 +91,8 @@ export async function getBrief(): Promise<BriefView | null> {
       date: stored.briefDate,
       summary: stored.summary,
       items: stored.items,
+      claims: stored.claims,
+      conflicts: stored.conflicts,
       model: stored.model,
       live: false,
     };
@@ -95,6 +103,8 @@ export async function getBrief(): Promise<BriefView | null> {
     date: composed.briefDate,
     summary: composed.summary,
     items: composed.items,
+    claims: composed.claims,
+    conflicts: composed.conflicts,
     model: composed.model,
     live: true,
   };
