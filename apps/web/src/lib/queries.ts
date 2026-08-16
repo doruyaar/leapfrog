@@ -113,6 +113,11 @@ export interface SignalsFeedOptions {
   vendor?: string;
   /** Keep only signals at or above this impact score (1–5). */
   impactMin?: number;
+  /**
+   * Include market-wide items (those with no resolved vendor). Off by default so the
+   * feed leads with competitor-specific insights rather than general market noise.
+   */
+  includeMarket?: boolean;
   sort?: SignalSort;
   dir?: SortDir;
   page: number;
@@ -137,7 +142,7 @@ export interface SignalsFeedPage {
  * behaviour). Pagination is a simple slice — the corpus is small and already fully read.
  */
 export function getSignalsFeed(options: SignalsFeedOptions): SignalsFeedPage {
-  const { q, category, vendor, impactMin, sort, dir, page } = options;
+  const { q, category, vendor, impactMin, includeMarket, sort, dir, page } = options;
   const isFiltered = Boolean(q || category || vendor || impactMin);
 
   let matched = getSignals({ search: q, sort, dir });
@@ -145,6 +150,9 @@ export function getSignalsFeed(options: SignalsFeedOptions): SignalsFeedPage {
     const needle = vendor.toLowerCase();
     matched = matched.filter((s) => s.vendor?.toLowerCase() === needle);
   }
+  // Hide general market items (no resolved vendor) unless explicitly shown. A vendor
+  // filter already narrows to one vendor, so this only matters for the full feed.
+  if (!includeMarket && !vendor) matched = matched.filter((s) => s.vendor !== null);
   if (impactMin) matched = matched.filter((s) => s.impactScore >= impactMin);
 
   const breakdown = categoryBreakdown(matched);

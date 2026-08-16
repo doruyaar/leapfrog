@@ -78,12 +78,12 @@ export function citationsAreValid(summary: string, items: BriefItem[]): boolean 
 /** The always-valid fallback: a grounded, cited summary stitched from the top signals. */
 export function buildExtractiveSummary(items: BriefItem[]): string {
   if (items.length === 0) {
-    return 'No signals yet. Run `npm run seed` (or ingest live sources) to populate the brief.';
+    return 'No insights yet. Run `npm run seed` (or ingest live sources) to populate the brief.';
   }
 
   const highImpact = items.filter((item) => item.impactScore >= 4).length;
   const lead =
-    `${items.length} signal${items.length === 1 ? '' : 's'} in today's brief` +
+    `${items.length} insight${items.length === 1 ? '' : 's'} in today's brief` +
     (highImpact > 0 ? `, ${highImpact} at impact 4 or higher.` : '.');
 
   const highlights = items

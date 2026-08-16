@@ -52,6 +52,8 @@ export default async function SignalsPage({
   const impactRaw = firstValue(sp, 'impact');
   const impactMin =
     impactRaw && /^[2-5]$/.test(impactRaw) ? Number(impactRaw) : undefined;
+  // Market-wide items are hidden by default; `?market=show` opts them back in.
+  const includeMarket = firstValue(sp, 'market') === 'show';
   const sort = oneOf<SignalSort>(firstValue(sp, 'sort'), [
     'published',
     'impact',
@@ -65,6 +67,7 @@ export default async function SignalsPage({
     category,
     vendor,
     impactMin,
+    includeMarket,
     sort,
     dir,
     page,
@@ -82,6 +85,7 @@ export default async function SignalsPage({
     category,
     vendor,
     impact: impactMin ? String(impactMin) : undefined,
+    market: includeMarket ? 'show' : undefined,
     sort: activeSort === DEFAULT_SORT ? undefined : sort,
     dir: activeSort === DEFAULT_SORT ? undefined : dir,
   };
@@ -135,6 +139,11 @@ export default async function SignalsPage({
           <ListToolbar
             noun="insight"
             filters={filters}
+            checkbox={{
+              param: 'market',
+              label: 'Hide market-wide insights',
+              onValue: 'show',
+            }}
             sort={{
               options: SORT_OPTIONS,
               active: activeSort,

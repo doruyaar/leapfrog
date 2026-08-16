@@ -117,7 +117,7 @@ export function renderSubscriptionEmail(
   const manageUrl = `${baseUrl}/notifications`;
   const reason = describeSubscription(subscription);
   const count = signals.length;
-  const noun = count === 1 ? 'signal' : 'signals';
+  const noun = count === 1 ? 'insight' : 'insights';
 
   const subject = options.sample
     ? `LeapFrog · sample alert — ${subscription.label}`

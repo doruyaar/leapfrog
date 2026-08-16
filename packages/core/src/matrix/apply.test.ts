@@ -100,7 +100,7 @@ describe('matrix approval gate', () => {
       assetKey: 'Sonatype::security',
       action: 'approve',
       suggestionId: suggestion.suggestionId,
-      signalId: 42,
+      insightId: 42,
     });
   });
 

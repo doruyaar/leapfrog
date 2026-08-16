@@ -24,7 +24,7 @@ Commands:
   diff      Detect state changes: new vs. update vs. re-phrasing. No key needed. Safe to repeat.
   embed     Chunk and embed enriched items into the retrieval index. Safe to repeat.
   brief     Compose and store today's ranked, cited brief. Safe to repeat.
-  notify    Email each subscription its new matching signals. No key needed (writes .eml
+  notify    Email each subscription its new matching insights. No key needed (writes .eml
             to data/outbox); RESEND_API_KEY delivers to a real inbox. Safe to repeat.
   ask       Answer a question with hybrid RAG and grounded citations.
   battlecard Compose, store, and export a competitor battlecard as Markdown.
@@ -50,8 +50,8 @@ Options (seed):
 
 Options (brief):
   --date <YYYY-MM-DD>       Day the brief covers (default today)
-  --top <n>                 Number of signals in the brief (default 8)
-  --notify                  Push impact >= 4 signals to SLACK_WEBHOOK_URL if set
+  --top <n>                 Number of insights in the brief (default 8)
+  --notify                  Push impact >= 4 insights to SLACK_WEBHOOK_URL if set
 
 Options (notify):
   --test <id>               Send a one-off test email for subscription <id> (ignores the

@@ -34,7 +34,7 @@ function formatMessage(briefDate: string, items: BriefItem[]): string {
       (item.vendor ? ` — ${item.vendor}` : '') +
       `\n  ${item.whyItMatters}\n  ${item.url}`,
   );
-  return `:frog: *LeapFrog brief — ${briefDate}* — ${items.length} high-impact signal(s)\n\n${lines.join('\n')}`;
+  return `:frog: *LeapFrog brief — ${briefDate}* — ${items.length} high-impact insight(s)\n\n${lines.join('\n')}`;
 }
 
 /**
@@ -54,7 +54,7 @@ export async function notifyHighImpact(
     return { delivered: false, sent: highImpact.length, reason: 'no webhook configured' };
   }
   if (highImpact.length === 0) {
-    return { delivered: false, sent: 0, reason: `no signals at impact ${threshold}+` };
+    return { delivered: false, sent: 0, reason: `no insights at impact ${threshold}+` };
   }
 
   const doFetch = options.fetch ?? fetch;

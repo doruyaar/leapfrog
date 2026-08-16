@@ -120,6 +120,6 @@ describe('composeBrief', () => {
     const brief = await composeBrief(db, { now: NOW });
     expect(brief.items).toHaveLength(0);
     expect(brief.model).toBeNull();
-    expect(brief.summary).toMatch(/no signals/i);
+    expect(brief.summary).toMatch(/no insights/i);
   });
 });

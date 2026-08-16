@@ -15,7 +15,7 @@ import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqli
 export const SOURCE_KINDS = ['rss', 'github', 'nvd', 'hn'] as const;
 export type SourceKind = (typeof SOURCE_KINDS)[number];
 
-/** Signal categories assigned during LLM enrichment. */
+/** Insight categories assigned during LLM enrichment. */
 export const CATEGORIES = [
   'Security',
   'Product',
@@ -331,8 +331,8 @@ export const assetRevisions = sqliteTable(
     suggestionId: text('suggestion_id').notNull(),
     before: text('before'),
     after: text('after'),
-    /** The signal that drove the edit, for the user-visible audit trail. */
-    signalId: integer('signal_id'),
+    /** The insight that drove the edit, for the user-visible audit trail. */
+    insightId: integer('insight_id'),
     createdAt,
   },
   (t) => [
@@ -343,7 +343,7 @@ export const assetRevisions = sqliteTable(
 
 /**
  * Stored battlecards (GAP-PLAN §5.1): fully derived, rebuildable views persisted so
- * staleness is measurable — "N new signals since this card was generated" needs a
+ * staleness is measurable — "N new insights since this card was generated" needs a
  * durable `generatedAt`. One row per competitor; refresh upserts on `vendor`.
  */
 export const battlecards = sqliteTable(
@@ -406,10 +406,10 @@ export const notificationDeliveries = sqliteTable(
     subscriptionId: integer('subscription_id')
       .notNull()
       .references(() => subscriptions.id, { onDelete: 'cascade' }),
-    /** The delivered item's id (a `raw_items.id` for `signal`). */
+    /** The delivered item's id (a `raw_items.id` for `insight`). */
     itemId: integer('item_id').notNull(),
-    /** What kind of item was delivered — `signal` today. */
-    itemKind: text('item_kind').notNull().default('signal'),
+    /** What kind of item was delivered — `insight` today. */
+    itemKind: text('item_kind').notNull().default('insight'),
     sentAt: integer('sent_at', { mode: 'timestamp_ms' })
       .notNull()
       .default(sql`(unixepoch() * 1000)`),

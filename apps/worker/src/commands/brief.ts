@@ -49,7 +49,7 @@ function print(brief: StoredBrief): void {
       `  [${item.impactScore}] #${item.id} ${item.category}${vendor} — ${item.title}`,
     );
   }
-  console.log(`\n${brief.items.length} signal(s).`);
+  console.log(`\n${brief.items.length} insight(s).`);
 }
 
 export async function runBriefCommand(argv: string[]): Promise<number> {
@@ -63,11 +63,11 @@ export async function runBriefCommand(argv: string[]): Promise<number> {
   }
 
   try {
-    if (verbose) process.stdout.write('→ Ranking signals and composing summary … ');
+    if (verbose) process.stdout.write('→ Ranking insights and composing summary … ');
     const composed = await composeBrief(db, { date: options.date, topN: options.topN });
     if (verbose) {
       console.log(
-        `✓ ${composed.items.length} signal(s), summary via ${composed.model ?? 'empty'}`,
+        `✓ ${composed.items.length} insight(s), summary via ${composed.model ?? 'empty'}`,
       );
     }
 
@@ -82,7 +82,7 @@ export async function runBriefCommand(argv: string[]): Promise<number> {
       if (verbose) {
         console.log(
           notified.delivered
-            ? `✓ alerted on ${notified.sent} signal(s)`
+            ? `✓ alerted on ${notified.sent} insight(s)`
             : `• skipped (${notified.reason})`,
         );
       }
