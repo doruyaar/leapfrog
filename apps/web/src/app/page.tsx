@@ -57,7 +57,7 @@ export default async function HomePage() {
               className="text-[15px] leading-relaxed text-ink"
             />
             <p className="mt-3 text-[12px] text-ink-faint">
-              Ranked by impact × recency · citations link to the source signal.
+              Ranked by impact × recency · citations link to the source insight.
             </p>
           </section>
 

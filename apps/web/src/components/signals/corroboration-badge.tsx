@@ -78,7 +78,7 @@ export function CorroborationPanel({
             .map((c) => (
               <li key={c.rawItemId}>
                 <Link
-                  href={`/signals/${c.rawItemId}`}
+                  href={`/insights/${c.rawItemId}`}
                   className="block text-[12.5px] leading-snug text-ink hover:text-accent"
                 >
                   {c.title}

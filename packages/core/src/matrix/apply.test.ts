@@ -50,6 +50,15 @@ function makeSuggestion(overrides: Partial<MatrixSuggestion> = {}): MatrixSugges
     impactScore: 5,
     publishedAt: new Date('2026-08-12T00:00:00Z'),
     score: 5,
+    evidence: [],
+    evidenceCount: 0,
+    confidence: 'medium',
+    confidenceFactors: {
+      evidenceCount: 1,
+      maxImpact: 5,
+      freshness: 1,
+      hasPrimarySource: false,
+    },
     ...overrides,
   };
 }

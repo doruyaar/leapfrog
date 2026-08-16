@@ -18,8 +18,8 @@ export default function BattlecardsPage() {
           Battlecards
         </h1>
         <p className="mt-1 text-[13px] text-ink-dim">
-          {FOCUS_VENDOR} vs. each competitor — composed from the comparison matrix and the
-          live corpus, exportable to Markdown.
+          {FOCUS_VENDOR} vs. each competitor — composed from the competitive matrix and
+          the live corpus, exportable to Markdown.
         </p>
       </div>
 

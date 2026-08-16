@@ -54,13 +54,13 @@ Open <http://localhost:3000>. The app is organized as a proactive-first workspac
 | Page                                 | What it does                                                                                                                            |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | **Today's Brief** (`/`)              | The home screen: a ranked, cited digest of what changed, each item scored 1–5 for impact on JFrog with a "why it matters" note.         |
-| **Signals** (`/signals`)             | The full feed of enriched items with filters (vendor, category) and sorting. Open any signal for detail, sources, and corroboration.    |
+| **Insights** (`/insights`)           | The full feed of enriched items with filters (vendor, category) and sorting. Open any insight for detail, sources, and corroboration.   |
 | **Changes** (`/changes`)             | Material state changes — new vs. update vs. re-phrasing — so real news is distinguished from noise.                                     |
 | **Competitors** (`/competitors`)     | Every tracked vendor with intelligence in the corpus, busiest first; open one for its timeline and filterable feed.                     |
-| **Comparison** (`/comparison`)       | JFrog vs. competitors across capability axes, with auto-suggested edits drawn from recent signals.                                      |
+| **Competitive Matrix** (`/matrix`)   | JFrog vs. competitors across capability axes, with confidence, evidence, and recommended updates drawn from recent insights.            |
 | **Battlecards** (`/battlecards`)     | One-click, source-footnoted sales battlecard per competitor, refreshable from the latest corpus.                                        |
 | **Ask** (`/ask`)                     | Hybrid RAG chat over the corpus. Every answer cites its sources and refuses ("not in my sources") when the corpus has nothing relevant. |
-| **Notifications** (`/notifications`) | Subscribe to signals matching a vendor/category; digests are emailed (or written to a local outbox with no key).                        |
+| **Notifications** (`/notifications`) | Subscribe to insights matching a vendor/category; digests are emailed (or written to a local outbox with no key).                       |
 
 ## How it works
 

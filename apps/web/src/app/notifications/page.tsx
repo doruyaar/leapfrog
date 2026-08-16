@@ -64,7 +64,7 @@ export default async function NotificationsPage({
 
       {!hasDb ? (
         <EmptyState
-          title="No signals to subscribe to yet"
+          title="No insights to subscribe to yet"
           hint="Load the demo snapshot first, then create a subscription. No API key needed."
           command="npm run seed"
         />

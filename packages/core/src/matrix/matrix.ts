@@ -16,8 +16,12 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import type { Database } from '../db/client.js';
 import { CATEGORIES, type Category } from '../db/schema.js';
-import { readSignals } from '../query/signals.js';
-import { signalScore } from '../brief/rank.js';
+import {
+  deriveConfidence,
+  type ConfidenceFactors,
+  type ConfidenceLevel,
+} from './confidence.js';
+import { readVendorEvidence, type EvidenceSignal } from './evidence.js';
 
 /** How strongly a vendor covers an axis — drives the cell colour. */
 export const CELL_LEVELS = ['strong', 'partial', 'none', 'info'] as const;
@@ -107,15 +111,27 @@ export interface MatrixSuggestion {
    * but only with a citation-checked draft.
    */
   proposed: MatrixCell;
-  /** The signal that prompts the review. */
+  /** The signal that prompts the review — the single most relevant piece of evidence. */
   signalId: number;
   signalTitle: string;
   signalSummary: string;
   category: Category;
   impactScore: number;
+  /** When the driving evidence was detected (its publish date), or `null`. */
   publishedAt: Date | null;
   /** Impact × recency; higher means "review this sooner". */
   score: number;
+  /**
+   * Every tracked signal supporting this cell, most relevant first (the driving
+   * signal is always included). Lets the UI say "based on N recent signals" and let
+   * the analyst inspect them — a recommendation is never unexplained.
+   */
+  evidence: EvidenceSignal[];
+  /** Total supporting signals behind the recommendation. */
+  evidenceCount: number;
+  /** How well-evidenced the recommendation is (see {@link deriveConfidence}). */
+  confidence: ConfidenceLevel;
+  confidenceFactors: ConfidenceFactors;
 }
 
 export interface SuggestOptions {
@@ -124,6 +140,8 @@ export interface SuggestOptions {
   minImpact?: number;
   /** Cap on the number of suggestions returned. */
   limit?: number;
+  /** Cap on supporting-evidence signals attached per suggestion. */
+  evidenceLimit?: number;
   /** Suggestion ids already approved or rejected; these never resurface. */
   reviewedSuggestionIds?: ReadonlySet<string>;
 }
@@ -160,9 +178,11 @@ export function buildDeterministicDraft(
 }
 
 /**
- * Derive a ranked review queue from the corpus: for each vendor column, find recent
- * signals whose category maps to an axis and propose revisiting that cell. At most one
- * suggestion per (vendor, axis) — the strongest signal — so the queue stays actionable.
+ * Derive a ranked review queue from the corpus: for each vendor column, find the
+ * recent signals whose category maps to an axis and recommend revisiting that cell.
+ * At most one recommendation per (vendor, axis) — driven by the strongest unreviewed
+ * signal — so the queue stays actionable, but each recommendation carries the *full*
+ * set of supporting evidence and a confidence indication so it is never unexplained.
  * Nothing is written; a human decides whether the curated cell actually changes.
  */
 export function suggestMatrixUpdates(
@@ -173,40 +193,59 @@ export function suggestMatrixUpdates(
   const now = options.now ?? new Date();
   const minImpact = options.minImpact ?? 3;
   const limit = options.limit ?? 8;
-
+  const evidenceLimit = options.evidenceLimit ?? 5;
   const reviewed = options.reviewedSuggestionIds ?? new Set<string>();
+
   const bestByCell = new Map<string, MatrixSuggestion>();
   for (const vendor of matrix.vendors) {
-    const signals = readSignals(db, { vendor: vendor.name });
-    for (const signal of signals) {
-      if (signal.impactScore < minImpact) continue;
-      for (const axis of matrix.axes) {
-        if (!axis.categories.includes(signal.category)) continue;
-        const suggestionId = suggestionIdFor(vendor.name, axis.id, signal.id);
-        if (reviewed.has(suggestionId)) continue;
-        const key = `${vendor.name}::${axis.id}`;
-        const score = signalScore(signal.impactScore, signal.publishedAt, now);
-        const existing = bestByCell.get(key);
-        if (existing && existing.score >= score) continue;
+    // Read the vendor's evidence once (already ranked by impact × recency) and fan it
+    // out to the axes it touches, rather than re-scanning per axis.
+    const vendorEvidence = readVendorEvidence(db, vendor.name, now);
+    for (const axis of matrix.axes) {
+      // Notable evidence only: low-impact mentions are noise, not a reason to revisit
+      // a rating, and counting them would overstate the recommendation's basis.
+      const matching = vendorEvidence.filter(
+        (e) => axis.categories.includes(e.category) && e.impactScore >= minImpact,
+      );
+      if (matching.length === 0) continue;
 
-        const cell = axis.cells[vendor.name];
-        bestByCell.set(key, {
-          suggestionId,
-          vendor: vendor.name,
-          axisId: axis.id,
-          axisLabel: axis.label,
-          currentLevel: cell?.level ?? 'none',
-          currentNote: cell?.note ?? '—',
-          proposed: buildDeterministicDraft(cell, signal.id, signal.summary),
-          signalId: signal.id,
-          signalTitle: signal.title,
-          signalSummary: signal.summary,
-          category: signal.category,
-          impactScore: signal.impactScore,
-          publishedAt: signal.publishedAt,
-          score,
-        });
-      }
+      // The driver is the strongest unreviewed signal; the rest (already notable) count
+      // as corroborating evidence for the confidence indication.
+      const driver = matching.find(
+        (e) => !reviewed.has(suggestionIdFor(vendor.name, axis.id, e.id)),
+      );
+      if (!driver) continue;
+
+      const cell = axis.cells[vendor.name];
+      const confidence = deriveConfidence(
+        matching.map((e) => ({
+          impactScore: e.impactScore,
+          publishedAt: e.publishedAt,
+          primary: e.tier === 'primary',
+        })),
+        now,
+      );
+
+      bestByCell.set(`${vendor.name}::${axis.id}`, {
+        suggestionId: suggestionIdFor(vendor.name, axis.id, driver.id),
+        vendor: vendor.name,
+        axisId: axis.id,
+        axisLabel: axis.label,
+        currentLevel: cell?.level ?? 'none',
+        currentNote: cell?.note ?? '—',
+        proposed: buildDeterministicDraft(cell, driver.id, driver.summary),
+        signalId: driver.id,
+        signalTitle: driver.title,
+        signalSummary: driver.summary,
+        category: driver.category,
+        impactScore: driver.impactScore,
+        publishedAt: driver.publishedAt,
+        score: driver.score,
+        evidence: matching.slice(0, evidenceLimit),
+        evidenceCount: matching.length,
+        confidence: confidence.level,
+        confidenceFactors: confidence.factors,
+      });
     }
   }
 

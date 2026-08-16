@@ -28,7 +28,7 @@ export function VendorTimeline({ signals }: { signals: SignalSummary[] }) {
   if (signals.length === 0) {
     return (
       <p className="border border-dashed border-line px-4 py-8 text-center text-[13px] text-ink-faint">
-        No signals in this category yet.
+        No insights in this category yet.
       </p>
     );
   }
@@ -53,7 +53,7 @@ export function VendorTimeline({ signals }: { signals: SignalSummary[] }) {
                     aria-hidden
                   />
                   <Link
-                    href={`/signals/${signal.id}`}
+                    href={`/insights/${signal.id}`}
                     className="group flex items-start gap-3 border border-line bg-card px-3.5 py-2.5 transition-colors hover:border-accent"
                   >
                     <span

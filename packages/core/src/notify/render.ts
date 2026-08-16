@@ -1,6 +1,6 @@
 /**
  * Render a subscription digest into an email. Groundedness carries over from the rest of
- * the product: every signal in the email links to its in-app detail page (`/signals/:id`)
+ * the product: every insight in the email links to its in-app detail page (`/insights/:id`)
  * and to its original source, and the footer states, in plain English, exactly why the
  * recipient got it — with a one-click way to manage or unsubscribe.
  */
@@ -54,7 +54,7 @@ function resolveBaseUrl(explicit?: string): string {
 }
 
 function signalHtml(signal: SignalSummary, baseUrl: string): string {
-  const detail = `${baseUrl}/signals/${signal.id}`;
+  const detail = `${baseUrl}/insights/${signal.id}`;
   const meta = [signal.vendor, signal.category]
     .filter((v): v is string => Boolean(v))
     .map(escapeHtml)
@@ -80,7 +80,7 @@ function signalHtml(signal: SignalSummary, baseUrl: string): string {
                 )}
               </p>
               <div style="font-size:12px;">
-                <a href="${detail}" style="color:#2f6feb;text-decoration:none;">View signal</a>
+                <a href="${detail}" style="color:#2f6feb;text-decoration:none;">View insight</a>
                 <span style="color:#9aa0a6;">&nbsp;·&nbsp;</span>
                 <a href="${escapeHtml(
                   signal.url,
@@ -101,7 +101,7 @@ function signalText(signal: SignalSummary, baseUrl: string): string {
     `[${signal.impactScore}] ${signal.title}`,
     meta,
     `Why it matters — ${signal.whyItMatters}`,
-    `${baseUrl}/signals/${signal.id}`,
+    `${baseUrl}/insights/${signal.id}`,
   ]
     .filter(Boolean)
     .join('\n');

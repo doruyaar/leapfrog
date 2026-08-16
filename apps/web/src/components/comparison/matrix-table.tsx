@@ -1,33 +1,24 @@
 import Link from 'next/link';
 import type { CellLevel, ComparisonMatrix } from '@leapfrog/core';
+import type { CellExplainabilityView } from '@/lib/queries';
 import { cn } from '@/lib/utils';
-
-/** Level → dot colour + label. `none` reads as a gap; `info` is neutral (nuance, not a score). */
-const LEVEL_STYLE: Record<CellLevel, { dot: string; label: string }> = {
-  strong: { dot: 'bg-[#3bc03f]', label: 'Strong' },
-  partial: { dot: 'bg-[#d9a521]', label: 'Partial' },
-  none: { dot: 'bg-[#c9302c]', label: 'Gap' },
-  info: { dot: 'bg-[#6b93b8]', label: 'Varies' },
-};
-
-/** Serializable audit info per cell (`vendor::axisId`) — the last approved edit. */
-export interface CellAuditInfo {
-  approvedAt: string;
-  signalId: number | null;
-}
+import { MatrixCell } from './matrix-cell';
+import { LEVEL_STYLE } from './matrix-visuals';
 
 /**
  * The curated capability grid: axes down the left, vendors across the top. The focus
- * vendor's column is tinted so the table reads as "us vs. the field". Each cell carries a
- * coverage dot (strong/partial/gap/varies) plus the human-written note behind it.
- * Cells updated through the approval flow show their audit trail on hover.
+ * vendor's column is tinted so the table reads as "us vs. the field". To stay scannable
+ * at a glance, each cell shows only its coverage rating (a coloured dot + one word); the
+ * human-written note, the confidence, when it was last updated, and the supporting
+ * evidence are one click away in the cell's popover — so the table never overloads while
+ * every rating stays fully explainable.
  */
 export function MatrixTable({
   matrix,
-  audit = {},
+  explain,
 }: {
   matrix: ComparisonMatrix;
-  audit?: Record<string, CellAuditInfo>;
+  explain: Record<string, CellExplainabilityView>;
 }) {
   return (
     <div className="overflow-x-auto border border-line bg-card">
@@ -63,11 +54,7 @@ export function MatrixTable({
         <tbody>
           {matrix.axes.map((axis) => (
             <tr key={axis.id} className="border-b border-line-soft last:border-0">
-              <th
-                scope="row"
-                className="sticky left-0 z-10 bg-card px-4 py-3 align-top"
-                title={axis.description}
-              >
+              <th scope="row" className="sticky left-0 z-10 bg-card px-4 py-3 align-top">
                 <div className="text-[13px] font-medium text-ink-strong">
                   {axis.label}
                 </div>
@@ -76,36 +63,19 @@ export function MatrixTable({
                 </div>
               </th>
               {matrix.vendors.map((vendor) => {
-                const cell = axis.cells[vendor.name];
-                const level: CellLevel = cell?.level ?? 'none';
-                const style = LEVEL_STYLE[level];
                 const isFocus = vendor.name === matrix.focusVendor;
-                const cellAudit = audit[`${vendor.name}::${axis.id}`];
+                const key = `${vendor.name}::${axis.id}`;
+                const detail =
+                  explain[key] ?? fallbackDetail(matrix, axis.id, vendor.name);
                 return (
                   <td
                     key={vendor.slug}
-                    className={cn('px-4 py-3 align-top', isFocus && 'bg-accent-soft/40')}
-                    title={
-                      cellAudit
-                        ? `Last updated ${new Date(cellAudit.approvedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} by an approved edit${cellAudit.signalId ? ` (driven by signal #${cellAudit.signalId})` : ''}`
-                        : undefined
-                    }
+                    className={cn(
+                      'px-2 py-1.5 align-middle',
+                      isFocus && 'bg-accent-soft/40',
+                    )}
                   >
-                    <div className="flex items-start gap-2">
-                      <span
-                        className={cn('mt-1 size-2 shrink-0 rounded-full', style.dot)}
-                        title={style.label}
-                      />
-                      <span className="text-[12.5px] leading-snug text-ink">
-                        {cell?.note ?? '—'}
-                        {cellAudit && (
-                          <span
-                            className="ml-1.5 inline-block size-1.5 rounded-full bg-accent align-middle"
-                            aria-label="Updated through an approved edit"
-                          />
-                        )}
-                      </span>
-                    </div>
+                    <MatrixCell detail={detail} isFocus={isFocus} />
                   </td>
                 );
               })}
@@ -117,16 +87,51 @@ export function MatrixTable({
   );
 }
 
-/** Legend for the coverage dots, shown under the table. */
+/** A minimal detail when explainability is unavailable (e.g. no database seeded). */
+function fallbackDetail(
+  matrix: ComparisonMatrix,
+  axisId: string,
+  vendor: string,
+): CellExplainabilityView {
+  const axis = matrix.axes.find((a) => a.id === axisId);
+  const cell = axis?.cells[vendor];
+  return {
+    vendor,
+    axisId,
+    axisLabel: axis?.label ?? axisId,
+    level: cell?.level ?? 'none',
+    note: cell?.note ?? '—',
+    evidence: [],
+    evidenceCount: 0,
+    confidence: 'low',
+    confidenceFactors: {
+      evidenceCount: 0,
+      maxImpact: 0,
+      freshness: 0,
+      hasPrimarySource: false,
+    },
+    lastUpdatedAt: null,
+    lastUpdatedSignalId: null,
+  };
+}
+
+/** Legend for the coverage dots plus a one-line "how to read this" cue. */
 export function MatrixLegend() {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-4 text-[11.5px] text-ink-dim">
+    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11.5px] text-ink-dim">
       {(Object.keys(LEVEL_STYLE) as CellLevel[]).map((level) => (
         <span key={level} className="inline-flex items-center gap-1.5">
           <span className={cn('size-2 rounded-full', LEVEL_STYLE[level].dot)} />
           {LEVEL_STYLE[level].label}
         </span>
       ))}
+      <span className="inline-flex items-center gap-1.5 text-ink-faint">
+        <span className="size-1.5 rounded-full bg-accent" />
+        Recently updated
+      </span>
+      <span className="text-ink-faint">
+        Click any cell for the evidence and confidence behind it.
+      </span>
     </div>
   );
 }

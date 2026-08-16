@@ -76,7 +76,7 @@ export async function approveSuggestionAction(formData: FormData): Promise<void>
   if (!suggestion) return;
 
   withWriteDb((db) => approveMatrixSuggestion(db, suggestion));
-  revalidatePath('/comparison');
+  revalidatePath('/matrix');
 }
 
 /** Record a dismissal so the suggestion never resurfaces. */
@@ -88,7 +88,7 @@ export async function rejectSuggestionAction(formData: FormData): Promise<void> 
   if (!suggestion) return;
 
   withWriteDb((db) => rejectMatrixSuggestion(db, suggestion));
-  revalidatePath('/comparison');
+  revalidatePath('/matrix');
 }
 
 /** Recompose a battlecard from the current corpus and store it. */

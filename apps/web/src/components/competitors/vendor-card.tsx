@@ -35,7 +35,7 @@ export function VendorCard({
             )}
           </div>
           <div className="text-[11px] text-ink-faint">
-            {vendor.signalCount} signal{vendor.signalCount === 1 ? '' : 's'} ·{' '}
+            {vendor.signalCount} insight{vendor.signalCount === 1 ? '' : 's'} ·{' '}
             {relativeAge(vendor.latestAt)}
           </div>
         </div>

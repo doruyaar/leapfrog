@@ -16,6 +16,7 @@ import {
   countSignalsSince,
   createOpenRouterMatrixDrafter,
   draftMatrixEdits,
+  explainMatrix,
   MissingApiKeyError,
   readChangeEventForItem,
   readChangeEvents,
@@ -31,10 +32,13 @@ import {
   type Battlecard,
   type BriefItem,
   type Category,
+  type CellLevel,
   type ChangeEventSummary,
   type ChangeKind,
   type ChangeSort,
   type ComparisonMatrix,
+  type ConfidenceFactors,
+  type ConfidenceLevel,
   type Corroboration,
   type Dimension,
   type ListSignalsOptions,
@@ -253,6 +257,78 @@ export function getMatrixCellAudit(): Map<string, MatrixCellAudit> {
   return db ? readMatrixCellAudit(db) : new Map();
 }
 
+/** One supporting signal behind a rating, serialized for a client component. */
+export interface EvidenceView {
+  id: number;
+  title: string;
+  summary: string;
+  vendor: string | null;
+  category: Category;
+  impactScore: number;
+  /** ISO date, or `null` when undated. */
+  publishedAt: string | null;
+  sourceName: string;
+  tier: 'primary' | 'secondary';
+}
+
+/**
+ * The "why this rating" view of one matrix cell, serialized (dates → ISO strings) so
+ * it can cross the server→client boundary into the interactive cell popover.
+ */
+export interface CellExplainabilityView {
+  vendor: string;
+  axisId: string;
+  axisLabel: string;
+  level: CellLevel;
+  note: string;
+  evidence: EvidenceView[];
+  evidenceCount: number;
+  confidence: ConfidenceLevel;
+  confidenceFactors: ConfidenceFactors;
+  lastUpdatedAt: string | null;
+  lastUpdatedSignalId: number | null;
+}
+
+/**
+ * Explainability for every matrix cell, keyed by `vendor::axisId`: the supporting
+ * evidence, a derived confidence indication, and when an approved edit last touched
+ * the cell. Serialized to plain JSON for the client-side cell popover.
+ */
+export function getMatrixExplainability(
+  matrix: ComparisonMatrix,
+): Record<string, CellExplainabilityView> {
+  const db = getDb();
+  if (!db) return {};
+
+  const out: Record<string, CellExplainabilityView> = {};
+  for (const [key, cell] of explainMatrix(db, matrix)) {
+    out[key] = {
+      vendor: cell.vendor,
+      axisId: cell.axisId,
+      axisLabel: cell.axisLabel,
+      level: cell.level,
+      note: cell.note,
+      evidence: cell.evidence.map((e) => ({
+        id: e.id,
+        title: e.title,
+        summary: e.summary,
+        vendor: e.vendor,
+        category: e.category,
+        impactScore: e.impactScore,
+        publishedAt: e.publishedAt?.toISOString() ?? null,
+        sourceName: e.sourceName,
+        tier: e.tier,
+      })),
+      evidenceCount: cell.evidenceCount,
+      confidence: cell.confidence,
+      confidenceFactors: cell.confidenceFactors,
+      lastUpdatedAt: cell.lastUpdatedAt?.toISOString() ?? null,
+      lastUpdatedSignalId: cell.lastUpdatedSignalId,
+    };
+  }
+  return out;
+}
+
 /** A competitor the platform can build a battlecard against (matrix columns minus focus). */
 export interface BattlecardVendor {
   name: string;
@@ -430,10 +506,13 @@ export type {
   Battlecard,
   BriefItem,
   Category,
+  CellLevel,
   ChangeEventSummary,
   ChangeKind,
   ChangeSort,
   ComparisonMatrix,
+  ConfidenceFactors,
+  ConfidenceLevel,
   Corroboration,
   Dimension,
   MatrixCellAudit,

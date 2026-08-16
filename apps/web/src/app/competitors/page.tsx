@@ -26,7 +26,7 @@ export default function CompetitorsPage() {
       {vendors.length === 0 ? (
         <EmptyState
           title="No competitors yet"
-          hint="Load the demo snapshot, then reload — the roster derives itself from the seeded signals. No API key needed."
+          hint="Load the demo snapshot, then reload — the roster derives itself from the seeded insights. No API key needed."
           command="npm run seed"
         />
       ) : (
