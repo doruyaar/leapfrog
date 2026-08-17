@@ -1,6 +1,6 @@
 'use client';
 
-import { MessagesSquare } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChat, type ChatContext } from './chat-provider';
 
@@ -34,7 +34,7 @@ export function TalkAboutButton({
         className,
       )}
     >
-      <MessagesSquare className="size-3.5" strokeWidth={1.9} />
+      <Sparkles className="size-3.5" strokeWidth={1.9} />
       {label}
     </button>
   );
