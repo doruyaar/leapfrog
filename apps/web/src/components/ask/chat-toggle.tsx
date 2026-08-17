@@ -1,6 +1,6 @@
 'use client';
 
-import { MessagesSquare } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChat } from './chat-provider';
 
@@ -22,7 +22,7 @@ export function ChatToggle() {
           : 'text-chrome-ink-dim hover:bg-chrome-hover hover:text-chrome-ink',
       )}
     >
-      <MessagesSquare className="size-[19px]" strokeWidth={1.9} />
+      <Sparkles className="size-[19px]" strokeWidth={1.9} />
     </button>
   );
 }

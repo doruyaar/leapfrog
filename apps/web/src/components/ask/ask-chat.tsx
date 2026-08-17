@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Send, Sparkles, ShieldAlert } from 'lucide-react';
-import { CitedText } from '@/components/signals/cited-text';
+import { MarkdownMessage } from '@/components/signals/markdown-message';
 import { VendorMark } from '@/components/signals/badges';
 import { impactColor } from '@/lib/format';
 import { useChat, type Turn } from './chat-provider';
@@ -159,7 +159,7 @@ function AssistantTurn({ turn }: { turn: Turn }) {
         )}
       </div>
 
-      <CitedText text={answer} className="text-[14px] leading-relaxed text-ink" />
+      <MarkdownMessage text={answer} className="text-[14px] text-ink" />
 
       {citations.length > 0 && (
         <div className="mt-3 border-t border-line-soft pt-3">
