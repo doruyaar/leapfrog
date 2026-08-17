@@ -8,6 +8,19 @@
 import { z } from 'zod';
 import { CATEGORIES } from '../db/schema.js';
 
+/** Top of the impact scale. Impact is an integer 1–{@link IMPACT_MAX}, never `/10`. */
+export const IMPACT_MAX = 5;
+
+/** The rubric label for an impact score (mirrors `prompts/enrich.md`). */
+export function impactLabel(score: number): string {
+  return (
+    ({ 5: 'Act now', 4: 'High', 3: 'Medium', 2: 'Low', 1: 'Noise' } as Record<
+      number,
+      string
+    >)[score] ?? 'Unscored'
+  );
+}
+
 /**
  * The JSON shape the enrichment prompt asks for. `.strip()` tolerates extra keys a
  * model may add; the required fields still have to be present and well-typed.

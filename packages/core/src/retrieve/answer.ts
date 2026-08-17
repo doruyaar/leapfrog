@@ -19,7 +19,7 @@ import {
 } from './hybrid.js';
 
 /** Bump when the answer wording / grounding contract in `prompts/ask.md` changes. */
-export const ASK_PROMPT_VERSION = 'ask@3';
+export const ASK_PROMPT_VERSION = 'ask@4';
 
 /** Shown when the corpus has nothing relevant — the groundedness demo moment. */
 export const REFUSAL_MESSAGE =

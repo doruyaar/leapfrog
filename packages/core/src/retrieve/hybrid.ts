@@ -40,6 +40,8 @@ export interface RetrievedPassage {
   category: Category;
   impactScore: number;
   summary: string;
+  /** One-line rationale backing the impact score; null when the model omitted it. */
+  rationale: string | null;
   publishedAt: Date | null;
   /** Fused RRF score; higher is more relevant. */
   score: number;
@@ -122,6 +124,7 @@ export async function retrieve(
       category: enrichedItems.category,
       impactScore: enrichedItems.impactScore,
       summary: enrichedItems.summary,
+      rationale: enrichedItems.rationale,
       publishedAt: rawItems.publishedAt,
     })
     .from(chunks)
@@ -164,6 +167,7 @@ export async function retrieve(
       category: row.category,
       impactScore: row.impactScore,
       summary: row.summary,
+      rationale: row.rationale,
       publishedAt: row.publishedAt,
       score,
     });
@@ -198,6 +202,7 @@ export function hydratePassages(
       category: enrichedItems.category,
       impactScore: enrichedItems.impactScore,
       summary: enrichedItems.summary,
+      rationale: enrichedItems.rationale,
       publishedAt: rawItems.publishedAt,
     })
     .from(chunks)
@@ -225,6 +230,7 @@ export function hydratePassages(
       category: row.category,
       impactScore: row.impactScore,
       summary: row.summary,
+      rationale: row.rationale,
       publishedAt: row.publishedAt,
       // Pinned: rank ahead of query-retrieved passages so it leads the answer.
       score: Number.POSITIVE_INFINITY,

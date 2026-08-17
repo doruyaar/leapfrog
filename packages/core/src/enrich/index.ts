@@ -26,6 +26,8 @@ export {
 } from './prompt.js';
 export {
   enrichmentOutputSchema,
+  IMPACT_MAX,
+  impactLabel,
   parseEnrichmentOutput,
   toEnrichmentFields,
   type EnrichmentFields,

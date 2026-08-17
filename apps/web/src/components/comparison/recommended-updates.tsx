@@ -2,7 +2,7 @@ import { Check, Sparkles, X } from 'lucide-react';
 import type { EvidenceSignal, MatrixSuggestion } from '@leapfrog/core';
 import type { EvidenceView } from '@/lib/queries';
 import { approveSuggestionAction, rejectSuggestionAction } from '@/lib/actions';
-import { formatDate, relativeAge } from '@/lib/format';
+import { formatDate, impactLabel, relativeAge } from '@/lib/format';
 import { CitedText } from '@/components/signals/cited-text';
 import { VendorMark } from '@/components/signals/badges';
 import { TalkAboutButton } from '@/components/ask/talk-about-button';
@@ -87,7 +87,8 @@ function RecommendationCard({ suggestion: s }: { suggestion: MatrixSuggestion })
     label: `${s.axisLabel} — ${s.vendor}`,
     preamble:
       `The user is asking about a recommended matrix update for ${s.vendor} on ` +
-      `"${s.axisLabel}" (${s.category}, impact ${s.impactScore}/10). ` +
+      `"${s.axisLabel}" (${s.category}, impact ${s.impactScore}/5 — ` +
+      `${impactLabel(s.impactScore)}). ` +
       `Recommended assessment: ${s.proposed.note} ` +
       `Driving evidence: insight #${s.signalId} "${s.signalTitle}".`,
     focusId: s.signalId,

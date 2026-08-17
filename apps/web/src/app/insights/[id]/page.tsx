@@ -71,7 +71,8 @@ export default async function SignalDetailPage({
     preamble:
       `The user is asking about insight #${signal.id}: "${signal.title}" ` +
       `(${signal.vendor ?? 'market-wide'}, ${signal.category}, impact ` +
-      `${signal.impactScore}/10). Why it matters: ${signal.whyItMatters}`,
+      `${signal.impactScore}/5 — ${impactLabel(signal.impactScore)}). ` +
+      `Why it matters: ${signal.whyItMatters}`,
     focusId: signal.id,
   };
 

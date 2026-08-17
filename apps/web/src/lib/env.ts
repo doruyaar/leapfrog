@@ -12,6 +12,12 @@ import { loadEnvConfig } from '@next/env';
  * module does it as an import side effect — it runs exactly where `process.env` is read.
  * Vars already present in the environment (e.g. injected in production) are preserved,
  * and when no workspace root exists (deployed standalone) this is a no-op.
+ *
+ * `forceReload` is required: Next already ran `loadEnvConfig` for `apps/web` at startup,
+ * which caches the result and sets the process-global `__NEXT_PROCESSED_ENV`. Without
+ * forcing, `@next/env` short-circuits this second call and the root `.env` (e.g.
+ * `OPENROUTER_API_KEY`) never loads — leaving chat/brief stuck in the extractive fallback.
+ * Forcing re-resolves from the pristine initial env, so injected vars are still preserved.
  */
 
 /** The nearest ancestor whose package.json declares `workspaces` (the monorepo root). */
@@ -35,4 +41,6 @@ function workspaceRoot(from: string): string | undefined {
 }
 
 const root = workspaceRoot(process.cwd());
-if (root) loadEnvConfig(root, process.env.NODE_ENV !== 'production');
+if (root) {
+  loadEnvConfig(root, process.env.NODE_ENV !== 'production', undefined, true);
+}

@@ -89,6 +89,7 @@ describe('githubAdapter', () => {
   });
 
   it('sends the API version header and a token when configured', async () => {
+    // jfrog-ignore
     process.env.GITHUB_TOKEN = 'token-123';
     const fetch = respondWith([]);
 

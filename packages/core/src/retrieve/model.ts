@@ -8,6 +8,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_OPENROUTER_BASE_URL, MissingApiKeyError } from '../enrich/client.js';
+import { IMPACT_MAX, impactLabel } from '../enrich/schema.js';
 import { fetchWithRetry, type HttpOptions } from '../ingest/http.js';
 import { ASK_PROMPT_VERSION, type AnswerModel, type AskContext } from './answer.js';
 import type { RetrievedPassage } from './hybrid.js';
@@ -71,13 +72,22 @@ function loadAskPrompt(): PromptTemplate {
   return cached;
 }
 
-/** Format the retrieved passages into the citation-tagged context block. */
+/**
+ * Format the retrieved passages into the citation-tagged context block. Each header
+ * carries LeapFrog's own assessment — the impact score (on a 1–{@link IMPACT_MAX} scale)
+ * and its one-line rationale — so the model can answer questions *about the scoring*
+ * from grounded values rather than guessing a scale (e.g. inventing "/10").
+ */
 function formatContext(passages: RetrievedPassage[]): string {
   return passages
-    .map(
-      (p) =>
-        `[#${p.rawItemId}] ${p.title} (${p.vendor ?? 'market'}, ${p.category})\n${p.content}`,
-    )
+    .map((p) => {
+      const impact = `impact ${p.impactScore}/${IMPACT_MAX} — ${impactLabel(p.impactScore)}`;
+      const rationale = p.rationale ? `; rationale: "${p.rationale}"` : '';
+      return (
+        `[#${p.rawItemId}] ${p.title} (${p.vendor ?? 'market'}, ${p.category}; ` +
+        `${impact}${rationale})\n${p.content}`
+      );
+    })
     .join('\n\n');
 }
 
