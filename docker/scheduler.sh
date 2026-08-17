@@ -15,8 +15,11 @@ run_pass() {
     $WORKER fetch || echo "[scheduler] fetch failed (continuing)"
     $WORKER ingest || echo "[scheduler] ingest failed (continuing)"
     $WORKER enrich || echo "[scheduler] enrich failed (continuing)"
-    $WORKER diff || echo "[scheduler] diff failed (continuing)"
+    # embed must run before diff: the diff similarity check reads the vector index,
+    # so diffing un-embedded items would misclassify same-batch duplicates as "new"
+    # (the seed path runs embed-then-diff for the same reason).
     $WORKER embed || echo "[scheduler] embed failed (continuing)"
+    $WORKER diff || echo "[scheduler] diff failed (continuing)"
   fi
   # These run key-free (demo and live): recompose the brief and send digests.
   $WORKER brief || echo "[scheduler] brief failed (continuing)"

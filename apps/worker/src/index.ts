@@ -1,4 +1,3 @@
-import { greet } from '@leapfrog/core';
 import { loadEnv } from './env.js';
 import { runAskCommand } from './commands/ask.js';
 import { runBattlecardCommand } from './commands/battlecard.js';
@@ -12,7 +11,7 @@ import { runIngestCommand } from './commands/ingest.js';
 import { runNotifyCommand } from './commands/notify.js';
 import { runSeedCommand } from './commands/seed.js';
 
-const USAGE = `${greet()}
+const USAGE = `LeapFrog worker
 
 Usage: worker <command> [options]
 
@@ -87,8 +86,8 @@ Environment:
 `;
 
 /**
- * Worker entrypoint. Scheduling (node-cron) lands in a later issue; today the worker
- * exposes each finished pipeline stage as a CLI command.
+ * Worker entrypoint: each pipeline stage is a CLI command. Scheduling is external —
+ * `docker/scheduler.sh` loops the stages on an interval (docs/DESIGN.md §5).
  */
 async function main(argv: string[]): Promise<number> {
   loadEnv();
