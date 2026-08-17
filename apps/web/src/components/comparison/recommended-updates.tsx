@@ -5,6 +5,7 @@ import { approveSuggestionAction, rejectSuggestionAction } from '@/lib/actions';
 import { formatDate, relativeAge } from '@/lib/format';
 import { CitedText } from '@/components/signals/cited-text';
 import { VendorMark } from '@/components/signals/badges';
+import { TalkAboutButton } from '@/components/ask/talk-about-button';
 import { ConfidenceBadge, EvidenceList, LevelChip } from './matrix-visuals';
 
 /** Serialize a core evidence signal for the shared {@link EvidenceList}. */
@@ -80,6 +81,18 @@ function RecommendationCard({ suggestion: s }: { suggestion: MatrixSuggestion })
   const multi = evidence.length > 1;
   const levelChanges = s.proposed.level !== s.currentLevel;
 
+  // Scope the assistant to this recommendation; `focusId` pins the driving signal
+  // server-side so the discussed evidence is always answerable.
+  const chatContext = {
+    label: `${s.axisLabel} — ${s.vendor}`,
+    preamble:
+      `The user is asking about a recommended matrix update for ${s.vendor} on ` +
+      `"${s.axisLabel}" (${s.category}, impact ${s.impactScore}/10). ` +
+      `Recommended assessment: ${s.proposed.note} ` +
+      `Driving evidence: insight #${s.signalId} "${s.signalTitle}".`,
+    focusId: s.signalId,
+  };
+
   return (
     <li className="border border-line bg-card">
       <div className="flex flex-wrap items-start justify-between gap-2 border-b border-line-soft px-4 py-3">
@@ -107,10 +120,15 @@ function RecommendationCard({ suggestion: s }: { suggestion: MatrixSuggestion })
       </div>
 
       <div className="px-4 py-3">
-        <div className="rounded-[5px] border border-accent/40 bg-accent-soft px-3 py-2.5">
+        <div className="group/talk rounded-[5px] border border-accent/40 bg-accent-soft px-3 py-2.5">
           <div className="mb-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-accent">
             Recommended assessment
             <LevelChip level={s.proposed.level} className="text-accent" />
+            <TalkAboutButton
+              context={chatContext}
+              revealOnHover
+              className="ml-auto tracking-normal normal-case"
+            />
           </div>
           <CitedText text={s.proposed.note} className="text-[13px] leading-relaxed" />
         </div>

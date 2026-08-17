@@ -51,7 +51,7 @@ function deliveredSignalIds(db: Database, subscriptionId: number): Set<number> {
     .where(
       and(
         eq(notificationDeliveries.subscriptionId, subscriptionId),
-        eq(notificationDeliveries.itemKind, 'signal'),
+        eq(notificationDeliveries.itemKind, 'insight'),
       ),
     )
     .all();
@@ -62,7 +62,7 @@ function deliveredSignalIds(db: Database, subscriptionId: number): Set<number> {
 function recordDeliveries(db: Database, subscriptionId: number, itemIds: number[]): void {
   if (itemIds.length === 0) return;
   db.insert(notificationDeliveries)
-    .values(itemIds.map((itemId) => ({ subscriptionId, itemId, itemKind: 'signal' })))
+    .values(itemIds.map((itemId) => ({ subscriptionId, itemId, itemKind: 'insight' })))
     .onConflictDoNothing()
     .run();
 }
@@ -200,7 +200,7 @@ export async function sendTestNotification(
       matched: 0,
       delivered: false,
       channel: sender.channel,
-      reason: 'no signals in corpus — run `npm run seed`',
+      reason: 'no insights in corpus — run `npm run seed`',
       sample: true,
     };
   }

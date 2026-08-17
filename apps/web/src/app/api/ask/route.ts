@@ -1,3 +1,4 @@
+import '@/lib/env';
 import { NextResponse } from 'next/server';
 import {
   answerQuestion,
@@ -34,15 +35,34 @@ export async function POST(request: Request) {
     question?: unknown;
     vendor?: unknown;
     category?: unknown;
+    context?: { label?: unknown; preamble?: unknown; focusId?: unknown } | null;
   };
   const question = typeof body.question === 'string' ? body.question.trim() : '';
   if (!question) {
     return NextResponse.json({ error: 'question is required' }, { status: 400 });
   }
 
+  // The "Talk about it" subject, if the drawer was opened from a page. Both text fields
+  // must be present, otherwise we treat the question as unscoped.
+  const rawContext = body.context;
+  const context =
+    rawContext &&
+    typeof rawContext.label === 'string' &&
+    typeof rawContext.preamble === 'string' &&
+    rawContext.label.trim() &&
+    rawContext.preamble.trim()
+      ? {
+          label: rawContext.label.trim(),
+          preamble: rawContext.preamble.trim(),
+          focusId:
+            typeof rawContext.focusId === 'number' ? rawContext.focusId : undefined,
+        }
+      : undefined;
+
   const result = await answerQuestion(db, question, {
     vendor: typeof body.vendor === 'string' ? body.vendor : undefined,
     category: typeof body.category === 'string' ? (body.category as Category) : undefined,
+    context,
     model: optionalModel(),
   });
 

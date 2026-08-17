@@ -6,32 +6,40 @@
 import { desc, eq } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { briefs, type Brief } from '../db/schema.js';
-import type { BriefItem, ComposedBrief } from './compose.js';
+import type { BriefClaim, BriefConflict, BriefItem, ComposedBrief } from './compose.js';
 
-/** A stored brief with its ranked items parsed back into objects. */
+/** A stored brief with its ranked items, claims, and conflicts parsed back into objects. */
 export interface StoredBrief {
   id: number;
   briefDate: string;
   summary: string;
   items: BriefItem[];
+  claims: BriefClaim[];
+  conflicts: BriefConflict[];
   model: string | null;
   promptVersion: string | null;
   createdAt: Date;
 }
 
-function parseRow(row: Brief): StoredBrief {
-  let items: BriefItem[] = [];
+/** Parse a JSON array column, tolerating a corrupt payload with an empty list. */
+function parseArray<T>(json: string): T[] {
   try {
-    const parsed = JSON.parse(row.items) as unknown;
-    if (Array.isArray(parsed)) items = parsed as BriefItem[];
+    const parsed = JSON.parse(json) as unknown;
+    if (Array.isArray(parsed)) return parsed as T[];
   } catch {
-    // A corrupt payload yields an empty item list rather than a throw.
+    // A corrupt payload yields an empty list rather than a throw.
   }
+  return [];
+}
+
+function parseRow(row: Brief): StoredBrief {
   return {
     id: row.id,
     briefDate: row.briefDate,
     summary: row.summary,
-    items,
+    items: parseArray<BriefItem>(row.items),
+    claims: parseArray<BriefClaim>(row.claims),
+    conflicts: parseArray<BriefConflict>(row.conflicts),
     model: row.model,
     promptVersion: row.promptVersion,
     createdAt: row.createdAt,
@@ -44,6 +52,8 @@ export function saveBrief(db: Database, composed: ComposedBrief): StoredBrief {
     briefDate: composed.briefDate,
     summary: composed.summary,
     items: JSON.stringify(composed.items),
+    claims: JSON.stringify(composed.claims),
+    conflicts: JSON.stringify(composed.conflicts),
     model: composed.model,
     promptVersion: composed.promptVersion,
   };
@@ -56,6 +66,8 @@ export function saveBrief(db: Database, composed: ComposedBrief): StoredBrief {
       set: {
         summary: values.summary,
         items: values.items,
+        claims: values.claims,
+        conflicts: values.conflicts,
         model: values.model,
         promptVersion: values.promptVersion,
         createdAt: new Date(),

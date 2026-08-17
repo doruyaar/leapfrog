@@ -58,7 +58,7 @@ export function readMatrixCellAudit(db: Database): Map<string, MatrixCellAudit> 
       audit.set(row.assetKey, {
         assetKey: row.assetKey,
         after: JSON.parse(row.after) as MatrixCell,
-        signalId: row.signalId,
+        signalId: row.insightId,
         approvedAt: row.createdAt,
       });
     } catch {
@@ -112,7 +112,7 @@ export function approveMatrixSuggestion(
       suggestionId: suggestion.suggestionId,
       before: before ? JSON.stringify(before) : null,
       after: JSON.stringify(after),
-      signalId: suggestion.signalId,
+      insightId: suggestion.signalId,
     })
     .run();
 
@@ -133,7 +133,7 @@ export function rejectMatrixSuggestion(db: Database, suggestion: MatrixSuggestio
       suggestionId: suggestion.suggestionId,
       before: JSON.stringify(current),
       after: null,
-      signalId: suggestion.signalId,
+      insightId: suggestion.signalId,
     })
     .run();
 }

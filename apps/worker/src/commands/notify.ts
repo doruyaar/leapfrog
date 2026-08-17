@@ -41,12 +41,12 @@ export function parseNotifyArgs(argv: string[]): NotifyCommandOptions {
 
 function printRun(result: NotifyRunResult): void {
   console.log(
-    `\nChannel: ${result.channel} — ${result.delivered} email(s), ${result.sent} signal(s) delivered\n`,
+    `\nChannel: ${result.channel} — ${result.delivered} email(s), ${result.sent} insight(s) delivered\n`,
   );
   for (const r of result.results) {
     if (r.delivered) {
       const where = r.ref ? ` → ${r.ref}` : '';
-      console.log(`  ✓ ${r.email} · ${r.label} — ${r.matched} signal(s)${where}`);
+      console.log(`  ✓ ${r.email} · ${r.label} — ${r.matched} insight(s)${where}`);
     } else if (r.matched === 0) {
       console.log(`  • ${r.email} · ${r.label} — no new matches`);
     } else {

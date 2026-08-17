@@ -173,3 +173,65 @@ export async function retrieve(
     .sort((a, b) => b.score - a.score)
     .slice(0, options.limit ?? 6);
 }
+
+/**
+ * Hydrate specific items into passages directly by id, bypassing the query and relevance
+ * gate. This is how "Talk about it" pins the signal the user clicked: it is definitionally
+ * in scope, so it must be answerable even when the question ("what is it?") shares no terms
+ * with the body. Returns the lead chunk per item, in the id order given; unknown or
+ * un-enriched ids are silently skipped.
+ */
+export function hydratePassages(
+  db: Database,
+  rawItemIds: number[],
+): RetrievedPassage[] {
+  if (rawItemIds.length === 0) return [];
+
+  const rows = db
+    .select({
+      chunkId: chunks.id,
+      rawItemId: rawItems.id,
+      title: rawItems.title,
+      url: rawItems.url,
+      content: chunks.content,
+      chunkVendor: chunks.vendor,
+      category: enrichedItems.category,
+      impactScore: enrichedItems.impactScore,
+      summary: enrichedItems.summary,
+      publishedAt: rawItems.publishedAt,
+    })
+    .from(chunks)
+    .innerJoin(rawItems, eq(rawItems.id, chunks.rawItemId))
+    .innerJoin(
+      enrichedItems,
+      and(eq(enrichedItems.rawItemId, rawItems.id), eq(enrichedItems.status, 'ok')),
+    )
+    .innerJoin(sources, eq(sources.id, rawItems.sourceId))
+    .where(inArray(rawItems.id, rawItemIds))
+    .all();
+
+  // Keep the lead chunk (smallest id) per item — it opens the source content.
+  const leadPerItem = new Map<number, RetrievedPassage>();
+  for (const row of rows) {
+    const existing = leadPerItem.get(row.rawItemId);
+    if (existing && existing.chunkId <= row.chunkId) continue;
+    leadPerItem.set(row.rawItemId, {
+      chunkId: row.chunkId,
+      rawItemId: row.rawItemId,
+      title: row.title,
+      url: row.url,
+      content: row.content,
+      vendor: row.chunkVendor,
+      category: row.category,
+      impactScore: row.impactScore,
+      summary: row.summary,
+      publishedAt: row.publishedAt,
+      // Pinned: rank ahead of query-retrieved passages so it leads the answer.
+      score: Number.POSITIVE_INFINITY,
+    });
+  }
+
+  return rawItemIds
+    .map((id) => leadPerItem.get(id))
+    .filter((p): p is RetrievedPassage => p !== undefined);
+}

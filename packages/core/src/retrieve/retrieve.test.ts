@@ -229,4 +229,50 @@ describe('answerQuestion', () => {
     expect(result.mode).toBe('extractive');
     expect(result.answer).toContain(`[#${nexusId}]`);
   });
+
+  it('backs the extractive answer with a verbatim quote from the source', async () => {
+    const result = await answerQuestion(db, 'Nexus CVE', { embedder: topicEmbedder() });
+    // The lead of the seeded content, quoted, is concrete evidence next to the citation.
+    expect(result.answer).toContain('Critical CVE-2026-3199 was disclosed');
+    expect(result.answer).toContain(`[#${nexusId}]`);
+  });
+
+  it('pins the focused signal so a vague question is still answerable', async () => {
+    // "what is it?" shares no terms with the body and is off-topic on its own — it would
+    // refuse. With the signal pinned via focusId, it is guaranteed in scope.
+    const bare = await answerQuestion(db, 'what is it?', { embedder: topicEmbedder() });
+    expect(bare.mode).toBe('refusal');
+
+    const scoped = await answerQuestion(db, 'what is it?', {
+      embedder: topicEmbedder(),
+      context: {
+        label: 'Nexus registry advisory',
+        preamble: `insight #${nexusId}`,
+        focusId: nexusId,
+      },
+    });
+    expect(scoped.mode).toBe('extractive');
+    expect(scoped.answer).toContain(`[#${nexusId}]`);
+    expect(scoped.citations.map((c) => c.id)).toContain(nexusId);
+  });
+
+  it('passes the focus context to the live model and stays grounded', async () => {
+    let seenContext: string | undefined;
+    const model: AnswerModel = {
+      model: 'test-llm',
+      promptVersion: 'ask@2',
+      async answer(_query, passages, context) {
+        seenContext = context?.preamble;
+        return `Scoped answer [#${passages[0]!.rawItemId}].`;
+      },
+    };
+    const result = await answerQuestion(db, 'is it serious?', {
+      embedder: topicEmbedder(),
+      context: { label: 'Nexus registry advisory', preamble: 'insight #1: Nexus CVE' },
+      model,
+    });
+    expect(result.mode).toBe('llm');
+    expect(seenContext).toBe('insight #1: Nexus CVE');
+    expect(result.answer).toContain(`[#${nexusId}]`);
+  });
 });

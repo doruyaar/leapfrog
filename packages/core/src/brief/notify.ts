@@ -26,15 +26,32 @@ export interface NotifyResult {
   reason?: string;
 }
 
+/**
+ * The link line for an item, honouring its verification verdict: a link is only
+ * committed to the alert once it is confirmed to resolve to a relevant page. An
+ * unreachable or off-topic URL is labelled instead of shipped, so we never send a
+ * source we could not stand behind.
+ */
+function linkLine(item: BriefItem): string {
+  switch (item.urlStatus) {
+    case 'unreachable':
+      return `  ⚠ source link unreachable, not linked (${item.url})`;
+    case 'irrelevant':
+      return `  ⚠ source link did not resolve to a relevant page, not linked (${item.url})`;
+    default:
+      return `  ${item.url}`;
+  }
+}
+
 /** Render the Slack message body for the high-impact signals. */
 function formatMessage(briefDate: string, items: BriefItem[]): string {
   const lines = items.map(
     (item) =>
       `• *[impact ${item.impactScore}] ${item.title}*` +
       (item.vendor ? ` — ${item.vendor}` : '') +
-      `\n  ${item.whyItMatters}\n  ${item.url}`,
+      `\n  ${item.whyItMatters}\n${linkLine(item)}`,
   );
-  return `:frog: *LeapFrog brief — ${briefDate}* — ${items.length} high-impact signal(s)\n\n${lines.join('\n')}`;
+  return `:frog: *LeapFrog brief — ${briefDate}* — ${items.length} high-impact insight(s)\n\n${lines.join('\n')}`;
 }
 
 /**
@@ -54,7 +71,7 @@ export async function notifyHighImpact(
     return { delivered: false, sent: highImpact.length, reason: 'no webhook configured' };
   }
   if (highImpact.length === 0) {
-    return { delivered: false, sent: 0, reason: `no signals at impact ${threshold}+` };
+    return { delivered: false, sent: 0, reason: `no insights at impact ${threshold}+` };
   }
 
   const doFetch = options.fetch ?? fetch;

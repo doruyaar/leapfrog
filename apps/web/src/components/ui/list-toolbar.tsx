@@ -32,12 +32,24 @@ export interface SortConfig {
   defaultValue: string;
 }
 
+/**
+ * An on-by-default checkbox filter. Checked is the default, param-free state; unchecking
+ * writes `param=onValue` to the URL. Keeps the default view's links clean.
+ */
+export interface CheckboxFilter {
+  param: string;
+  label: string;
+  /** Value written to the param when the box is unchecked. */
+  onValue: string;
+}
+
 interface ListToolbarProps {
   /** What one row is called, e.g. "signal" — used in the search placeholder. */
   noun: string;
   filters: SelectFilter[];
   sort: SortConfig;
   category?: CategoryFacet;
+  checkbox?: CheckboxFilter;
 }
 
 /**
@@ -47,7 +59,13 @@ interface ListToolbarProps {
  * narrowed result never strands the user on an empty page. Native `<select>` and real
  * `<Link>` chips keep it fully keyboard-operable with no hover-only affordances.
  */
-export function ListToolbar({ noun, filters, sort, category }: ListToolbarProps) {
+export function ListToolbar({
+  noun,
+  filters,
+  sort,
+  category,
+  checkbox,
+}: ListToolbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -74,6 +92,7 @@ export function ListToolbar({ noun, filters, sort, category }: ListToolbarProps)
     Boolean(activeSearch) ||
     Boolean(category?.active) ||
     filters.some((f) => current[f.name]) ||
+    Boolean(checkbox && current[checkbox.param] === checkbox.onValue) ||
     (current.sort ?? '') !== '' ||
     (current.dir ?? '') !== '';
 
@@ -159,7 +178,7 @@ export function ListToolbar({ noun, filters, sort, category }: ListToolbarProps)
         </div>
       )}
 
-      {(filters.length > 0 || hasActiveFilters) && (
+      {(filters.length > 0 || checkbox || hasActiveFilters) && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           {filters.map((filter) => (
             <label
@@ -181,6 +200,22 @@ export function ListToolbar({ noun, filters, sort, category }: ListToolbarProps)
               </select>
             </label>
           ))}
+
+          {checkbox && (
+            <label className="inline-flex cursor-pointer items-center gap-1.5 text-[12px] text-ink-dim">
+              <input
+                type="checkbox"
+                checked={current[checkbox.param] !== checkbox.onValue}
+                onChange={(e) =>
+                  apply({
+                    [checkbox.param]: e.target.checked ? undefined : checkbox.onValue,
+                  })
+                }
+                className="size-3.5 rounded border-field-line accent-accent"
+              />
+              {checkbox.label}
+            </label>
+          )}
 
           {hasActiveFilters && (
             <Link

@@ -97,8 +97,8 @@ export function buildExtractiveSummary(
     const n = recentSignals.length;
     const basis =
       n === 0
-        ? `no tracked signals for ${vendor} yet`
-        : `${n} tracked ${n === 1 ? 'signal' : 'signals'}`;
+        ? `no tracked insights for ${vendor} yet`
+        : `${n} tracked ${n === 1 ? 'insight' : 'insights'}`;
     return `${vendor} isn't on the ${focusVendor} comparison matrix yet — positioning here is based on ${basis}.${latestMove}`.trim();
   }
 
@@ -279,7 +279,7 @@ export function toMarkdown(card: Battlecard): string {
   const lines: string[] = [];
   lines.push(`# Battlecard — ${card.focusVendor} vs. ${card.vendor}`);
   lines.push('');
-  lines.push(`_Generated ${card.generatedAt.slice(0, 10)} from tracked signals._`);
+  lines.push(`_Generated ${card.generatedAt.slice(0, 10)} from tracked insights._`);
   lines.push('');
   lines.push('## Positioning');
   lines.push(stripCitations(card.summary));
@@ -318,7 +318,7 @@ export function toMarkdown(card: Battlecard): string {
       lines.push(`- **${signal.title}**${date} — ${signal.summary} [#${signal.id}]`);
     }
   } else {
-    lines.push('- No tracked signals yet.');
+    lines.push('- No tracked insights yet.');
   }
   lines.push('');
 

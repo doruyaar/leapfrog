@@ -30,6 +30,8 @@ import {
   CATEGORIES,
   FOCUS_VENDOR,
   type Battlecard,
+  type BriefClaim,
+  type BriefConflict,
   type BriefItem,
   type Category,
   type CellLevel,
@@ -65,6 +67,10 @@ export interface BriefView {
   date: string;
   summary: string;
   items: BriefItem[];
+  /** The summary decomposed into grounded, quoted, cited claims. */
+  claims: BriefClaim[];
+  /** Unresolved disagreements between sources, surfaced for the reader. */
+  conflicts: BriefConflict[];
   model: string | null;
   /** True when the brief was composed on the fly (no stored brief yet). */
   live: boolean;
@@ -85,6 +91,8 @@ export async function getBrief(): Promise<BriefView | null> {
       date: stored.briefDate,
       summary: stored.summary,
       items: stored.items,
+      claims: stored.claims,
+      conflicts: stored.conflicts,
       model: stored.model,
       live: false,
     };
@@ -95,6 +103,8 @@ export async function getBrief(): Promise<BriefView | null> {
     date: composed.briefDate,
     summary: composed.summary,
     items: composed.items,
+    claims: composed.claims,
+    conflicts: composed.conflicts,
     model: composed.model,
     live: true,
   };
@@ -113,6 +123,11 @@ export interface SignalsFeedOptions {
   vendor?: string;
   /** Keep only signals at or above this impact score (1–5). */
   impactMin?: number;
+  /**
+   * Include market-wide items (those with no resolved vendor). Off by default so the
+   * feed leads with competitor-specific insights rather than general market noise.
+   */
+  includeMarket?: boolean;
   sort?: SignalSort;
   dir?: SortDir;
   page: number;
@@ -137,7 +152,7 @@ export interface SignalsFeedPage {
  * behaviour). Pagination is a simple slice — the corpus is small and already fully read.
  */
 export function getSignalsFeed(options: SignalsFeedOptions): SignalsFeedPage {
-  const { q, category, vendor, impactMin, sort, dir, page } = options;
+  const { q, category, vendor, impactMin, includeMarket, sort, dir, page } = options;
   const isFiltered = Boolean(q || category || vendor || impactMin);
 
   let matched = getSignals({ search: q, sort, dir });
@@ -145,6 +160,9 @@ export function getSignalsFeed(options: SignalsFeedOptions): SignalsFeedPage {
     const needle = vendor.toLowerCase();
     matched = matched.filter((s) => s.vendor?.toLowerCase() === needle);
   }
+  // Hide general market items (no resolved vendor) unless explicitly shown. A vendor
+  // filter already narrows to one vendor, so this only matters for the full feed.
+  if (!includeMarket && !vendor) matched = matched.filter((s) => s.vendor !== null);
   if (impactMin) matched = matched.filter((s) => s.impactScore >= impactMin);
 
   const breakdown = categoryBreakdown(matched);

@@ -65,13 +65,13 @@ export function matchSignal(
 /**
  * A plain-English sentence describing what a rule notifies on — the "scent" a user
  * reads on the subscription card and in the email footer. Empty filters read as
- * "All signals" rather than an empty string.
+ * "All insights" rather than an empty string.
  */
 export function describeSubscription(filters: SubscriptionFilters): string {
   const subject =
     filters.categories.length > 0
-      ? `${filters.categories.join(' or ')} signals`
-      : 'All signals';
+      ? `${filters.categories.join(' or ')} insights`
+      : 'All insights';
 
   const clauses: string[] = [];
   if (filters.vendors.length > 0) {

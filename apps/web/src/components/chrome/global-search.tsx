@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { CATEGORY_COLOR } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { useChat } from '@/components/ask/chat-provider';
 import type { SearchResponse, SearchResult, SearchResultType } from '@/lib/search-types';
 
 /** One icon per entity kind, matching the sidebar so a hit's type reads at a glance. */
@@ -28,12 +29,13 @@ const TYPE_ICON: Record<SearchResultType, LucideIcon> = {
 /** A row the user can move to and open — a real result, or the "Ask" fallback. */
 type NavItem =
   | { kind: 'result'; result: SearchResult }
-  | { kind: 'ask'; href: string; label: string };
+  | { kind: 'ask'; query: string; label: string };
 
 const DEBOUNCE_MS = 180;
 
 export function GlobalSearch() {
   const router = useRouter();
+  const { openChat, ask } = useChat();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<SearchResponse | null>(null);
@@ -86,7 +88,7 @@ export function GlobalSearch() {
     if (trimmed) {
       items.push({
         kind: 'ask',
-        href: `/ask?q=${encodeURIComponent(trimmed)}`,
+        query: trimmed,
         label: `Ask about “${trimmed}”`,
       });
     }
@@ -104,6 +106,17 @@ export function GlobalSearch() {
       router.push(href);
     },
     [close, router],
+  );
+
+  // The "Ask" fallback opens the assistant panel and asks straight away, unscoped.
+  const startAsk = useCallback(
+    (question: string) => {
+      close();
+      setQuery('');
+      openChat();
+      void ask(question);
+    },
+    [close, openChat, ask],
   );
 
   // Cmd/Ctrl+K from anywhere, or "/" when not already typing in a field, focuses search.
@@ -163,7 +176,9 @@ export function GlobalSearch() {
     } else if (event.key === 'Enter') {
       event.preventDefault();
       const item = navItems[Math.min(active, navItems.length - 1)];
-      if (item) go(item.kind === 'ask' ? item.href : item.result.href);
+      if (!item) return;
+      if (item.kind === 'ask') startAsk(item.query);
+      else go(item.result.href);
     }
   }
 
@@ -295,7 +310,7 @@ export function GlobalSearch() {
           aria-selected={active === index}
           data-index={index}
           onMouseEnter={() => setActive(index)}
-          onClick={() => go(askItem.href)}
+          onClick={() => startAsk(askItem.query)}
           className={cn(
             'flex w-full items-center gap-3 px-3 py-2 text-left transition-colors',
             active === index ? 'bg-row-selected' : 'hover:bg-row-hover',

@@ -69,8 +69,8 @@ describe('matchSignal', () => {
 });
 
 describe('describeSubscription', () => {
-  it('reads as "All signals" when empty', () => {
-    expect(describeSubscription({ ...ANY })).toBe('All signals');
+  it('reads as "All insights" when empty', () => {
+    expect(describeSubscription({ ...ANY })).toBe('All insights');
   });
 
   it('builds a plain-English sentence from the filters', () => {
@@ -81,6 +81,6 @@ describe('describeSubscription', () => {
         keywords: ['CVE'],
         minImpact: 4,
       }),
-    ).toBe("Security signals about Sonatype at impact 4+ mentioning 'CVE'");
+    ).toBe("Security insights about Sonatype at impact 4+ mentioning 'CVE'");
   });
 });
