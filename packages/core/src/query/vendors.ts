@@ -46,9 +46,7 @@ export function vendorSlugMatches(vendor: string, slug: string): boolean {
  * competitors ({@link TRACKED_COMPETITORS}). Matching by slug tolerates spelling and
  * casing drift in enriched vendor names ("jfrog", "JFrog").
  */
-const TRACKED_SLUGS = new Set(
-  [FOCUS_VENDOR, ...TRACKED_COMPETITORS].map(vendorSlug),
-);
+const TRACKED_SLUGS = new Set([FOCUS_VENDOR, ...TRACKED_COMPETITORS].map(vendorSlug));
 
 /**
  * True when a vendor is one the product tracks — the focus vendor or a curated

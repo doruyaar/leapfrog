@@ -73,7 +73,10 @@ export function BriefConflicts({ conflicts }: { conflicts: BriefConflict[] }) {
             <p className="text-[13px] font-medium text-ink-strong">{conflict.topic}</p>
             <ul className="mt-1.5 flex flex-col gap-2">
               {conflict.sides.map((side, j) => (
-                <li key={`${side.sourceId}-${j}`} className="border-l-2 border-amber-500/40 pl-3">
+                <li
+                  key={`${side.sourceId}-${j}`}
+                  className="border-l-2 border-amber-500/40 pl-3"
+                >
                   <p className="text-[14px] leading-relaxed text-ink">
                     {side.text}
                     <CiteLink id={side.sourceId} />

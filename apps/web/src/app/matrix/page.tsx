@@ -28,8 +28,8 @@ export default async function ComparisonPage() {
         </h1>
         <p className="mt-1 text-[13px] text-ink-dim">
           JFrog vs. the field across capability axes. Each cell shows a coverage rating —
-          click it to see the evidence, confidence, and last update behind it. Add or remove
-          any tracked company with the controls above the grid.
+          click it to see the evidence, confidence, and last update behind it. Add or
+          remove any tracked company with the controls above the grid.
         </p>
       </div>
 

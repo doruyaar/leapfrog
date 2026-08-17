@@ -25,7 +25,8 @@ describe('pageMatchesItem', () => {
   };
 
   it('passes when the vendor and enough title terms appear', () => {
-    const page = 'JFrog announced the Artifactory release with a new SBOM export feature.';
+    const page =
+      'JFrog announced the Artifactory release with a new SBOM export feature.';
     expect(pageMatchesItem(page, item)).toBe(true);
   });
 
@@ -57,7 +58,8 @@ describe('createHttpUrlVerifier', () => {
 
   it('returns irrelevant for a reachable but off-topic page', async () => {
     const verifier = createHttpUrlVerifier({
-      fetch: async () => new Response('Welcome to our unrelated marketing homepage.', { status: 200 }),
+      fetch: async () =>
+        new Response('Welcome to our unrelated marketing homepage.', { status: 200 }),
     });
     expect(await verifier.verify(item)).toBe('irrelevant');
   });

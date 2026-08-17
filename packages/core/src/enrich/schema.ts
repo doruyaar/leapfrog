@@ -14,10 +14,12 @@ export const IMPACT_MAX = 5;
 /** The rubric label for an impact score (mirrors `prompts/enrich.md`). */
 export function impactLabel(score: number): string {
   return (
-    ({ 5: 'Act now', 4: 'High', 3: 'Medium', 2: 'Low', 1: 'Noise' } as Record<
-      number,
-      string
-    >)[score] ?? 'Unscored'
+    (
+      { 5: 'Act now', 4: 'High', 3: 'Medium', 2: 'Low', 1: 'Noise' } as Record<
+        number,
+        string
+      >
+    )[score] ?? 'Unscored'
   );
 }
 

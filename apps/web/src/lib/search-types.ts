@@ -2,11 +2,7 @@ import type { Category } from '@leapfrog/core';
 
 /** The entity kinds the global search can return, in the order they are grouped. */
 export type SearchResultType =
-  | 'insight'
-  | 'competitor'
-  | 'battlecard'
-  | 'change'
-  | 'matrix';
+  'insight' | 'competitor' | 'battlecard' | 'change' | 'matrix';
 
 /** One hit, already shaped for display and safe to send to the client. */
 export interface SearchResult {

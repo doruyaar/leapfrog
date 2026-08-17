@@ -185,10 +185,7 @@ export async function retrieve(
  * with the body. Returns the lead chunk per item, in the id order given; unknown or
  * un-enriched ids are silently skipped.
  */
-export function hydratePassages(
-  db: Database,
-  rawItemIds: number[],
-): RetrievedPassage[] {
+export function hydratePassages(db: Database, rawItemIds: number[]): RetrievedPassage[] {
   if (rawItemIds.length === 0) return [];
 
   const rows = db

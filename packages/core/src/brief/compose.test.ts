@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createDatabase, type Database } from '../db/client.js';
 import { runMigrations } from '../db/migrate.js';
-import { changeEvents, enrichedItems, rawItems, sources, vendorFacts } from '../db/schema.js';
+import {
+  changeEvents,
+  enrichedItems,
+  rawItems,
+  sources,
+  vendorFacts,
+} from '../db/schema.js';
 import {
   buildExtractiveSummary,
   citationsAreValid,
@@ -122,7 +128,9 @@ describe('composeBrief', () => {
       promptVersion: 'brief-llm@1',
       summarize: async (sources: BriefSource[]): Promise<BriefDraft> => ({
         summary: `Grounded take [#${sources[0]!.id}]`,
-        claims: [{ text: 'It happened', sourceId: sources[0]!.id, quote: 'alpha body text' }],
+        claims: [
+          { text: 'It happened', sourceId: sources[0]!.id, quote: 'alpha body text' },
+        ],
         conflicts: [],
       }),
     };
@@ -152,7 +160,9 @@ describe('composeBrief', () => {
       promptVersion: 'brief-llm@1',
       summarize: async (): Promise<BriefDraft> => ({
         summary: `Take [#${id}]`,
-        claims: [{ text: 'Invented', sourceId: id, quote: 'this text is nowhere in the source' }],
+        claims: [
+          { text: 'Invented', sourceId: id, quote: 'this text is nowhere in the source' },
+        ],
         conflicts: [],
       }),
     };

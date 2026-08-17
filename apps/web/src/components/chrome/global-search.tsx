@@ -258,7 +258,9 @@ export function GlobalSearch() {
                             {result.category && (
                               <span
                                 className="size-2 shrink-0 rounded-full"
-                                style={{ backgroundColor: CATEGORY_COLOR[result.category] }}
+                                style={{
+                                  backgroundColor: CATEGORY_COLOR[result.category],
+                                }}
                                 aria-hidden
                               />
                             )}
@@ -316,7 +318,11 @@ export function GlobalSearch() {
             active === index ? 'bg-row-selected' : 'hover:bg-row-hover',
           )}
         >
-          <Sparkles className="size-4 shrink-0 text-accent" strokeWidth={1.9} aria-hidden />
+          <Sparkles
+            className="size-4 shrink-0 text-accent"
+            strokeWidth={1.9}
+            aria-hidden
+          />
           <span className="truncate text-[13px] text-ink">{askItem.label}</span>
         </button>
       </div>

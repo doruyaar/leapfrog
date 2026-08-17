@@ -102,13 +102,14 @@ function Welcome({
       <p className="mt-2 max-w-md text-[13px] text-ink-dim">
         {focus ? (
           <>
-            Grounded answers about <span className="font-medium text-ink">{focus}</span> and
-            how it fits the competitive picture. Every claim cites and quotes its source.
+            Grounded answers about <span className="font-medium text-ink">{focus}</span>{' '}
+            and how it fits the competitive picture. Every claim cites and quotes its
+            source.
           </>
         ) : (
           <>
-            Grounded answers over the tracked corpus. Every claim cites its source — and if
-            the answer isn&apos;t in the sources, LeapFrog says so instead of guessing.
+            Grounded answers over the tracked corpus. Every claim cites its source — and
+            if the answer isn&apos;t in the sources, LeapFrog says so instead of guessing.
           </>
         )}
       </p>

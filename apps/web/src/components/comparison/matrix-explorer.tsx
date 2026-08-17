@@ -34,10 +34,7 @@ export function MatrixExplorer({
     [matrix],
   );
 
-  const bySlug = useMemo(
-    () => new Map(companies.map((c) => [c.slug, c])),
-    [companies],
-  );
+  const bySlug = useMemo(() => new Map(companies.map((c) => [c.slug, c])), [companies]);
 
   // Start with the curated matrix competitors selected — the grid opens as it always has.
   const [selected, setSelected] = useState<string[]>(() =>
@@ -49,8 +46,7 @@ export function MatrixExplorer({
 
   const selectedSet = useMemo(() => new Set(selected), [selected]);
 
-  const remove = (slug: string) =>
-    setSelected((prev) => prev.filter((s) => s !== slug));
+  const remove = (slug: string) => setSelected((prev) => prev.filter((s) => s !== slug));
   const toggle = (slug: string) =>
     setSelected((prev) =>
       prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
@@ -110,11 +106,7 @@ export function MatrixExplorer({
           </span>
         ))}
 
-        <AddCompanyMenu
-          companies={companies}
-          selected={selectedSet}
-          onToggle={toggle}
-        />
+        <AddCompanyMenu companies={companies} selected={selectedSet} onToggle={toggle} />
       </div>
 
       {selectedCompanies.length === 0 ? (
@@ -230,9 +222,7 @@ function AddCompanyMenu({
                       <span
                         className={cn(
                           'grid size-4 shrink-0 place-items-center rounded-[4px] border',
-                          on
-                            ? 'border-accent bg-accent text-white'
-                            : 'border-line',
+                          on ? 'border-accent bg-accent text-white' : 'border-line',
                         )}
                         aria-hidden
                       >

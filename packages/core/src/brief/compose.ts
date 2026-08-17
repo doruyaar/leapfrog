@@ -187,10 +187,7 @@ function conflictIsGrounded(
  * Every draft claim and conflict must be grounded, and the summary's inline citations
  * must resolve. This is why a live summary can be trusted despite being LLM-written.
  */
-export function draftIsGrounded(
-  draft: BriefDraft,
-  sources: BriefSource[],
-): boolean {
+export function draftIsGrounded(draft: BriefDraft, sources: BriefSource[]): boolean {
   if (!citationsAreValid(draft.summary, sources)) return false;
   const sourcesById = new Map(sources.map((s) => [s.id, s]));
   if (!draft.claims.every((claim) => claimIsGrounded(claim, sourcesById))) return false;
@@ -302,7 +299,11 @@ export function detectStructuralConflicts(
       topic: `${event.vendor} — ${event.dimension}`,
       sides: [
         { text: event.after, sourceId: current.id, quote: leadingQuote(current) },
-        { text: event.before ?? prior.summary, sourceId: prior.id, quote: leadingQuote(prior) },
+        {
+          text: event.before ?? prior.summary,
+          sourceId: prior.id,
+          quote: leadingQuote(prior),
+        },
       ],
       note: 'The record changed between these sources; both states are shown rather than assuming the newer one is settled.',
     });
@@ -317,7 +318,12 @@ function loadSources(db: Database, items: BriefItem[]): BriefSource[] {
   const rows = db
     .select({ id: rawItems.id, content: rawItems.content })
     .from(rawItems)
-    .where(inArray(rawItems.id, items.map((item) => item.id)))
+    .where(
+      inArray(
+        rawItems.id,
+        items.map((item) => item.id),
+      ),
+    )
     .all();
   const contentById = new Map(rows.map((row) => [row.id, row.content]));
   return items.map((item) => ({ ...item, content: contentById.get(item.id) ?? '' }));

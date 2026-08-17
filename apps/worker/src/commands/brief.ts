@@ -63,7 +63,8 @@ function print(brief: StoredBrief): void {
   console.log('');
   for (const item of brief.items) {
     const vendor = item.vendor ? ` · ${item.vendor}` : '';
-    const flag = item.urlStatus && item.urlStatus !== 'verified' ? ` [url: ${item.urlStatus}]` : '';
+    const flag =
+      item.urlStatus && item.urlStatus !== 'verified' ? ` [url: ${item.urlStatus}]` : '';
     console.log(
       `  [${item.impactScore}] #${item.id} ${item.category}${vendor} — ${item.title}${flag}`,
     );
@@ -71,7 +72,9 @@ function print(brief: StoredBrief): void {
   console.log(`\n${brief.items.length} insight(s).`);
 
   if (brief.conflicts.length > 0) {
-    console.log(`\n⚠ ${brief.conflicts.length} unresolved conflict(s) — surfaced, not decided:`);
+    console.log(
+      `\n⚠ ${brief.conflicts.length} unresolved conflict(s) — surfaced, not decided:`,
+    );
     for (const conflict of brief.conflicts) {
       console.log(`  • ${conflict.topic}`);
       for (const side of conflict.sides) {
@@ -115,7 +118,8 @@ export async function runBriefCommand(argv: string[]): Promise<number> {
     const verifier: UrlVerifier | undefined = options.verifyUrls
       ? createHttpUrlVerifier()
       : undefined;
-    if (verbose && verifier) console.log('  verifying source links before committing them');
+    if (verbose && verifier)
+      console.log('  verifying source links before committing them');
 
     if (verbose) process.stdout.write('→ Ranking insights and composing summary … ');
     const composed = await composeBrief(db, {

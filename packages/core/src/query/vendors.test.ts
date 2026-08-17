@@ -160,7 +160,11 @@ describe('readVendors', () => {
     await seedSignal(db, { title: 'focus', enrichedVendor: 'JFrog' });
     await seedSignal(db, { title: 'off-roster', enrichedVendor: 'HashiCorp' });
 
-    expect(readVendors(db).map((v) => v.vendor).sort()).toEqual(['JFrog', 'Sonatype']);
+    expect(
+      readVendors(db)
+        .map((v) => v.vendor)
+        .sort(),
+    ).toEqual(['JFrog', 'Sonatype']);
   });
 });
 

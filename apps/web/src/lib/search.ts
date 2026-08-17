@@ -53,7 +53,8 @@ export function searchAll(rawQuery: string): SearchResponse {
       category: s.category,
     }),
   );
-  if (insights.length) groups.push({ type: 'insight', label: 'Insights', results: insights });
+  if (insights.length)
+    groups.push({ type: 'insight', label: 'Insights', results: insights });
 
   // Competitors — matched by name against the derived roster.
   const competitors: SearchResult[] = getVendors()
@@ -112,7 +113,8 @@ export function searchAll(rawQuery: string): SearchResponse {
       title: a.label,
       snippet: truncate(a.description),
     }));
-  if (axes.length) groups.push({ type: 'matrix', label: 'Competitive Matrix', results: axes });
+  if (axes.length)
+    groups.push({ type: 'matrix', label: 'Competitive Matrix', results: axes });
 
   const total = groups.reduce((sum, g) => sum + g.results.length, 0);
   return { query, groups, total };

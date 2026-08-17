@@ -153,9 +153,7 @@ export async function answerQuestion(
   options: AskOptions = {},
 ): Promise<AskAnswer> {
   // Bias retrieval toward the discussed subject without letting it drown the question.
-  const retrievalQuery = options.context
-    ? `${query}\n${options.context.label}`
-    : query;
+  const retrievalQuery = options.context ? `${query}\n${options.context.label}` : query;
   const retrieved = await retrieve(db, retrievalQuery, options);
 
   // Pin the clicked signal so it is always in scope (it may not match the query at all),
@@ -185,5 +183,9 @@ export async function answerQuestion(
     }
   }
 
-  return { answer: buildExtractiveAnswer(passages, focus), citations, mode: 'extractive' };
+  return {
+    answer: buildExtractiveAnswer(passages, focus),
+    citations,
+    mode: 'extractive',
+  };
 }
