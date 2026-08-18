@@ -3,12 +3,14 @@ import Link from 'next/link';
 import { ArrowDown, ArrowLeft, ExternalLink } from 'lucide-react';
 import {
   getChangeEvent,
+  getConflictsForSignal,
   getCorroboration,
   getRelatedSignals,
   getSignal,
 } from '@/lib/queries';
 import { formatDate, impactColor, impactLabel } from '@/lib/format';
 import { CategoryBadge, ImpactBadge, VendorMark } from '@/components/signals/badges';
+import { ConflictPanel } from '@/components/signals/brief-grounding';
 import { CorroborationPanel } from '@/components/signals/corroboration-badge';
 import { StateChangeBadge } from '@/components/signals/signal-card';
 import { SubscribeLink } from '@/components/notifications/subscribe-link';
@@ -59,6 +61,7 @@ export default async function SignalDetailPage({
   const related = getRelatedSignals(signal.id, signal.vendor);
   const changeEvent = getChangeEvent(signal.id);
   const corroboration = getCorroboration(signal.id);
+  const conflicts = await getConflictsForSignal(signal.id);
   const materialChange =
     changeEvent !== null &&
     (changeEvent.kind === 'new' || changeEvent.kind === 'update') &&
@@ -128,6 +131,8 @@ export default async function SignalDetailPage({
                 {signal.whyItMatters}
               </p>
             </div>
+
+            <ConflictPanel conflicts={conflicts} selfId={signal.id} />
 
             {changeEvent && changeEvent.before !== null && (
               <>

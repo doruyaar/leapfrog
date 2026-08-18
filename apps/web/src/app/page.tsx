@@ -3,7 +3,7 @@ import { CalendarDays, Sparkles } from 'lucide-react';
 import { getBrief, getCorroboration, getMaterialChangeIds } from '@/lib/queries';
 import { formatDate } from '@/lib/format';
 import { CitedText } from '@/components/signals/cited-text';
-import { BriefConflicts } from '@/components/signals/brief-grounding';
+import { BriefConflictsSection } from '@/components/signals/brief-grounding';
 import { SignalCard } from '@/components/signals/signal-card';
 import { EmptyState } from '@/components/ui/empty-state';
 
@@ -30,6 +30,15 @@ export default async function HomePage() {
     if (!quotes.includes(claim.quote)) quotes.push(claim.quote);
     quotesById.set(claim.sourceId, quotes);
   }
+
+  // Contested sources: any insight that is one side of an unresolved disagreement. Its
+  // citations render amber (hover shows both sides) and its card carries the badge, so
+  // the conflict travels with the claims it touches instead of shouting from a panel.
+  const conflictsById = new Map(
+    (brief?.conflicts ?? []).flatMap((conflict) =>
+      conflict.sides.map((side) => [side.sourceId, conflict] as const),
+    ),
+  );
 
   return (
     <div className="px-[34px] pb-11 pt-5">
@@ -66,6 +75,7 @@ export default async function HomePage() {
             <CitedText
               text={brief.summary}
               quotesById={quotesById}
+              conflictsById={conflictsById}
               className="text-[15px] leading-relaxed text-ink"
             />
             <p className="mt-3 text-[12px] text-ink-faint">
@@ -74,7 +84,7 @@ export default async function HomePage() {
             </p>
           </section>
 
-          <BriefConflicts conflicts={brief.conflicts} />
+          <BriefConflictsSection conflicts={brief.conflicts} />
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {brief.items.map((item, i) => (
@@ -84,6 +94,7 @@ export default async function HomePage() {
                 rank={i + 1}
                 stateChange={changedIds.has(item.id)}
                 corroboration={corroborations.get(item.id) ?? undefined}
+                contested={conflictsById.has(item.id)}
               />
             ))}
           </div>

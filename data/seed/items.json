@@ -541,5 +541,50 @@
       "why_it_matters": "Repeat coverage of GitLab's registry GA keeps the bundled-alternative narrative in front of buyers; JFrog's multi-cloud and enterprise-scale differentiation matters in every one of these conversations.",
       "rationale": "Analyst coverage restating an already-tracked competitor launch."
     }
+  },
+  {
+    "source": "GitLab Blog",
+    "externalId": "gitlab-pricing-hold-2026",
+    "url": "https://about.gitlab.com/blog/2026/08/14/gitlab-2026-pricing-commitment/",
+    "title": "GitLab reaffirms flat Premium and Ultimate seat pricing for 2026",
+    "content": "GitLab told customers it has no plans to change Premium or Ultimate per-seat list pricing in 2026. The company said its focus this year is bundling more AI and security capabilities into existing tiers rather than raising prices, and pointed to the recent Artifact Registry GA as added value at no extra seat cost.",
+    "publishedAt": "2026-08-14T10:00:00Z",
+    "enrichment": {
+      "category": "Pricing",
+      "vendors": [
+        "GitLab"
+      ],
+      "products": [
+        "GitLab Premium",
+        "GitLab Ultimate"
+      ],
+      "impact_score": 4,
+      "summary": "GitLab said it will keep Premium and Ultimate per-seat list pricing flat through 2026, adding AI and security capabilities to existing tiers instead of raising prices.",
+      "why_it_matters": "A public pricing-hold commitment is a competitive anchor JFrog deals get measured against; if it holds, GitLab's bundled platform gets cheaper in relative terms as it adds features.",
+      "rationale": "A direct competitor's pricing stance on the exact tiers buyers weigh against JFrog."
+    }
+  },
+  {
+    "source": "The Register — DevOps",
+    "externalId": "elreg-gitlab-seat-price-increase",
+    "url": "https://www.theregister.com/2026/08/16/gitlab_seat_price_increase/",
+    "title": "GitLab to raise Premium and Ultimate seat prices about 15% from October",
+    "content": "GitLab will raise Premium and Ultimate per-seat list pricing by roughly 15 percent effective October 1, 2026, its first increase in two years. The company said its focus this year is bundling more AI and security capabilities into existing tiers.",
+    "publishedAt": "2026-08-16T09:00:00Z",
+    "enrichment": {
+      "category": "Pricing",
+      "vendors": [
+        "GitLab"
+      ],
+      "products": [
+        "GitLab Premium",
+        "GitLab Ultimate"
+      ],
+      "impact_score": 4,
+      "summary": "GitLab is raising Premium and Ultimate per-seat pricing about 15% from October 2026, its first increase in two years, citing added AI and security capabilities.",
+      "why_it_matters": "A mid-cycle seat-price increase is a live switching trigger for JFrog sales, and it directly contradicts GitLab's own pricing-hold message — a gap worth confirming before quoting against it.",
+      "rationale": "A competitor price increase with deal-level impact that also conflicts with the vendor's public commitment."
+    },
+    "previousContent": "GitLab told customers it has no plans to change Premium or Ultimate per-seat list pricing in 2026. The company said its focus this year is bundling more AI and security capabilities into existing tiers."
   }
 ]

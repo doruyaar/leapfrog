@@ -39,13 +39,13 @@ A single end-to-end run — ingest → normalize/dedupe → LLM enrich → impac
 diff (state-change detection) → compose brief — turns raw signals into a full, cited
 workspace:
 
-| Metric                    | Typical run                                                              |
-| ------------------------- | ------------------------------------------------------------------------ |
-| **Signals ingested**      | ~400 raw signals across 10 tracked competitors                           |
-| **Insights processed**    | ~400 enriched, impact-scored, and diffed against their previous state    |
-| **Wall-clock time**       | ~15 minutes end to end                                                   |
-| **Cost**                  | ~$1 on a top-tier model (e.g. `openai/gpt-5.6-luna`)                      |
-| **Output**                | Ranked daily brief, comparison matrix, per-competitor battlecards, grounded Q&A |
+| Metric                 | Typical run                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| **Signals ingested**   | ~400 raw signals across 10 tracked competitors                                  |
+| **Insights processed** | ~400 enriched, impact-scored, and diffed against their previous state           |
+| **Wall-clock time**    | ~15 minutes end to end                                                          |
+| **Cost**               | ~$1 on a top-tier model (e.g. `openai/gpt-5.6-luna`)                            |
+| **Output**             | Ranked daily brief, comparison matrix, per-competitor battlecards, grounded Q&A |
 
 Because every stage is idempotent, re-running only pays for what actually changed.
 

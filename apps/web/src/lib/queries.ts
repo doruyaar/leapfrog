@@ -182,6 +182,18 @@ export function getSignal(id: number): SignalDetail | null {
   return db ? readSignalDetail(db, id) : null;
 }
 
+/**
+ * The unresolved disagreements in the latest brief that this signal is one side of, so
+ * the insight detail page can show the conflict where the contested claim actually lives.
+ */
+export async function getConflictsForSignal(rawItemId: number): Promise<BriefConflict[]> {
+  const brief = await getBrief();
+  if (!brief) return [];
+  return brief.conflicts.filter((conflict) =>
+    conflict.sides.some((side) => side.sourceId === rawItemId),
+  );
+}
+
 export function getRelatedSignals(
   id: number,
   vendor: string | null,

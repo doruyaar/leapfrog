@@ -1,7 +1,9 @@
 import { Fragment, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Quote } from 'lucide-react';
+import type { BriefConflict } from '@leapfrog/core';
 import { cn } from '@/lib/utils';
+import { ConflictCite } from './brief-grounding';
 
 /**
  * Render text that may contain `[#<id>]` citations, turning each into a link to the
@@ -12,15 +14,21 @@ import { cn } from '@/lib/utils';
  * verbatim quote(s) the conclusion rests on — the grounding travels with the sentence it
  * supports instead of piling up in a separate wall of references below. Clicking still
  * opens the full source, so the quote is available on touch too.
+ *
+ * When `conflictsById` marks a cited source as contested, its citation renders amber
+ * instead of green and the hover shows both sides of the disagreement — the color says
+ * "settled vs. disputed" without a separate warning panel.
  */
 export function CitedText({
   text,
   className,
   quotesById,
+  conflictsById,
 }: {
   text: string;
   className?: string;
   quotesById?: Map<number, string[]>;
+  conflictsById?: Map<number, BriefConflict>;
 }) {
   const nodes: ReactNode[] = [];
   const regex = /\[#(\d+)\]/g;
@@ -34,6 +42,15 @@ export function CitedText({
       );
     }
     const id = Number(match[1]);
+    const conflict = conflictsById?.get(id);
+    if (conflict) {
+      nodes.push(
+        <ConflictCite key={`cite-${match.index}`} id={id} conflict={conflict} />,
+      );
+      lastIndex = regex.lastIndex;
+      continue;
+    }
+
     const quotes = quotesById?.get(id) ?? [];
     const pill = (
       <Link
@@ -55,7 +72,7 @@ export function CitedText({
           <span
             role="tooltip"
             className={cn(
-              'pointer-events-none invisible absolute bottom-full left-1/2 z-30 mb-2 w-72 max-w-[80vw]',
+              'pointer-events-none invisible absolute top-full left-1/2 z-30 mt-2 w-72 max-w-[80vw]',
               '-translate-x-1/2 rounded-md border border-line bg-card p-3 text-left opacity-0 shadow-lg',
               'transition-opacity duration-150',
               'group-hover:visible group-hover:opacity-100',

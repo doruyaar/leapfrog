@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRightLeft } from 'lucide-react';
+import { ArrowRightLeft, Scale } from 'lucide-react';
 import type { Category } from '@leapfrog/core';
 import type { Corroboration } from '@/lib/queries';
 import { CATEGORY_COLOR, formatDate, relativeAge } from '@/lib/format';
@@ -28,23 +28,36 @@ export function StateChangeBadge() {
   );
 }
 
+/** Small badge marking a signal that is one side of an unresolved disagreement. */
+export function ConflictBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-medium text-amber-600">
+      <Scale className="size-3" />
+      Sources disagree
+    </span>
+  );
+}
+
 /**
  * The unit of the product: one triaged, scored, "so-what"-annotated signal. Clicking it
  * opens the detail view; every card carries its impact, category, vendor, and the
  * grounded "why it matters" line so the feed is scannable without drilling in.
  * `stateChange` marks a material change to the vendor state (the brief distinguishes
- * *news* from *change*); `corroboration` renders the trust badge when computed.
+ * *news* from *change*); `corroboration` renders the trust badge when computed;
+ * `contested` marks a signal that is one side of an unresolved source disagreement.
  */
 export function SignalCard({
   signal,
   rank,
   stateChange = false,
   corroboration,
+  contested = false,
 }: {
   signal: CardSignal;
   rank?: number;
   stateChange?: boolean;
   corroboration?: Corroboration['status'];
+  contested?: boolean;
 }) {
   return (
     <Link
@@ -81,9 +94,10 @@ export function SignalCard({
 
       <p className="line-clamp-2 text-[13px] text-ink-dim">{signal.summary}</p>
 
-      {(stateChange || corroboration) && (
+      {(stateChange || corroboration || contested) && (
         <div className="flex flex-wrap items-center gap-2">
           {stateChange && <StateChangeBadge />}
+          {contested && <ConflictBadge />}
           {corroboration && <CorroborationBadge status={corroboration} />}
         </div>
       )}
