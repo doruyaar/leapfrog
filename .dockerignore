@@ -4,10 +4,9 @@
 **/.next
 **/*.tsbuildinfo
 
-# Local runtime state — never bake a laptop's database or sent emails into an image.
+# Local runtime state — never bake a laptop's database into an image.
 data/leapfrog.sqlite
 data/leapfrog.sqlite-*
-data/outbox
 data/*.sqlite
 data/*.sqlite-*
 

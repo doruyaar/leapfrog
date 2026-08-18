@@ -60,7 +60,7 @@ Open <http://localhost:3000>. The app is organized as a proactive-first workspac
 | **Competitive Matrix** (`/matrix`)   | JFrog vs. competitors across capability axes, with confidence, evidence, and recommended updates drawn from recent insights.            |
 | **Battlecards** (`/battlecards`)     | One-click, source-footnoted sales battlecard per competitor, refreshable from the latest corpus.                                        |
 | **Ask** (`/ask`)                     | Hybrid RAG chat over the corpus. Every answer cites its sources and refuses ("not in my sources") when the corpus has nothing relevant. |
-| **Notifications** (`/notifications`) | Subscribe to insights matching a vendor/category; digests are emailed (or written to a local outbox with no key).                       |
+| **Notifications** (`/notifications`) | Subscribe to insights matching a vendor/category and preview the digest email each rule produces; live delivery turns on with a key in production. |
 
 ## How it works
 
@@ -101,7 +101,7 @@ npm run enrich     # classify, score, and summarize (needs a key; see live mode)
 npm run diff       # detect new vs. update vs. re-phrasing (key-free)
 npm run embed      # chunk and embed into the retrieval index (local, key-free)
 npm run brief      # compose today's ranked, cited brief (key-free)
-npm run notify     # email subscriptions their new matching signals (key-free outbox)
+npm run notify     # email subscriptions their new matching signals (needs RESEND_API_KEY)
 npm run ask -- --q "what changed at Sonatype?"   # hybrid RAG answer with citations
 npm run battlecard -- --vendor Sonatype          # generate a battlecard
 ```

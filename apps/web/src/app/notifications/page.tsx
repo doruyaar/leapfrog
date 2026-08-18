@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Bell } from 'lucide-react';
+import { Bell, Info } from 'lucide-react';
 import { CATEGORIES } from '@leapfrog/core';
 import { getSubscriptionFacets, getSubscriptions, type Category } from '@/lib/queries';
 import { getDb } from '@/lib/db';
@@ -57,10 +57,18 @@ export default async function NotificationsPage({
           Notifications
         </h1>
         <p className="mt-1 text-[13px] text-ink-dim">
-          Get an email when the market moves — subscribe to exactly the companies, update
-          types, severity, and keywords you care about.
+          Subscribe to exactly the companies, update types, severity, and keywords you
+          care about, and preview the email each rule produces.
         </p>
       </div>
+
+      <p className="mb-5 flex items-start gap-2 rounded-md border border-line bg-field px-3 py-2 text-[12.5px] text-ink-dim">
+        <Info className="mt-0.5 size-4 shrink-0 text-accent" />
+        <span>
+          Demo only — this doesn&apos;t send real email yet. It previews how the feature
+          works and how each alert will look.
+        </span>
+      </p>
 
       {!hasDb ? (
         <EmptyState

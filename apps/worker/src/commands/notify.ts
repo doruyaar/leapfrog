@@ -1,10 +1,9 @@
 /**
  * `worker notify` — the delivery pass (docs/DESIGN.md §5, step 6, generalised from Slack
  * to email subscriptions). Evaluate every enabled subscription against the corpus and
- * email the new matches. Works with **zero keys**: without `RESEND_API_KEY` each digest is
- * written as a real `.eml` file under `data/outbox` you can open locally; with a key it
- * goes to the recipient's inbox via Resend. Safe to re-run — the delivery ledger means a
- * second run sends nothing new.
+ * email the new matches. Real delivery needs `RESEND_API_KEY`; without it the command runs
+ * in demo mode and sends nothing (preview how alerts look in the app at `/notifications`).
+ * Safe to re-run — the delivery ledger means a second run sends nothing new.
  */
 import {
   createDatabase,
@@ -53,9 +52,9 @@ function printRun(result: NotifyRunResult): void {
       console.log(`  ✗ ${r.email} · ${r.label} — not sent (${r.reason})`);
     }
   }
-  if (result.channel === 'outbox') {
-    console.log('\nDemo mode: double-click the matching .html file (next to each .eml)');
-    console.log('to view a notification in your browser — no mail app needed.');
+  if (result.channel === 'preview') {
+    console.log('\nDemo mode: email delivery is off, so nothing was sent.');
+    console.log('Preview how each alert looks in the app at /notifications.');
     console.log('Set RESEND_API_KEY to deliver to a real inbox instead.');
   }
 }

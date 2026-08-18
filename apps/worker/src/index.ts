@@ -23,8 +23,8 @@ Commands:
   diff      Detect state changes: new vs. update vs. re-phrasing. No key needed. Safe to repeat.
   embed     Chunk and embed enriched items into the retrieval index. Safe to repeat.
   brief     Compose and store today's ranked, cited brief. Safe to repeat.
-  notify    Email each subscription its new matching insights. No key needed (writes .eml
-            to data/outbox); RESEND_API_KEY delivers to a real inbox. Safe to repeat.
+  notify    Email each subscription its new matching insights. Needs RESEND_API_KEY to
+            deliver; without it, demo mode sends nothing (preview alerts in the app).
   ask       Answer a question with hybrid RAG and grounded citations.
   battlecard Compose, store, and export a competitor battlecard as Markdown.
   eval      Score the golden datasets (change classification). No key needed.
@@ -74,9 +74,8 @@ Environment:
   LEAPFROG_DB_PATH          Default SQLite file location
   GITHUB_TOKEN              Raises the GitHub API limit from 60 to 5,000 requests/hour
   NVD_API_KEY               Raises the NVD limit from 5 to 50 requests/30s
-  RESEND_API_KEY            Deliver "notify" emails to a real inbox; unset = .eml outbox
+  RESEND_API_KEY            Deliver "notify" emails to a real inbox; unset = demo (no send)
   NOTIFY_EMAIL_FROM         From address for notifications (default onboarding@resend.dev)
-  NOTIFY_OUTBOX_DIR         Where demo-mode .eml files are written (default data/outbox)
   APP_BASE_URL              Origin used for email deep links (default http://localhost:3000)
   OPENROUTER_API_KEY        Required for "enrich"; without it, use demo-mode seed data
   OPENROUTER_ENRICH_MODEL   Enrichment model slug (default openai/gpt-4o-mini)
