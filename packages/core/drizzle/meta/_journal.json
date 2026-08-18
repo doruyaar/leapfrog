@@ -50,6 +50,13 @@
       "when": 1787073112751,
       "tag": "0006_vec_chunks_1536",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1787082012007,
+      "tag": "0007_cool_zaran",
+      "breakpoints": true
     }
   ]
 }

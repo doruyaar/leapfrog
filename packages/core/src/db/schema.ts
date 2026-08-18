@@ -128,6 +128,12 @@ export const enrichedItems = sqliteTable(
     rationale: text('rationale'),
     status: text('status', { enum: ENRICHMENT_STATUSES }).notNull().default('ok'),
     quarantineReason: text('quarantine_reason'),
+    /**
+     * Enrichment attempts for this item so far. Caps quarantine retries: an item whose
+     * output keeps failing validation is retried a bounded number of times, not on
+     * every scheduled pass forever (each retry is a paid LLM call).
+     */
+    attempts: integer('attempts').notNull().default(1),
     // --- observability (logged on every LLM call) ---
     model: text('model').notNull(),
     promptVersion: text('prompt_version').notNull(),

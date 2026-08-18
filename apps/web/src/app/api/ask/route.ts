@@ -7,7 +7,7 @@ import {
   type Category,
 } from '@leapfrog/core';
 import { getDb } from '@/lib/db';
-import { allowRequest, clientKey } from '@/lib/rate-limit';
+import { allowGlobal, allowRequest, clientKey } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +30,9 @@ function optionalModel(): AnswerModel | undefined {
 }
 
 export async function POST(request: Request) {
-  if (!allowRequest(clientKey(request))) {
+  // Per-client budget first (spoof-resistant key), then the shared all-clients ceiling so
+  // an IP-rotating flood cannot run up unbounded token spend / embedding CPU.
+  if (!allowRequest(clientKey(request)) || !allowGlobal()) {
     return NextResponse.json(
       { error: 'rate limit exceeded — try again in a minute' },
       { status: 429 },

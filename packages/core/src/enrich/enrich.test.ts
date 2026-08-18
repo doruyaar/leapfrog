@@ -6,7 +6,7 @@ import { enrichedItems, rawItems, sources } from '../db/schema.js';
 import type { EnrichmentModel, ModelCompletion } from './client.js';
 import { enrichItems } from './enrich.js';
 import { ENRICH_PROMPT_VERSION } from './prompt.js';
-import { selectPendingInputs } from './select.js';
+import { MAX_ENRICH_ATTEMPTS, selectPendingInputs } from './select.js';
 
 function okJson(overrides: Record<string, unknown> = {}): string {
   return JSON.stringify({
@@ -184,6 +184,67 @@ describe('enrichItems', () => {
     const rows = db.select().from(enrichedItems).all();
     expect(rows).toHaveLength(2);
     expect(rows.every((r) => r.status === 'ok')).toBe(true);
+  });
+
+  it('re-enriches an item whose raw content was revised after enrichment', async () => {
+    const id = seedRaw(db, sourceId, 'revised');
+    await enrichItems(db, { model: stubModel({ revised: { content: okJson() } }) });
+    expect(selectPendingInputs(db)).toHaveLength(0);
+
+    // Simulate the pipeline order: the enrichment predates the revising ingest,
+    // which rewrites the content and bumps `fetchedAt` (see upsertRawItems).
+    db.update(enrichedItems)
+      .set({ createdAt: new Date(Date.now() - 60_000) })
+      .where(eq(enrichedItems.rawItemId, id))
+      .run();
+    db.update(rawItems)
+      .set({ content: 'revised body', fetchedAt: new Date() })
+      .where(eq(rawItems.id, id))
+      .run();
+
+    expect(selectPendingInputs(db).map((i) => i.title)).toEqual(['revised']);
+
+    // Re-enriching replaces the stale row in place and closes the item again.
+    const report = await enrichItems(db, {
+      model: stubModel({ revised: { content: okJson({ impact_score: 5 }) } }),
+    });
+    expect(report).toMatchObject({ attempted: 1, enriched: 1 });
+
+    const rows = db.select().from(enrichedItems).all();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.impactScore).toBe(5);
+    expect(selectPendingInputs(db)).toHaveLength(0);
+  });
+
+  it('stops retrying a quarantined item after MAX_ENRICH_ATTEMPTS', async () => {
+    const id = seedRaw(db, sourceId, 'hopeless');
+    const model = stubModel({ hopeless: { content: 'never valid json' } });
+
+    for (let run = 1; run <= MAX_ENRICH_ATTEMPTS; run += 1) {
+      const report = await enrichItems(db, { model });
+      expect(report).toMatchObject({ attempted: 1, quarantined: 1 });
+    }
+
+    const row = db
+      .select()
+      .from(enrichedItems)
+      .where(eq(enrichedItems.rawItemId, id))
+      .get();
+    expect(row!.attempts).toBe(MAX_ENRICH_ATTEMPTS);
+
+    // Retries exhausted: the item is no longer pending, so no further model calls.
+    expect(selectPendingInputs(db)).toHaveLength(0);
+
+    // A content revision re-opens it regardless — new input deserves a fresh look.
+    db.update(enrichedItems)
+      .set({ createdAt: new Date(Date.now() - 60_000) })
+      .where(eq(enrichedItems.rawItemId, id))
+      .run();
+    db.update(rawItems)
+      .set({ content: 'revised body', fetchedAt: new Date() })
+      .where(eq(rawItems.id, id))
+      .run();
+    expect(selectPendingInputs(db).map((i) => i.title)).toEqual(['hopeless']);
   });
 
   it('enriches an explicit id set (e.g. an ingest run changedIds)', async () => {

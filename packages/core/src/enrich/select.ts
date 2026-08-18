@@ -1,12 +1,13 @@
 /**
  * Choosing what to enrich. Enrichment is a derived, rebuildable view over the raw
  * items (docs/DESIGN.md §5), so selection is idempotent: by default it returns items
- * that have no successful enrichment yet — brand-new items and ones previously
- * quarantined (a bad completion is worth another try; a good one is left alone). The
- * ingest pipeline's `changedIds` can also be passed straight through to re-enrich the
- * exact items a source just revised.
+ * that have no up-to-date successful enrichment yet — brand-new items, items whose raw
+ * content was revised after they were enriched, and ones previously quarantined (a bad
+ * completion is worth another try, capped so a persistently failing item does not burn
+ * an LLM call on every scheduled pass forever). The ingest pipeline's `changedIds` can
+ * also be passed straight through to re-enrich the exact items a source just revised.
  */
-import { desc, eq, inArray, isNull, or } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { enrichedItems, rawItems, sources } from '../db/schema.js';
 import type { PromptInput } from './prompt.js';
@@ -32,8 +33,17 @@ export interface SelectPendingOptions {
 }
 
 /**
- * Raw items awaiting a good enrichment: those with no enriched row, or one still
- * quarantined. Newest first, so a capped run enriches the most timely items.
+ * How many model calls one item gets before a quarantined enrichment stops being
+ * retried. A revision of the raw content re-opens the item regardless of the count
+ * (new input deserves a fresh look); the cap only stops re-paying for the same
+ * failing input on every scheduled pass.
+ */
+export const MAX_ENRICH_ATTEMPTS = 3;
+
+/**
+ * Raw items awaiting a good, current enrichment: those with no enriched row, one
+ * written before the raw content was last revised, or one still quarantined with
+ * retries left. Newest first, so a capped run enriches the most timely items.
  */
 export function selectPendingInputs(
   db: Database,
@@ -44,7 +54,23 @@ export function selectPendingInputs(
     .from(rawItems)
     .innerJoin(sources, eq(sources.id, rawItems.sourceId))
     .leftJoin(enrichedItems, eq(enrichedItems.rawItemId, rawItems.id))
-    .where(or(isNull(enrichedItems.id), eq(enrichedItems.status, 'quarantined')))
+    .where(
+      or(
+        isNull(enrichedItems.id),
+        // The upsert that revises a raw item bumps `fetchedAt`, and every enrichment
+        // write bumps `createdAt` — so "enriched before last fetched" is exactly
+        // "stale". This is how revisions rebuild across scheduler processes, where
+        // ingest's in-memory `changedIds` cannot reach this stage. Compared at
+        // second granularity because the column default (`unixepoch() * 1000`)
+        // truncates to seconds while `fetchedAt` carries milliseconds — a row
+        // written in the same second as the fetch is fresh, not stale.
+        sql`${enrichedItems.createdAt} / 1000 < ${rawItems.fetchedAt} / 1000`,
+        and(
+          eq(enrichedItems.status, 'quarantined'),
+          lt(enrichedItems.attempts, MAX_ENRICH_ATTEMPTS),
+        ),
+      ),
+    )
     .orderBy(desc(rawItems.publishedAt));
 
   const rows = options.limit ? query.limit(options.limit).all() : query.all();

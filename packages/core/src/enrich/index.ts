@@ -34,6 +34,7 @@ export {
   type EnrichmentOutput,
 } from './schema.js';
 export {
+  MAX_ENRICH_ATTEMPTS,
   selectInputsByIds,
   selectPendingInputs,
   type EnrichmentInput,

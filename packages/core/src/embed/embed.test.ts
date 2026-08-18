@@ -179,6 +179,43 @@ describe('embedItems', () => {
     expect(second.attempted).toBe(0);
   });
 
+  it('re-embeds an item whose raw content was revised after indexing', async () => {
+    const id = await seedEnrichedItem(db, {
+      title: 'revised-later',
+      content: 'Original body before the source republished it.',
+    });
+
+    await embedItems(db, { embedder: stubEmbedder() });
+    const before = db.select().from(chunks).where(eq(chunks.rawItemId, id)).all();
+    expect(before.length).toBeGreaterThan(0);
+
+    // Simulate the pipeline order: the chunks predate the revising ingest, which
+    // rewrites the content and bumps `fetchedAt` (see upsertRawItems).
+    db.update(chunks)
+      .set({ createdAt: new Date(Date.now() - 60_000) })
+      .where(eq(chunks.rawItemId, id))
+      .run();
+    db.update(rawItems)
+      .set({ content: 'Revised body after republication.', fetchedAt: new Date() })
+      .where(eq(rawItems.id, id))
+      .run();
+
+    const rerun = await embedItems(db, { embedder: stubEmbedder() });
+    expect(rerun).toMatchObject({ attempted: 1, embedded: 1 });
+
+    // The stale index entry was swapped, not duplicated, and now carries new text.
+    const after = db.select().from(chunks).where(eq(chunks.rawItemId, id)).all();
+    expect(after.map((c) => c.content).join(' ')).toContain('Revised body');
+    const vecCount = db.$client.prepare(`SELECT count(*) AS n FROM vec_chunks`).get() as {
+      n: number;
+    };
+    expect(vecCount.n).toBe(after.length);
+
+    // And the item is closed again: nothing pending on the next pass.
+    const third = await embedItems(db, { embedder: stubEmbedder() });
+    expect(third.attempted).toBe(0);
+  });
+
   it('re-embeds explicit ids by replacing, not duplicating, their chunks', async () => {
     const id = await seedEnrichedItem(db, {
       title: 'revise-me',

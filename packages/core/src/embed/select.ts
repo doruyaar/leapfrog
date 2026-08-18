@@ -7,7 +7,7 @@
  * pipeline's `changedIds` can also be passed straight through to re-embed exactly the items
  * a source just revised.
  */
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { chunks, enrichedItems, rawItems, sources, type Category } from '../db/schema.js';
 
@@ -47,9 +47,12 @@ export interface SelectPendingOptions {
 }
 
 /**
- * Enriched items with no chunks yet, newest first, so a capped run indexes the most timely
- * items. The left join to `chunks` filtered on a null id returns exactly the items that have
- * never been chunked — re-running after some are indexed picks up only the remainder.
+ * Enriched items with no current chunks, newest first, so a capped run indexes the most
+ * timely items. The left join to `chunks` catches both never-chunked items (null id) and
+ * stale ones — chunks written before the raw content was last revised (`fetchedAt` is
+ * bumped by the revising upsert). Grouped by item because the join fans out to one row
+ * per chunk; the write path replaces an item's chunks wholesale, so re-selecting a stale
+ * item swaps its index entry rather than duplicating it.
  */
 export function selectPendingInputs(
   db: Database,
@@ -64,7 +67,16 @@ export function selectPendingInputs(
     )
     .innerJoin(sources, eq(sources.id, rawItems.sourceId))
     .leftJoin(chunks, eq(chunks.rawItemId, rawItems.id))
-    .where(isNull(chunks.id))
+    // Second-granularity comparison: the chunk `createdAt` default truncates to
+    // seconds while `fetchedAt` carries milliseconds, so a same-second write is
+    // fresh, not stale (mirrors the enrich/diff staleness checks).
+    .where(
+      or(
+        isNull(chunks.id),
+        sql`${chunks.createdAt} / 1000 < ${rawItems.fetchedAt} / 1000`,
+      ),
+    )
+    .groupBy(rawItems.id)
     .orderBy(desc(rawItems.publishedAt));
 
   const rows = options.limit ? query.limit(options.limit).all() : query.all();

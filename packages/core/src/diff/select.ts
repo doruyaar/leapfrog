@@ -5,7 +5,7 @@
  * the vendor-fact supersede chains are built in publication order — "what did we
  * believe before this item" is only well-defined when history is replayed forward.
  */
-import { and, asc, eq, inArray, isNull, or } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import {
   changeEvents,
@@ -80,7 +80,11 @@ export interface SelectPendingDiffOptions {
   limit?: number;
 }
 
-/** Enriched (`ok`) items with no change event yet, or one still quarantined. */
+/**
+ * Enriched (`ok`) items with no current change event: none yet, one written before the
+ * raw content was last revised (the revising upsert bumps `fetchedAt`; the event upsert
+ * replaces rather than duplicates), or one still quarantined.
+ */
 export function selectPendingDiffInputs(
   db: Database,
   options: SelectPendingDiffOptions = {},
@@ -94,7 +98,14 @@ export function selectPendingDiffInputs(
     .where(
       and(
         eq(enrichedItems.status, 'ok'),
-        or(isNull(changeEvents.id), eq(changeEvents.status, 'quarantined')),
+        or(
+          isNull(changeEvents.id),
+          // Second-granularity staleness check, matching enrich/embed: the event
+          // `createdAt` default truncates to seconds while `fetchedAt` carries
+          // milliseconds, so a same-second write is fresh, not stale.
+          sql`${changeEvents.createdAt} / 1000 < ${rawItems.fetchedAt} / 1000`,
+          eq(changeEvents.status, 'quarantined'),
+        ),
       ),
     )
     .orderBy(asc(rawItems.publishedAt));

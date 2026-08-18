@@ -36,6 +36,9 @@ services:
       - key: HF_HOME
         value: /data/.cache
       # --- Secrets: set these in the Render dashboard (sync:false = not in git) ---
+      # DEMO_USER + DEMO_PASS are REQUIRED in production: the app fails closed (503) when
+      # the gate is unset, so a forgotten secret can't expose a metered instance. To run
+      # a public demo without a gate on purpose, add LEAPFROG_ALLOW_PUBLIC=1 instead.
       - key: DEMO_USER # Basic-auth username for the shared link
         sync: false
       - key: DEMO_PASS # Basic-auth password for the shared link

@@ -33,12 +33,15 @@ docker compose up --build
 
 Open <http://localhost:3000>. On first boot the **web** container seeds the demo
 snapshot (downloads the ~30 MB embedding model once, cached under the volume); the
-**worker** container waits for the DB, then runs the pipeline every
-`SCHEDULE_INTERVAL_SECONDS` (default 6h).
+**worker** container waits for the DB, runs a pipeline pass immediately, then repeats
+every `SCHEDULE_INTERVAL_SECONDS` (default 6h). Each pass writes a heartbeat next to
+the SQLite file, surfaced at `/api/health` (`scheduler.stale` flips after two missed
+intervals) — check that instead of container logs to confirm the pipeline is ticking.
 
 | Var | Default | Purpose |
 |---|---|---|
 | `DEMO_USER` / `DEMO_PASS` | empty (gate off) | HTTP Basic Auth for the URL |
+| `LEAPFROG_ALLOW_PUBLIC` | empty | Set `1` to run a *production* build with the gate off on purpose (otherwise it fails closed) |
 | `INGEST_LIVE` | `0` | `1` runs the real fetch→enrich→embed pipeline (needs `OPENROUTER_API_KEY`) |
 | `SCHEDULE_INTERVAL_SECONDS` | `21600` | Worker pipeline cadence |
 | `LEAPFROG_DB_PATH` | `/data/leapfrog.sqlite` | DB location on the shared volume |
@@ -71,7 +74,10 @@ Password: <DEMO_PASS>
 ```
 
 The Basic-auth gate ([`apps/web/src/middleware.ts`](../apps/web/src/middleware.ts))
-covers every route except `/api/health` and static assets.
+covers every route except `/api/health` and static assets. It **fails closed in
+production**: a hosted build with `DEMO_USER`/`DEMO_PASS` unset returns `503` rather than
+serving the app openly (a forgotten secret should not expose a metered `/api/ask`). To run
+a hosted demo without a gate deliberately, set `LEAPFROG_ALLOW_PUBLIC=1`.
 
 ### Why one service instead of web + worker?
 

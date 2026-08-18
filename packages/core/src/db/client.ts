@@ -84,7 +84,12 @@ export function createDatabase(options: CreateDatabaseOptions = {}) {
 
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
-  sqlite.pragma('busy_timeout = 5000');
+  // The web server and the worker pipeline share this file from separate processes
+  // (co-located on Render, see render.yaml). WAL keeps readers off writers' backs,
+  // but a long derived-stage write transaction (embed/enrich batches) can still make
+  // the other process wait — give it well past the longest observed transaction
+  // rather than surfacing SQLITE_BUSY to a page load.
+  sqlite.pragma('busy_timeout = 30000');
 
   return drizzle(sqlite, { schema, logger: options.verbose ?? false });
 }

@@ -11,6 +11,7 @@
  * - **Re-running is safe.** Writes upsert on `raw_item_id`, so re-enriching an item
  *   (revised content, retried quarantine) replaces its row rather than duplicating it.
  */
+import { sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { enrichedItems, type NewEnrichedItem } from '../db/schema.js';
 import { mapWithConcurrency } from '../util/concurrency.js';
@@ -218,6 +219,9 @@ function writeEnrichment(db: Database, row: NewEnrichedItem): void {
         latencyMs: row.latencyMs ?? null,
         promptTokens: row.promptTokens ?? null,
         completionTokens: row.completionTokens ?? null,
+        // Counts every model call for this item, so selection can stop retrying an
+        // item whose output keeps failing validation (see MAX_ENRICH_ATTEMPTS).
+        attempts: sql`${enrichedItems.attempts} + 1`,
         createdAt: new Date(),
       },
     })
