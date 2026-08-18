@@ -9,7 +9,7 @@ import type { Database } from '../db/client.js';
 import { notificationDeliveries } from '../db/schema.js';
 import { readSignals, type SignalSummary } from '../query/signals.js';
 import { matchSignal, type SubscriptionFilters } from './match.js';
-import { renderSubscriptionEmail } from './render.js';
+import { renderSubscriptionEmail, type RenderedEmail } from './render.js';
 import { resolveEmailSender, type EmailSender } from './email/index.js';
 import {
   getSubscription,
@@ -90,7 +90,7 @@ export interface NotifyRunResult {
 }
 
 export interface RunNotificationsOptions {
-  /** Email sender; defaults to the configured one (Resend if keyed, else outbox). */
+  /** Email sender; defaults to the configured one (Resend if keyed, else preview no-op). */
   sender?: EmailSender;
   /** App origin for deep links; defaults to `APP_BASE_URL`. */
   baseUrl?: string;
@@ -225,6 +225,77 @@ export async function sendTestNotification(
     channel: result.channel,
     ref: result.ref,
     reason: result.reason,
+    sample,
+  };
+}
+
+/** A rendered notification for display only — nothing is sent, stored, or logged. */
+export interface NotificationPreview extends RenderedEmail {
+  subscriptionId: number;
+  label: string;
+  email: string;
+  /** Signals shown in the preview. */
+  matched: number;
+  /** True when illustrative recent signals stand in for a rule with no matches yet. */
+  sample: boolean;
+  /** Set when there is nothing to preview at all (e.g. an empty corpus). */
+  reason?: string;
+}
+
+export interface PreviewNotificationOptions {
+  /** App origin for deep links; defaults to `APP_BASE_URL`. */
+  baseUrl?: string;
+  /** Cap items in the preview; defaults to {@link MAX_ITEMS_PER_EMAIL}. */
+  maxItems?: number;
+}
+
+/**
+ * Render a subscription's email exactly as delivery would, purely to *show* how the alert
+ * looks for its current configuration. This is the demo's whole notification story until
+ * a provider key wires up real sending: it reads only, never touches the delivery ledger,
+ * and writes nothing to disk or the network. When nothing matches yet, a few recent
+ * insights stand in as a clearly-labelled sample so the preview is still a real, formatted
+ * email. Returns `null` when the subscription does not exist.
+ */
+export function previewNotification(
+  db: Database,
+  subscriptionId: number,
+  options: PreviewNotificationOptions = {},
+): NotificationPreview | null {
+  const sub: SubscriptionView | null = getSubscription(db, subscriptionId);
+  if (!sub) return null;
+
+  const maxItems = options.maxItems ?? MAX_ITEMS_PER_EMAIL;
+  const matches = findMatches(db, sub, { limit: maxItems });
+  const sample = matches.length === 0;
+  const signals = sample ? readSignals(db, { limit: 3 }) : matches;
+
+  if (signals.length === 0) {
+    return {
+      subscriptionId: sub.id,
+      label: sub.label,
+      email: sub.email,
+      subject: '',
+      html: '',
+      text: '',
+      matched: 0,
+      sample: true,
+      reason: 'no insights in corpus — run `npm run seed`',
+    };
+  }
+
+  const email = renderSubscriptionEmail(sub, signals, {
+    baseUrl: options.baseUrl,
+    sample,
+  });
+  return {
+    subscriptionId: sub.id,
+    label: sub.label,
+    email: sub.email,
+    subject: email.subject,
+    html: email.html,
+    text: email.text,
+    matched: signals.length,
     sample,
   };
 }

@@ -25,24 +25,25 @@ export {
 } from './render.js';
 export {
   findMatches,
+  previewNotification,
   readDeliveredIds,
   runNotifications,
   sendTestNotification,
   MAX_ITEMS_PER_EMAIL,
+  type NotificationPreview,
   type NotifyRunResult,
+  type PreviewNotificationOptions,
   type RunNotificationsOptions,
   type SubscriptionDeliveryResult,
   type TestSendResult,
 } from './deliver.js';
 export {
-  createOutboxSender,
+  createPreviewSender,
   createResendSender,
   resolveEmailSender,
-  resolveOutboxDir,
   DEFAULT_FROM,
   type EmailMessage,
   type EmailSender,
-  type OutboxOptions,
   type ResendOptions,
   type ResolveSenderOptions,
   type SendResult,

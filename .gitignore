@@ -26,9 +26,6 @@ next-env.d.ts
 *.sqlite-*
 *.db
 
-# Demo-mode email outbox (generated .eml notifications)
-data/outbox/
-
 # OS / editor
 .DS_Store
 .idea/

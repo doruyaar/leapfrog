@@ -2,7 +2,7 @@ import { Power, Trash2 } from 'lucide-react';
 import { describeSubscription, type SubscriptionView } from '@leapfrog/core';
 import { deleteSubscriptionAction, toggleSubscriptionAction } from '@/lib/actions';
 import { CATEGORY_COLOR, relativeAge } from '@/lib/format';
-import { TestButton } from './test-button';
+import { PreviewButton } from './preview-button';
 
 const FREQUENCY_LABEL: Record<SubscriptionView['frequency'], string> = {
   immediate: 'Immediately',
@@ -84,7 +84,7 @@ export function SubscriptionList({
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line-soft pt-3">
-            <TestButton subscriptionId={sub.id} />
+            <PreviewButton subscriptionId={sub.id} />
 
             <form action={toggleSubscriptionAction} className="ml-auto">
               <input type="hidden" name="id" value={sub.id} />

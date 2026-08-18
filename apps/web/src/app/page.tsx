@@ -3,7 +3,7 @@ import { CalendarDays, Sparkles } from 'lucide-react';
 import { getBrief, getCorroboration, getMaterialChangeIds } from '@/lib/queries';
 import { formatDate } from '@/lib/format';
 import { CitedText } from '@/components/signals/cited-text';
-import { BriefClaims, BriefConflicts } from '@/components/signals/brief-grounding';
+import { BriefConflicts } from '@/components/signals/brief-grounding';
 import { SignalCard } from '@/components/signals/signal-card';
 import { EmptyState } from '@/components/ui/empty-state';
 
@@ -20,6 +20,16 @@ export default async function HomePage() {
   const corroborations = new Map(
     itemIds.map((id) => [id, getCorroboration(id)?.status] as const),
   );
+
+  // Fold the grounding into the summary: map each cited source to the verbatim quote(s)
+  // the brief's claims rest on, so hovering a citation reveals its evidence in place
+  // rather than stacking a separate wall of references below the summary.
+  const quotesById = new Map<number, string[]>();
+  for (const claim of brief?.claims ?? []) {
+    const quotes = quotesById.get(claim.sourceId) ?? [];
+    if (!quotes.includes(claim.quote)) quotes.push(claim.quote);
+    quotesById.set(claim.sourceId, quotes);
+  }
 
   return (
     <div className="px-[34px] pb-11 pt-5">
@@ -55,15 +65,16 @@ export default async function HomePage() {
             </h2>
             <CitedText
               text={brief.summary}
+              quotesById={quotesById}
               className="text-[15px] leading-relaxed text-ink"
             />
             <p className="mt-3 text-[12px] text-ink-faint">
-              Ranked by impact × recency · citations link to the source insight.
+              Ranked by impact × recency · hover a citation for its source quote, click to
+              open it.
             </p>
           </section>
 
           <BriefConflicts conflicts={brief.conflicts} />
-          <BriefClaims claims={brief.claims} />
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {brief.items.map((item, i) => (

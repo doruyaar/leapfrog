@@ -15,12 +15,12 @@ import {
   createSubscription,
   deleteSubscription,
   findMatches,
+  previewNotification,
   readComparisonMatrix,
   readReviewedSuggestionIds,
   rejectMatrixSuggestion,
   runMigrations,
   saveBattlecard,
-  sendTestNotification,
   setSubscriptionEnabled,
   suggestMatrixUpdates,
   updateSubscription,
@@ -29,10 +29,10 @@ import {
   type Category,
   type Database,
   type MatrixSuggestion,
+  type NotificationPreview,
   type NotifyFrequency,
   type SubscriptionFilters,
   type SubscriptionInput,
-  type TestSendResult,
 } from '@leapfrog/core';
 import { getDb } from './db';
 import { getMatrixSuggestions } from './queries';
@@ -221,16 +221,15 @@ export async function previewMatchCountAction(
   return db ? findMatches(db, filters).length : 0;
 }
 
-/** Send a subscription its current matches right now (ignores the delivery ledger). */
-export async function sendTestAction(
+/**
+ * Render a subscription's email exactly as delivery would, so the user can see how the
+ * alert looks for its current configuration. Read-only: nothing is sent or stored — real
+ * delivery arrives with a provider key in production.
+ */
+export async function previewNotificationAction(
   subscriptionId: number,
-): Promise<TestSendResult | { delivered: false; reason: string }> {
-  const db = createDatabase();
-  runMigrations(db);
-  try {
-    const result = await sendTestNotification(db, subscriptionId);
-    return result ?? { delivered: false, reason: 'subscription not found' };
-  } finally {
-    db.$client.close();
-  }
+): Promise<NotificationPreview | { error: string }> {
+  const db = getDb();
+  if (!db) return { error: 'no insights yet — run `npm run seed`' };
+  return previewNotification(db, subscriptionId) ?? { error: 'subscription not found' };
 }
