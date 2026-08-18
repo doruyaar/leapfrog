@@ -233,9 +233,9 @@ export function createLocalEmbedder(
  * and querying must use the same source or vectors will not be comparable — this single
  * chooser is what keeps them aligned.
  */
-export function createDefaultEmbedder(
-  env: NodeJS.ProcessEnv = process.env,
-): Embedder {
+export function createDefaultEmbedder(env: NodeJS.ProcessEnv = process.env): Embedder {
   const config = readOpenRouterEmbeddingConfig(env);
-  return config ? createOpenRouterEmbedder(config) : createLocalEmbedder(readEmbeddingConfig(env));
+  return config
+    ? createOpenRouterEmbedder(config)
+    : createLocalEmbedder(readEmbeddingConfig(env));
 }

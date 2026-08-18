@@ -22,12 +22,16 @@ describe('mapWithConcurrency', () => {
   it('never runs more than `limit` workers at once', async () => {
     let inFlight = 0;
     let peak = 0;
-    await mapWithConcurrency(Array.from({ length: 20 }, (_, i) => i), 4, async () => {
-      inFlight += 1;
-      peak = Math.max(peak, inFlight);
-      await new Promise((r) => setTimeout(r, 1));
-      inFlight -= 1;
-    });
+    await mapWithConcurrency(
+      Array.from({ length: 20 }, (_, i) => i),
+      4,
+      async () => {
+        inFlight += 1;
+        peak = Math.max(peak, inFlight);
+        await new Promise((r) => setTimeout(r, 1));
+        inFlight -= 1;
+      },
+    );
     expect(peak).toBeLessThanOrEqual(4);
     expect(peak).toBeGreaterThan(1);
   });
