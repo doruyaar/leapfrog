@@ -27,7 +27,7 @@ services:
       - key: SCHEDULE_INTERVAL_SECONDS
         value: '21600' # every 6 hours
       - key: INGEST_LIVE
-        value: '0' # set to 1 (and add OPENROUTER_API_KEY) for the live pipeline
+        value: '1' # set to 1 (and add OPENROUTER_API_KEY) for the live pipeline
       # Persist the SQLite DB and the cached embedding model on the disk.
       - key: XDG_CACHE_HOME
         value: /data/.cache
@@ -52,3 +52,7 @@ services:
         sync: false
       - key: SLACK_WEBHOOK_URL
         sync: false
+      - key: OPENROUTER_CHAT_MODEL
+        value: openai/gpt-5.6-luna
+      - key: OPENROUTER_ENRICH_MODEL
+        value: openai/gpt-5.6-luna
