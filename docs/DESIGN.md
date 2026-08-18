@@ -40,7 +40,12 @@ Sources → Ingest → Normalize/Dedupe → LLM Enrich → Index (BM25 + vectors
 - **Daily Brief**: every morning the pipeline composes a ranked brief. Each item carries:
   category (Security / Product / Pricing / Business / Ecosystem), affected vendor,
   **impact score (1–5) for the focus vendor**, and a grounded "Why it matters" paragraph with citations.
-- **Alerts**: impact ≥ 4 items trigger a Slack webhook immediately (in-app toast + optional webhook).
+- **Change detection**: each enriched item is compared against prior state and labelled
+  new / update / re-phrasing, so the brief and the Changes view foreground material change,
+  not restatement.
+- **Alerts**: impact ≥ 4 items are pushed to an optional Slack webhook; analysts also
+  subscribe by vendor/category to email digests (Resend), previewed in-app on the
+  Notifications page. Both channels degrade to a clean no-op when their key/URL is absent.
 
 ### Passive surface
 - **Ask LeapFrog**: RAG chat over the full corpus. Hybrid retrieval (SQLite FTS5 BM25 + vector
@@ -81,8 +86,6 @@ tracked for signals without appearing in that head-to-head grid.
 - RSS/Atom: vendor blogs, release-note feeds, The Register/InfoQ/DevClass tags
 - GitHub Releases API (vendor OSS products)
 - NVD CVE API filtered by vendor product CPEs
-- Hacker News (Algolia API) mentions
-- Pricing pages (HTML snapshot + diff) — *stretch goal*
 
 ## 4. Stack — and the "why" for each choice
 
@@ -137,11 +140,15 @@ populated UI in under a minute. Live mode (`INGEST_LIVE=1` + API key) runs the r
    products[], impact_score, summary, why_it_matters}` validated by zod; items
    failing validation are quarantined, never shown. Raw item text is always preserved
    (immutable input); enrichment is a derived, re-buildable view.
-4. **Embed + index** — chunk on structural boundaries, store metadata with every chunk
+4. **Detect changes** — compare each enriched item against prior state to classify it as
+   new / update / re-phrasing (deterministic, key-free), so downstream surfaces foreground
+   material change over restatement.
+5. **Embed + index** — chunk on structural boundaries, store metadata with every chunk
    (source, vendor, category, published_at) for pre-filtered retrieval.
-5. **Compose** — daily brief = top-N by impact × recency, grouped by category, with an
+6. **Compose** — daily brief = top-N by impact × recency, grouped by category, with an
    LLM-written executive summary that cites item IDs (validated: every citation must exist).
-6. **Notify** — in-app inbox always; Slack webhook if configured.
+7. **Notify** — email digest subscriptions (Resend) plus an optional Slack webhook; both
+   degrade to a clean no-op without their key/URL.
 
 Every LLM call logs `request_id`, latency, and token counts (observability from day one).
 
@@ -149,9 +156,10 @@ Every LLM call logs `request_id`, latency, and token counts (observability from 
 
 ### Built and demonstrable now
 - Monorepo scaffold, CI, platform UI shell
-- 3 source adapters (RSS, GitHub Releases, NVD) + normalize/dedupe/enrich/embed pipeline
-- Daily Brief, feed with filters, competitor page, Ask (hybrid RAG + citations)
-- Battlecard generator, comparison matrix (curated axes + auto-suggested updates)
+- 3 source adapters (RSS, GitHub Releases, NVD) + normalize / dedupe / enrich / change-detection / embed pipeline
+- Daily Brief, Insights feed with filters, Changes view, competitor pages, Ask (hybrid RAG + citations)
+- Battlecard generator, comparison matrix (curated axes + auto-suggested updates), cross-source corroboration
+- Email digest notifications (Resend) with in-app preview; optional Slack webhook
 - Demo-mode seed data, eval script, README
 
 ### Next steps (with more time / resources)
@@ -179,5 +187,4 @@ Every LLM call logs `request_id`, latency, and token counts (observability from 
 - Architecture diagram: [`docs/diagrams/architecture.md`](diagrams/architecture.md)
 - Product scenarios: [`docs/diagrams/product-scenarios.md`](diagrams/product-scenarios.md)
 - Build plan & tasks: [`docs/diagrams/build-plan.md`](diagrams/build-plan.md)
-- Gap plan (change detection, corroboration, asset loop): [`docs/GAP-PLAN.md`](GAP-PLAN.md)
 - Decisions: [`docs/adr/`](adr/)

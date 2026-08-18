@@ -33,6 +33,22 @@ daily briefs, grounded Q&A, a comparison matrix, and battlecards.
   pre-filtering, so exact identifiers _and_ semantic questions both work.
 - **Config, not code.** Swap LLM providers/models with an env change — no source edits.
 
+## By the numbers
+
+A single end-to-end run — ingest → normalize/dedupe → LLM enrich → impact-score (1–5) →
+diff (state-change detection) → compose brief — turns raw signals into a full, cited
+workspace:
+
+| Metric                    | Typical run                                                              |
+| ------------------------- | ------------------------------------------------------------------------ |
+| **Signals ingested**      | ~400 raw signals across 10 tracked competitors                           |
+| **Insights processed**    | ~400 enriched, impact-scored, and diffed against their previous state    |
+| **Wall-clock time**       | ~15 minutes end to end                                                   |
+| **Cost**                  | ~$1 on a top-tier model (e.g. `openai/gpt-5.6-luna`)                      |
+| **Output**                | Ranked daily brief, comparison matrix, per-competitor battlecards, grounded Q&A |
+
+Because every stage is idempotent, re-running only pays for what actually changed.
+
 ## Quick start
 
 > No API key required — the bundled snapshot of real, pre-enriched signals runs the whole
@@ -62,6 +78,71 @@ Open <http://localhost:3000>. The app is organized as a proactive-first workspac
 | **Battlecards** (`/battlecards`)     | One-click, source-footnoted sales battlecard per competitor, refreshable from the latest corpus.                                                   |
 | **Ask** (`/ask`)                     | Hybrid RAG chat over the corpus. Every answer cites its sources and refuses ("not in my sources") when the corpus has nothing relevant.            |
 | **Notifications** (`/notifications`) | Subscribe to insights matching a vendor/category and preview the digest email each rule produces; live delivery turns on with a key in production. |
+
+## Screenshots
+
+### Today's Brief
+
+![Today's Brief](photos/daily_brief.png)
+
+The home screen: an executive summary followed by a ranked, category-grouped feed. Every
+card carries a 1–5 impact score, a "why it matters to JFrog" note, a state-change tag
+(new / update / re-phrasing), and a source badge.
+
+### Insight detail
+
+![Insight detail](photos/insight_cards.png)
+
+Open any insight for the full enrichment — "why it matters", a before/after "compared to
+previous state" diff, the summary, the impact rationale, and full provenance (source
+entities, corroboration, and the exact model, prompt version, and enrich date behind it).
+
+### Ask — contextual, grounded chat
+
+![Ask LeapFrog](photos/talkative_chat_about_page_context.png)
+
+A "Talk about it" panel opens in-context on any insight. Answers are grounded: every claim
+cites the corpus items it came from, and the assistant explains its impact scoring rather
+than hallucinating.
+
+### Competitors
+
+![Competitors](photos/battlecards.png)
+
+Every tracked vendor with intelligence in the corpus, busiest first, each with its insight
+count, latest headline, and category mix. Open one for its timeline and filterable feed.
+
+### Competitive Matrix — human-in-the-loop
+
+![Competitive Matrix](photos/comparison_matrix_with_human-in-the-loop_updates.png)
+
+JFrog vs. competitors across capability axes (Strong / Partial / Gap / Varies) with
+evidence behind every cell. When new signals arrive the system proposes matrix updates —
+**AI recommends, you decide**: each recommendation is backed by recent insights and only
+applied on approval.
+
+### Battlecards
+
+![Battlecard](photos/a_battlecard.png)
+
+A one-click, source-footnoted sales battlecard per competitor: positioning, where JFrog
+wins, watch-outs, points at parity, ready-to-use talking points, and recent activity —
+exportable to Markdown.
+
+### Notifications
+
+![Notifications](photos/notifications_system.png)
+
+Subscribe to exactly the companies, update types, severity, and keywords you care about,
+with immediate / daily / weekly frequency. Each rule shows how many current insights it
+matches before you save.
+
+### Digest email
+
+![Digest email](photos/how_email_looks_like.png)
+
+The email each subscription produces: matched insights with their impact score, category,
+and "why it matters", linking back to the insight and the original source.
 
 ## How it works
 

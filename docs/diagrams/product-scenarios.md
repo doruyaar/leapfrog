@@ -81,13 +81,15 @@ matrix, and a human-in-the-loop for anything that changes stated positioning.
 
 ```mermaid
 flowchart TD
-    HOME["Today's Brief (home)<br/>ranked, scored, cited"] --> ITEM["Signal detail<br/>summary, impact rationale,<br/>source links"]
-    HOME --> FEED["All Signals<br/>filter: vendor / category / date"]
+    HOME["Today's Brief (home)<br/>ranked, scored, cited"] --> ITEM["Insight detail<br/>summary, impact rationale,<br/>sources + corroboration"]
     NAV["Sidebar (platform-style)"] --> HOME
+    NAV --> FEED["Insights<br/>filter: vendor / category"]
+    NAV --> CHG["Changes<br/>new / update / re-phrasing"]
     NAV --> COMP["Competitors<br/>per-vendor timeline"]
-    NAV --> MATRIX["Comparison Matrix<br/>focus vendor vs. field"]
-    NAV --> CARDS["Battlecards<br/>generate / refresh / export"]
-    NAV --> ASKP["Ask LeapFrog<br/>chat with citations"]
-    NAV --> SRC["Sources (admin)<br/>add feed, run ingest now"]
+    NAV --> MATRIX["Competitive Matrix<br/>focus vendor vs. field"]
+    NAV --> CARDS["Battlecards<br/>generate / refresh"]
+    NAV --> NOTIF["Notifications<br/>email-digest subscriptions"]
+    ASK["Ask LeapFrog<br/>global chat drawer, cited"] -.-> HOME
+    FEED --> ITEM
     COMP --> CARDS
 ```

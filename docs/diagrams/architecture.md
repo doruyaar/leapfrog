@@ -10,13 +10,13 @@ flowchart LR
         RSS["RSS / Atom<br/>vendor blogs, release notes"]
         GH["GitHub Releases API"]
         NVD["NVD CVE API<br/>(vendor product CPEs)"]
-        HN["Hacker News<br/>(Algolia API)"]
     end
 
     subgraph WORKER["apps/worker — ingestion pipeline (node-cron / manual trigger)"]
         FETCH["Fetch<br/>SourceAdapter interface,<br/>retry + backoff"]
         NORM["Normalize + Dedupe<br/>canonical URL hash, content hash,<br/>idempotent upsert"]
         ENRICH["LLM Enrich (OpenRouter openai/gpt-4o-mini)<br/>category, vendors, impact 1–5,<br/>'why it matters'<br/>zod-validated structured output"]
+        DIFF["Detect changes<br/>new / update / re-phrasing<br/>(deterministic, key-free)"]
         EMBED["Chunk + Embed<br/>OpenRouter text-embedding-3-small<br/>(local fallback, no key),<br/>metadata on every chunk"]
         COMPOSE["Brief Composer (daily)<br/>rank by impact × recency,<br/>cited executive summary"]
     end
@@ -36,10 +36,10 @@ flowchart LR
         CARD["Battlecard generator"]
     end
 
-    NOTIFY["Slack webhook<br/>(impact ≥ 4 alerts)"]
+    NOTIFY["Notify<br/>email digests (Resend) +<br/>optional Slack webhook (impact ≥ 4)"]
     ANALYST(["CI Analyst / Sales / PMM"])
 
-    SOURCES --> FETCH --> NORM --> ENRICH --> EMBED
+    SOURCES --> FETCH --> NORM --> ENRICH --> DIFF --> EMBED
     NORM --> RAW
     ENRICH --> ENR
     EMBED --> FTS & VEC
