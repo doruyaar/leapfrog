@@ -8,8 +8,10 @@ export {
 export {
   answerQuestion,
   buildExtractiveAnswer,
+  isSmallTalk,
   ASK_PROMPT_VERSION,
   REFUSAL_MESSAGE,
+  GREETING_MESSAGE,
   type AnswerModel,
   type AskAnswer,
   type AskContext,

@@ -7,7 +7,13 @@ import { embedItems } from '../embed/embed.js';
 import { type Embedder } from '../embed/model.js';
 import { toMatchQuery } from './fts.js';
 import { retrieve, type RetrievedPassage } from './hybrid.js';
-import { answerQuestion, REFUSAL_MESSAGE, type AnswerModel } from './answer.js';
+import {
+  answerQuestion,
+  isSmallTalk,
+  GREETING_MESSAGE,
+  REFUSAL_MESSAGE,
+  type AnswerModel,
+} from './answer.js';
 
 /**
  * A topic-keyed embedder: every text maps to one of three orthonormal basis vectors by
@@ -102,6 +108,38 @@ describe('toMatchQuery', () => {
     // lets an off-topic question reach the refusal path instead of BM25-matching
     // every passage containing "is" or "the".
     expect(toMatchQuery('what is it about?')).toBe('');
+  });
+});
+
+describe('isSmallTalk', () => {
+  it('recognises greetings and social niceties (incl. elongation and punctuation)', () => {
+    for (const q of [
+      'hey',
+      'Hi!',
+      'hello',
+      'heyyy',
+      'hey there',
+      'Good morning',
+      'thanks',
+      'thank you!',
+      'how are you?',
+      'who are you',
+      'what can you do?',
+      'help',
+    ]) {
+      expect(isSmallTalk(q)).toBe(true);
+    }
+  });
+
+  it('does not treat a real question as small talk, even when it opens with a greeting', () => {
+    for (const q of [
+      "hey, what's the latest on Sonatype?",
+      'hello, how is GitLab pricing changing?',
+      'what is the CVE affecting Nexus?',
+      'thanks for the Docker update details',
+    ]) {
+      expect(isSmallTalk(q)).toBe(false);
+    }
   });
 });
 
@@ -203,6 +241,24 @@ describe('answerQuestion', () => {
     });
     expect(result.mode).toBe('refusal');
     expect(result.answer).toBe(REFUSAL_MESSAGE);
+    expect(result.citations).toHaveLength(0);
+  });
+
+  it('greets small talk instead of refusing, without touching retrieval', async () => {
+    // A model that throws proves the greeting short-circuits before any answer writing.
+    const model: AnswerModel = {
+      model: 'test-llm',
+      promptVersion: 'ask@4',
+      async answer() {
+        throw new Error('model should not be called for a greeting');
+      },
+    };
+    const result = await answerQuestion(db, 'hey', {
+      embedder: topicEmbedder(),
+      model,
+    });
+    expect(result.mode).toBe('greeting');
+    expect(result.answer).toBe(GREETING_MESSAGE);
     expect(result.citations).toHaveLength(0);
   });
 

@@ -27,6 +27,50 @@ export const REFUSAL_MESSAGE =
   'tracked competitive-intelligence corpus — try a question about JFrog or a tracked ' +
   'competitor (Sonatype, GitLab, Docker, GitHub, Snyk, Chainguard, and others).';
 
+/**
+ * Warm reply to a greeting or small talk. Groundedness only bites on *claims*, so a
+ * "hey" or "thanks" should be met like an assistant, not with the "not in my sources"
+ * refusal. It still steers the user back to what LeapFrog can actually answer.
+ */
+export const GREETING_MESSAGE =
+  "Hi — I'm LeapFrog, your competitive-intelligence assistant for the software-" +
+  'supply-chain and artifact-management market. Ask me about JFrog or a tracked ' +
+  'competitor (Sonatype, GitLab, Docker, GitHub, Snyk, Chainguard, and others) — a ' +
+  'recent launch, CVE, pricing move, or how the competitive picture is shifting — and ' +
+  "I'll answer from tracked sources, with citations.";
+
+/**
+ * Pure greetings / social niceties that carry no question to ground. Matched against the
+ * whole message (punctuation and letter-elongation stripped) so a real question that
+ * merely *opens* with a greeting — "hey, what's the latest on Sonatype?" — still goes
+ * through retrieval and is answered or refused on its merits.
+ */
+const SMALL_TALK_PATTERNS: RegExp[] = [
+  /^(hi+|hey+|hello+|helo+|hiya+|heya+|yo+|sup+|howdy+|hola+|greetings|gday)( (there|leapfrog|friend|team|all|everyone|folks))?$/,
+  /^good (morning|afternoon|evening|day)( leapfrog| there| all| everyone)?$/,
+  /^(how are you( doing| today)?|hows it going|how is it going|whats up|wassup|whats new|how goes it)$/,
+  /^(thanks|thank you|thank u|thankyou|thx|ty|cheers|much appreciated|appreciate it|nice one)( leapfrog)?$/,
+  /^(cool|nice|great|awesome|amazing|perfect|ok|okay|kk|got it|gotcha|sounds good|fair enough|makes sense|great stuff)$/,
+  /^(who are you|what are you|what can you do|what do you do|what is this|whats this|how does this work|how do you work|what can you help( me)?( with)?|can you help|help)$/,
+];
+
+/**
+ * True when the message is just a greeting / social nicety, not a question to ground.
+ * Normalises case, drops punctuation and emoji, and collapses whitespace before matching
+ * a small, closed set of phrases (with letter-elongation tolerated inside the patterns,
+ * so "heyyy" still counts). Real questions that merely *open* with a greeting fall
+ * through to retrieval, because the whole message must match a pattern.
+ */
+export function isSmallTalk(query: string): boolean {
+  const normalized = query
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!normalized) return false;
+  return SMALL_TALK_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
 export interface Citation {
   id: number;
   title: string;
@@ -39,7 +83,7 @@ export interface Citation {
 export interface AskAnswer {
   answer: string;
   citations: Citation[];
-  mode: 'refusal' | 'extractive' | 'llm';
+  mode: 'refusal' | 'extractive' | 'llm' | 'greeting';
 }
 
 /**
@@ -165,6 +209,13 @@ export async function answerQuestion(
   query: string,
   options: AskOptions = {},
 ): Promise<AskAnswer> {
+  // Greet, don't refuse: a bare "hey" / "thanks" carries no claim to ground, so meet it
+  // like an assistant instead of the "not in my sources" wall. Real questions (even ones
+  // that open with a greeting) fall through to retrieval and are answered or refused.
+  if (isSmallTalk(query)) {
+    return { answer: GREETING_MESSAGE, citations: [], mode: 'greeting' };
+  }
+
   // Bias retrieval toward the discussed subject without letting it drown the question.
   const retrievalQuery = options.context ? `${query}\n${options.context.label}` : query;
   const retrieved = await retrieve(db, retrievalQuery, options);

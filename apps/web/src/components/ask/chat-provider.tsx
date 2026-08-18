@@ -21,7 +21,7 @@ export interface Citation {
 export interface Answer {
   answer: string;
   citations: Citation[];
-  mode: 'refusal' | 'extractive' | 'llm';
+  mode: 'refusal' | 'extractive' | 'llm' | 'greeting';
 }
 
 export interface Turn {
