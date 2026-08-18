@@ -65,7 +65,12 @@ export async function runSeedCommand(argv: string[]): Promise<number> {
 
   if (!options.json) {
     console.log(`Seeding demo snapshot into ${resolveDatabasePath(options.dbPath)}…`);
-    if (options.embed) console.log('(first run downloads the local embedding model)\n');
+    if (options.embed) {
+      console.log(
+        '(embeddings use OpenRouter when a key is set; the key-free local fallback ' +
+          'downloads its model on first run)\n',
+      );
+    }
   }
 
   try {

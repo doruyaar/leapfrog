@@ -3,8 +3,9 @@
  * write the keyword + vector retrieval index (docs/DESIGN.md §4).
  *
  * Idempotent by design: it embeds items that are enriched `ok` but not yet chunked, so it
- * is safe to run after every enrich or on a schedule. No API key is required — embeddings
- * run locally via transformers.js — but the first run downloads the model (~30 MB) and
+ * is safe to run after every enrich or on a schedule. With `OPENROUTER_API_KEY` set,
+ * embeddings go through OpenRouter (`OPENROUTER_EMBEDDING_MODEL`); without a key they run
+ * locally via transformers.js, where the first run downloads the model (~30 MB) and
  * caches it, so an initial invocation can pause before the first item.
  */
 import {
@@ -20,18 +21,20 @@ import { numberFlag, parseFlags, stringFlag } from '../args.js';
 
 export interface EmbedCommandOptions {
   maxItems?: number;
+  concurrency?: number;
   dbPath?: string;
   json: boolean;
 }
 
 export function parseEmbedArgs(argv: string[]): EmbedCommandOptions {
   const flags = parseFlags(argv, {
-    values: ['max', 'db'],
+    values: ['max', 'concurrency', 'db'],
     switches: ['json'],
   });
 
   return {
     maxItems: numberFlag(flags, 'max', { min: 1 }),
+    concurrency: numberFlag(flags, 'concurrency', { min: 1 }),
     dbPath: stringFlag(flags, 'db'),
     json: flags.json === true,
   };
@@ -84,12 +87,16 @@ export async function runEmbedCommand(argv: string[]): Promise<number> {
 
   if (!options.json) {
     console.log(`Embedding pending items in ${resolveDatabasePath(options.dbPath)}…`);
-    console.log('(first run downloads the local embedding model, ~30 MB)\n');
+    console.log(
+      '(embeddings use OpenRouter when a key is set; the key-free local fallback ' +
+        'downloads its model on first run, ~30 MB)\n',
+    );
   }
 
   try {
     const report = await embedItems(db, {
       maxItems: options.maxItems,
+      concurrency: options.concurrency,
       // Live progress on the terminal; skipped in JSON mode to keep stdout parseable.
       onItemStart: options.json ? undefined : logItemStart,
       onItemComplete: options.json

@@ -26,7 +26,7 @@ import {
   type ChangeKind,
   type NewChangeEvent,
 } from '../db/schema.js';
-import { createLocalEmbedder, type Embedder } from '../embed/model.js';
+import { createDefaultEmbedder, type Embedder } from '../embed/model.js';
 import { MissingApiKeyError, type ModelCompletion } from '../enrich/client.js';
 import { createOpenRouterDiffModel, type DiffModel } from './client.js';
 import { readDiffModelConfig, readSimilarityThreshold } from './config.js';
@@ -131,7 +131,7 @@ export async function diffItems(
   options: DiffItemsOptions = {},
 ): Promise<DiffReport> {
   const model = options.model === undefined ? modelFromEnv() : options.model;
-  const embedder = options.embedder ?? createLocalEmbedder();
+  const embedder = options.embedder ?? createDefaultEmbedder();
   const threshold = options.similarityThreshold ?? readSimilarityThreshold();
 
   if (options.rebuild) {

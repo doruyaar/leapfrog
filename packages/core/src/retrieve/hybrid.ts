@@ -13,7 +13,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { chunks, enrichedItems, rawItems, sources, type Category } from '../db/schema.js';
 import { searchChunkEmbeddings } from '../db/vectors.js';
-import { createLocalEmbedder, type Embedder } from '../embed/model.js';
+import { createDefaultEmbedder, type Embedder } from '../embed/model.js';
 import { searchFts } from './fts.js';
 
 /** RRF damping constant; 60 is the value from the original RRF paper. */
@@ -57,7 +57,7 @@ export interface RetrieveOptions {
   limit?: number;
   /** Candidates pulled from each index before fusion. */
   candidateK?: number;
-  /** Query embedder; defaults to the local transformers.js model. */
+  /** Query embedder; defaults to OpenRouter (key set) or the local fallback. */
   embedder?: Embedder;
   /** Reference instant for the recency filter. */
   now?: Date;
@@ -86,7 +86,7 @@ export async function retrieve(
   if (!trimmed) return [];
 
   const candidateK = options.candidateK ?? 20;
-  const embedder = options.embedder ?? createLocalEmbedder();
+  const embedder = options.embedder ?? createDefaultEmbedder();
 
   const [queryVector] = await embedder.embed([trimmed]);
   const vectorHits = queryVector

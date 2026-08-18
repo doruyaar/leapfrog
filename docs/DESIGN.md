@@ -93,7 +93,7 @@ tracked for signals without appearing in that head-to-head grid.
 | Worker | **`apps/worker` — plain TS process, node-cron schedule** | Ingestion decoupled from serving (separate compute from state); trivially replaceable by a queue in prod |
 | DB | **SQLite (better-sqlite3) + Drizzle ORM + FTS5 + sqlite-vec** | Zero infra: `git clone && npm i && npm run dev` works on any laptop. One file = system of record, keyword index, and vector index. Documented migration path → Postgres + pgvector |
 | LLM | **OpenRouter `openai/gpt-4o-mini` (enrichment) / `openai/gpt-4o` (chat), via a thin provider-agnostic client** | One OpenAI-compatible gateway, one key — swap to Claude/Llama/etc. with a config change and no vendor lock-in. Cheap enough to enrich every item. Prompts live in `prompts/*.md` as versioned assets, params in config, outputs validated with **zod schemas** before touching the DB |
-| Embeddings | **Local `bge-small-en-v1.5` (384-dim) via transformers.js** | Runs on-device: no API key, fully offline, so the vector index reinforces the local-first story instead of adding a cloud dependency. Strong retrieval quality for news-length chunks (OpenRouter offers no embeddings endpoint) |
+| Embeddings | **OpenRouter `openai/text-embedding-3-small` (1536-dim), local `bge-small-en-v1.5` fallback via transformers.js** | Same key and gateway as generation; fast, cheap ($0.02/M tokens), and multi-provider. Without a key, embeddings fall back to the on-device model (zero-padded to 1536) so demo mode stays fully offline |
 | Retrieval | **Hybrid: FTS5 (BM25) + vector, metadata pre-filter, RRF merge** | News queries mix exact identifiers ("CVE-2026-3199") with semantic asks — hybrid handles both |
 | Evals | **Golden dataset (~30 labeled items) + `npm run eval`** | Classification accuracy + LLM-as-judge faithfulness check. No prompt change ships without it |
 | CI | **GitHub Actions: typecheck, lint, test, eval-smoke** | Green from the first commit |
@@ -112,7 +112,8 @@ OpenAI-compatible gateway, `OPENROUTER_CHAT_MODEL` can be `openai/gpt-4o` today 
 | `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | Gateway endpoint |
 | `OPENROUTER_ENRICH_MODEL` | `openai/gpt-4o-mini` | Bulk enrichment (cost-optimized) |
 | `OPENROUTER_CHAT_MODEL` | `openai/gpt-4o` | Ask / battlecard generation (quality) |
-| `EMBEDDING_MODEL` | `Xenova/bge-small-en-v1.5` | Local embeddings (no key, offline) |
+| `OPENROUTER_EMBEDDING_MODEL` | `openai/text-embedding-3-small` | Embeddings via OpenRouter (when the key is set) |
+| `EMBEDDING_MODEL` | `Xenova/bge-small-en-v1.5` | Local fallback embeddings (no key, offline) |
 
 ### Local-first (no cloud dependency by design)
 The product is designed to run end-to-end on a laptop: SQLite, in-process cron, local

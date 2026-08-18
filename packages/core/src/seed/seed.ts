@@ -43,7 +43,7 @@ export interface SeedOptions {
   dataset?: SeedDataset;
   /** Read the snapshot from this directory instead of the default `data/seed`. */
   seedDir?: string;
-  /** Embedding source; defaults to the local transformers.js model. */
+  /** Embedding source; defaults to OpenRouter (key set) or the local fallback. */
   embedder?: Embedder;
   /** Skip rebuilding the retrieval index (tests, or a raw-data-only seed). */
   embed?: boolean;

@@ -13,6 +13,7 @@
  */
 import type { Database } from '../db/client.js';
 import { enrichedItems, type NewEnrichedItem } from '../db/schema.js';
+import { mapWithConcurrency } from '../util/concurrency.js';
 import {
   createOpenRouterModel,
   readOpenRouterConfig,
@@ -95,19 +96,13 @@ export async function enrichItems(
     : selectPendingInputs(db, { limit: options.maxItems });
 
   const total = inputs.length;
-  const outcomes: EnrichItemOutcome[] = new Array<EnrichItemOutcome>(total);
-  const workers = Math.max(1, Math.min(options.concurrency ?? 1, total));
 
-  // A shared cursor into `inputs`: each worker claims the next index until drained.
   // better-sqlite3 writes are synchronous, so the concurrent completions serialize
-  // naturally on the write and never interleave a transaction.
-  let cursor = 0;
-  async function runWorker(): Promise<void> {
-    for (;;) {
-      const at = cursor;
-      cursor += 1;
-      const input = inputs[at];
-      if (!input) return;
+  // naturally on the write and never interleave a transaction. Outcomes keep input order.
+  const outcomes = await mapWithConcurrency(
+    inputs,
+    options.concurrency ?? 1,
+    async (input, at) => {
       const progress: EnrichProgress = {
         index: at + 1,
         total,
@@ -118,17 +113,15 @@ export async function enrichItems(
 
       const startedAt = Date.now();
       const outcome = await enrichOne(db, model, input);
-      outcomes[at] = outcome;
 
       options.onItemComplete?.({
         ...progress,
         outcome,
         elapsedMs: Date.now() - startedAt,
       });
-    }
-  }
-
-  await Promise.all(Array.from({ length: workers }, runWorker));
+      return outcome;
+    },
+  );
 
   return {
     attempted: inputs.length,

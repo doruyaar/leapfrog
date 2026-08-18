@@ -1,5 +1,6 @@
 /** Adapter lookup and multi-source runs. */
 import type { SourceKind } from '../db/schema.js';
+import { mapGroupedByKey } from '../util/concurrency.js';
 import { githubAdapter } from './adapters/github.js';
 import { nvdAdapter } from './adapters/nvd.js';
 import { rssAdapter } from './adapters/rss.js';
@@ -45,28 +46,66 @@ export type SourceRunOutcome =
   | { status: 'failed'; source: SourceInput; error: Error };
 
 /**
+ * How many *distinct hosts* the source stages fetch from at once. The catalog is tens
+ * of requests spread across many hosts, so overlapping their network waits is the single
+ * biggest speed-up available — while lanes (see {@link sourceHostKey}) keep every request
+ * to one host serial, staying inside its rate limit.
+ */
+export const DEFAULT_SOURCE_CONCURRENCY = 8;
+
+export interface SourceRunOptions {
+  /** Max distinct hosts fetched in parallel (default {@link DEFAULT_SOURCE_CONCURRENCY}). */
+  concurrency?: number;
+}
+
+/**
+ * The rate-limit lane a source belongs to. Sources that hit the same host must share a
+ * lane so they never fire concurrently: GitHub Releases and NVD each expose one shared
+ * per-key limit regardless of which repo/query is asked for, while RSS feeds are keyed by
+ * their feed host so two feeds on the same domain still serialise.
+ */
+export function sourceHostKey(source: SourceInput): string {
+  switch (source.kind) {
+    case 'github':
+      return 'github:api.github.com';
+    case 'nvd':
+      return 'nvd:services.nvd.nist.gov';
+    default:
+      try {
+        return `host:${new URL(source.url).host.toLowerCase()}`;
+      } catch {
+        return `source:${source.url}`;
+      }
+  }
+}
+
+/**
  * Fetch every source, isolating failures: a dead feed or a rate-limited API yields
- * one `failed` outcome instead of aborting the run. Sources are visited
- * sequentially — the whole catalog is tens of requests, and serial access keeps us
- * comfortably inside per-host rate limits.
+ * one `failed` outcome instead of aborting the run. Sources on distinct hosts are
+ * fetched in parallel (bounded by `concurrency`); sources sharing a host stay serial so
+ * we remain comfortably inside per-host rate limits. Outcomes keep input order.
  */
 export async function fetchSources(
   sources: SourceInput[],
   context?: FetchContext,
+  options: SourceRunOptions = {},
 ): Promise<SourceRunOutcome[]> {
-  const outcomes: SourceRunOutcome[] = [];
+  const concurrency = options.concurrency ?? DEFAULT_SOURCE_CONCURRENCY;
 
-  for (const source of sources) {
-    try {
-      outcomes.push({ status: 'ok', source, result: await fetchSource(source, context) });
-    } catch (error) {
-      outcomes.push({
-        status: 'failed',
-        source,
-        error: error instanceof Error ? error : new Error(String(error)),
-      });
-    }
-  }
-
-  return outcomes;
+  return mapGroupedByKey(
+    sources,
+    concurrency,
+    sourceHostKey,
+    async (source): Promise<SourceRunOutcome> => {
+      try {
+        return { status: 'ok', source, result: await fetchSource(source, context) };
+      } catch (error) {
+        return {
+          status: 'failed',
+          source,
+          error: error instanceof Error ? error : new Error(String(error)),
+        };
+      }
+    },
+  );
 }

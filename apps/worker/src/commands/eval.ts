@@ -1,12 +1,13 @@
 /**
  * `worker eval` — run the golden datasets against the deterministic pipeline logic
  * (GAP-PLAN §3.4). Today that is change classification: the labeled pairs in
- * `data/eval/change-pairs.json` are scored with the same local embeddings and the
+ * `data/eval/change-pairs.json` are scored with the same embeddings and the
  * same threshold the diff stage uses, so a threshold or model change that would
- * flip a known verdict fails loudly before it ships. Key-free by construction.
+ * flip a known verdict fails loudly before it ships. Uses OpenRouter embeddings
+ * when a key is set, the key-free local fallback otherwise — same as the pipeline.
  */
 import {
-  createLocalEmbedder,
+  createDefaultEmbedder,
   evaluateChangePairs,
   readChangePairs,
   readSimilarityThreshold,
@@ -43,13 +44,14 @@ export async function runEvalCommand(argv: string[]): Promise<number> {
   const threshold = readSimilarityThreshold();
   const pairs = readChangePairs();
 
+  const embedder = createDefaultEmbedder();
   if (!options.json) {
     console.log(
-      `Evaluating ${pairs.length} golden change pairs (local embeddings, no key)…\n`,
+      `Evaluating ${pairs.length} golden change pairs (embeddings: ${embedder.model})…\n`,
     );
   }
 
-  const report = await evaluateChangePairs(createLocalEmbedder(), pairs, threshold);
+  const report = await evaluateChangePairs(embedder, pairs, threshold);
 
   if (options.json) {
     console.log(JSON.stringify(report, null, 2));
