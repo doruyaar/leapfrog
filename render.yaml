@@ -12,7 +12,7 @@ services:
     name: leapfrog
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: starter # required for a persistent disk
+    plan: standard # 2 GB RAM / 1 CPU; any paid plan (starter+) supports the persistent disk
     healthCheckPath: /api/health
     autoDeploy: true
     disk:
