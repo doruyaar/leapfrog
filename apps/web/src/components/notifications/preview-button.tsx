@@ -6,8 +6,7 @@ import type { NotificationPreview } from '@leapfrog/core';
 import { previewNotificationAction } from '@/lib/actions';
 
 type PreviewState =
-  | { kind: 'preview'; data: NotificationPreview }
-  | { kind: 'error'; text: string };
+  { kind: 'preview'; data: NotificationPreview } | { kind: 'error'; text: string };
 
 /**
  * "Preview email" — renders how this subscription's alert will look for its current
@@ -46,13 +45,7 @@ export function PreviewButton({ subscriptionId }: { subscriptionId: number }) {
   );
 }
 
-function PreviewDialog({
-  state,
-  onClose,
-}: {
-  state: PreviewState;
-  onClose: () => void;
-}) {
+function PreviewDialog({ state, onClose }: { state: PreviewState; onClose: () => void }) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
