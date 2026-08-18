@@ -7,12 +7,17 @@ export {
   type TextChunk,
 } from './chunk.js';
 export {
+  createDefaultEmbedder,
   createLocalEmbedder,
+  createOpenRouterEmbedder,
   DEFAULT_EMBEDDING_MODEL,
+  DEFAULT_OPENROUTER_EMBEDDING_MODEL,
   EmbeddingDimensionError,
   readEmbeddingConfig,
+  readOpenRouterEmbeddingConfig,
   type Embedder,
   type EmbeddingConfig,
+  type OpenRouterEmbeddingConfig,
 } from './model.js';
 // `selectPendingInputs`/`selectInputsByIds` are intentionally not re-exported: they are
 // internal to the stage and the names collide with the enrich barrel. `EmbedInput` (the

@@ -21,11 +21,14 @@ export {
   type RetryPolicy,
 } from './http.js';
 export {
+  DEFAULT_SOURCE_CONCURRENCY,
   fetchSource,
   fetchSources,
   getAdapter,
   listAdapters,
+  sourceHostKey,
   UnsupportedSourceKindError,
+  type SourceRunOptions,
   type SourceRunOutcome,
 } from './registry.js';
 export { finalizeItems, parseSourceConfig, toResult } from './shared.js';

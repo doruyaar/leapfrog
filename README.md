@@ -27,7 +27,8 @@ daily briefs, grounded Q&A, a comparison matrix, and battlecards.
   refuses ("not in my sources") rather than hallucinating. LLM output is schema-validated
   before it is ever shown.
 - **Runs with zero keys.** `npm run seed && npm run dev` gives a fully populated UI in
-  under a minute. Embeddings run locally; only live generation needs a key.
+  under a minute. Embeddings use OpenRouter when a key is set and fall back to a local
+  model without one; only live generation strictly needs a key.
 - **Hybrid retrieval.** BM25 (SQLite FTS5) + vector search (sqlite-vec) with metadata
   pre-filtering, so exact identifiers _and_ semantic questions both work.
 - **Config, not code.** Swap LLM providers/models with an env change — no source edits.
@@ -39,13 +40,13 @@ daily briefs, grounded Q&A, a comparison matrix, and battlecards.
 
 ```bash
 npm install
-npm run seed     # load committed data + build the retrieval index (local embeddings)
+npm run seed     # load committed data + build the retrieval index
 npm run dev      # open http://localhost:3000
 ```
 
-`seed` populates a local SQLite database and builds the index (embeddings run **locally**
-via transformers.js, so no key is needed); `dev` serves the UI. Everything you see is
-grounded in the seeded corpus.
+`seed` populates a local SQLite database and builds the index (embeddings go through
+OpenRouter when `OPENROUTER_API_KEY` is set, otherwise a local transformers.js fallback —
+no key needed); `dev` serves the UI. Everything you see is grounded in the seeded corpus.
 
 ## Using the web UI
 
@@ -129,7 +130,7 @@ The set is seed configuration (rows in the `sources` table /
 | Web / UI      | Next.js (App Router) · Tailwind · shadcn/ui               |
 | Worker        | Plain TS pipeline, one command per stage                  |
 | Data & search | SQLite (better-sqlite3) · Drizzle ORM · FTS5 · sqlite-vec |
-| Embeddings    | Local `bge-small-en-v1.5` via transformers.js (no key)    |
+| Embeddings    | OpenRouter `text-embedding-3-small` (local fallback)      |
 | Generation    | OpenRouter (OpenAI-compatible) — provider-agnostic        |
 
 ## Deploying a shareable link

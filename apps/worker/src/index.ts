@@ -33,13 +33,16 @@ Options (fetch, ingest):
   --kind <rss|github|nvd>   Only sources of this kind
   --match <text>            Only sources whose name or locator contains <text>
   --since-days <n>          Ignore items older than n days
+  --concurrency <n>         Max distinct hosts fetched in parallel (default 8; sources
+                            sharing a host stay serial to respect its rate limit)
 
 Options (all commands):
   --max <n>                 Cap items (fetch: 10/source, ingest: 25/source, enrich/embed: all pending)
   --json                    Print machine-readable output
 
-Options (enrich):
-  --concurrency <n>         Max in-flight model requests (default 1; higher is faster but may hit rate limits)
+Options (enrich, embed):
+  --concurrency <n>         Max items processed at once (default 1; higher is faster but may
+                            hit rate limits — embed: worth raising only for the remote embedder)
 
 Options (diff):
   --rebuild                 Drop all change events and vendor facts, then replay the corpus
@@ -81,7 +84,8 @@ Environment:
   OPENROUTER_ENRICH_MODEL   Enrichment model slug (default openai/gpt-4o-mini)
   OPENROUTER_DIFF_MODEL     Diff model slug (defaults to the enrich model; optional — diff runs key-free)
   DIFF_SIMILARITY_THRESHOLD Similarity at which a new item counts as a re-phrasing (default 0.92)
-  EMBEDDING_MODEL           Local embedding model (default Xenova/bge-small-en-v1.5)
+  OPENROUTER_EMBEDDING_MODEL Embedding model via OpenRouter (default openai/text-embedding-3-small)
+  EMBEDDING_MODEL           Key-free local fallback embedding model (default Xenova/bge-small-en-v1.5)
 `;
 
 /**

@@ -13,8 +13,9 @@
  *   quarantined output never leaks into retrieval.
  */
 import type { Database } from '../db/client.js';
+import { mapWithConcurrency } from '../util/concurrency.js';
 import { buildDocument, chunkText, type ChunkOptions } from './chunk.js';
-import { createLocalEmbedder, type Embedder } from './model.js';
+import { createDefaultEmbedder, type Embedder } from './model.js';
 import { selectInputsByIds, selectPendingInputs, type EmbedInput } from './select.js';
 import { replaceItemChunks, type EmbeddedChunk } from './store.js';
 
@@ -42,12 +43,20 @@ export interface EmbedProgress {
 }
 
 export interface EmbedOptions {
-  /** Embedding source. Defaults to the local transformers.js model from the environment. */
+  /** Embedding source. Defaults to OpenRouter (key set) or the local fallback. */
   embedder?: Embedder;
   /** Embed exactly these raw items (e.g. an ingest run's `changedIds`). */
   rawItemIds?: number[];
   /** Cap when selecting pending items (ignored when `rawItemIds` is given). */
   maxItems?: number;
+  /**
+   * Max items chunked + embedded at once. Worth raising only for the remote
+   * (OpenRouter) embedder, where each item is a network round-trip and overlapping them
+   * shortens the batch; the local transformers.js model is CPU-bound on one thread, so a
+   * higher value there just queues work behind the single inference session. Defaults to
+   * 1 (sequential) to keep the key-free path predictable.
+   */
+  concurrency?: number;
   /** Override chunking size/overlap; defaults suit short news/CVE items. */
   chunking?: ChunkOptions;
   /**
@@ -64,37 +73,42 @@ export interface EmbedOptions {
 
 /**
  * Embed a batch of enriched items. Picks the embedder and the work set from `options`,
- * processes items one at a time (bounded memory, atomic per item), and returns a per-item
- * report.
+ * runs up to `concurrency` items at once (default 1 = sequential; each item is atomic and
+ * bounded in memory), and returns a per-item report in input order.
  */
 export async function embedItems(
   db: Database,
   options: EmbedOptions = {},
 ): Promise<EmbedReport> {
-  const embedder = options.embedder ?? createLocalEmbedder();
+  const embedder = options.embedder ?? createDefaultEmbedder();
   const inputs = options.rawItemIds
     ? selectInputsByIds(db, options.rawItemIds)
     : selectPendingInputs(db, { limit: options.maxItems });
 
-  const outcomes: EmbedItemOutcome[] = [];
   const total = inputs.length;
-  let index = 0;
-  for (const input of inputs) {
-    index += 1;
-    const progress: EmbedProgress = {
-      index,
-      total,
-      rawItemId: input.rawItemId,
-      title: input.title,
-    };
-    options.onItemStart?.(progress);
+  const outcomes = await mapWithConcurrency(
+    inputs,
+    options.concurrency ?? 1,
+    async (input, at) => {
+      const progress: EmbedProgress = {
+        index: at + 1,
+        total,
+        rawItemId: input.rawItemId,
+        title: input.title,
+      };
+      options.onItemStart?.(progress);
 
-    const startedAt = Date.now();
-    const outcome = await embedOne(db, embedder, input, options.chunking);
-    outcomes.push(outcome);
+      const startedAt = Date.now();
+      const outcome = await embedOne(db, embedder, input, options.chunking);
 
-    options.onItemComplete?.({ ...progress, outcome, elapsedMs: Date.now() - startedAt });
-  }
+      options.onItemComplete?.({
+        ...progress,
+        outcome,
+        elapsedMs: Date.now() - startedAt,
+      });
+      return outcome;
+    },
+  );
 
   return {
     attempted: inputs.length,

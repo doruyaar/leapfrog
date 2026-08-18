@@ -13,3 +13,4 @@ export * from './notify/index.js';
 export * from './query/index.js';
 export * from './retrieve/index.js';
 export * from './seed/index.js';
+export * from './util/index.js';

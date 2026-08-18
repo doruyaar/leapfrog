@@ -17,7 +17,7 @@ flowchart LR
         FETCH["Fetch<br/>SourceAdapter interface,<br/>retry + backoff"]
         NORM["Normalize + Dedupe<br/>canonical URL hash, content hash,<br/>idempotent upsert"]
         ENRICH["LLM Enrich (OpenRouter openai/gpt-4o-mini)<br/>category, vendors, impact 1–5,<br/>'why it matters'<br/>zod-validated structured output"]
-        EMBED["Chunk + Embed<br/>local bge-small-en-v1.5 (transformers.js),<br/>metadata on every chunk"]
+        EMBED["Chunk + Embed<br/>OpenRouter text-embedding-3-small<br/>(local fallback, no key),<br/>metadata on every chunk"]
         COMPOSE["Brief Composer (daily)<br/>rank by impact × recency,<br/>cited executive summary"]
     end
 

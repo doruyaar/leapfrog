@@ -21,13 +21,15 @@ export interface IngestOptions extends SourceFilter {
   maxItems: number;
   /** Ignore items older than this many days, overriding each source's fetch cursor. */
   sinceDays?: number;
+  /** Max distinct hosts fetched in parallel. */
+  concurrency?: number;
   dbPath?: string;
   json: boolean;
 }
 
 export function parseIngestArgs(argv: string[]): IngestOptions {
   const flags = parseFlags(argv, {
-    values: ['kind', 'match', 'max', 'since-days', 'db'],
+    values: ['kind', 'match', 'max', 'since-days', 'concurrency', 'db'],
     switches: ['json'],
   });
 
@@ -36,6 +38,7 @@ export function parseIngestArgs(argv: string[]): IngestOptions {
     match: stringFlag(flags, 'match'),
     maxItems: numberFlag(flags, 'max', { min: 1 }) ?? 25,
     sinceDays: numberFlag(flags, 'since-days', { min: 0 }),
+    concurrency: numberFlag(flags, 'concurrency', { min: 1 }),
     dbPath: stringFlag(flags, 'db'),
     json: flags.json === true,
   };
@@ -98,10 +101,12 @@ export async function runIngestCommand(argv: string[]): Promise<number> {
   }
 
   try {
-    const report = await ingestSources(db, sources, {
-      maxItems: options.maxItems,
-      since,
-    });
+    const report = await ingestSources(
+      db,
+      sources,
+      { maxItems: options.maxItems, since },
+      { concurrency: options.concurrency },
+    );
 
     if (options.json) {
       console.log(

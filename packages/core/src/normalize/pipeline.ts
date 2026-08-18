@@ -8,8 +8,14 @@
  * or a rate-limited API costs one entry in the report, never the whole run.
  */
 import type { Database } from '../db/client.js';
-import { fetchSource } from '../ingest/registry.js';
+import {
+  DEFAULT_SOURCE_CONCURRENCY,
+  fetchSource,
+  sourceHostKey,
+  type SourceRunOptions,
+} from '../ingest/registry.js';
 import type { FetchContext, SourceInput } from '../ingest/types.js';
+import { mapGroupedByKey } from '../util/concurrency.js';
 import { normalizeItems } from './items.js';
 import {
   emptyUpsertResult,
@@ -93,19 +99,23 @@ export async function ingestSource(
 }
 
 /**
- * Ingest every source sequentially. Serial access keeps the whole catalog — tens of
- * requests — comfortably inside per-host rate limits.
+ * Ingest every source, fetching distinct hosts in parallel (bounded by `concurrency`)
+ * while sources sharing a host stay serial — keeping the whole catalog comfortably inside
+ * per-host rate limits (see `sourceHostKey`). The overlapping network waits are the win;
+ * the per-source SQLite writes still serialise on the event loop, so a concurrent run
+ * never interleaves a transaction. Reports keep input order.
  */
 export async function ingestSources(
   db: Database,
   sources: SourceInput[],
   context: FetchContext = {},
+  options: SourceRunOptions = {},
 ): Promise<IngestReport> {
-  const reports: SourceIngestReport[] = [];
+  const concurrency = options.concurrency ?? DEFAULT_SOURCE_CONCURRENCY;
 
-  for (const source of sources) {
-    reports.push(await ingestSource(db, source, context));
-  }
+  const reports = await mapGroupedByKey(sources, concurrency, sourceHostKey, (source) =>
+    ingestSource(db, source, context),
+  );
 
   return { sources: reports, totals: summarize(reports) };
 }

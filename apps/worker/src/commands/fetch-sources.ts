@@ -11,13 +11,15 @@ export interface FetchOptions extends SourceFilter {
   maxItems: number;
   /** Ignore items older than this many days. */
   sinceDays?: number;
+  /** Max distinct hosts fetched in parallel. */
+  concurrency?: number;
   /** Emit the fetched items as JSON instead of a human summary. */
   json: boolean;
 }
 
 export function parseFetchArgs(argv: string[]): FetchOptions {
   const flags = parseFlags(argv, {
-    values: ['kind', 'match', 'max', 'since-days'],
+    values: ['kind', 'match', 'max', 'since-days', 'concurrency'],
     switches: ['json'],
   });
 
@@ -26,6 +28,7 @@ export function parseFetchArgs(argv: string[]): FetchOptions {
     match: stringFlag(flags, 'match'),
     maxItems: numberFlag(flags, 'max', { min: 1 }) ?? 10,
     sinceDays: numberFlag(flags, 'since-days', { min: 0 }),
+    concurrency: numberFlag(flags, 'concurrency', { min: 1 }),
     json: flags.json === true,
   };
 }
@@ -77,7 +80,11 @@ export async function runFetchCommand(argv: string[]): Promise<number> {
     console.log(`Fetching ${sources.length} source(s)…\n`);
   }
 
-  const outcomes = await fetchSources(sources, { maxItems: options.maxItems, since });
+  const outcomes = await fetchSources(
+    sources,
+    { maxItems: options.maxItems, since },
+    { concurrency: options.concurrency },
+  );
 
   if (options.json) {
     const items = outcomes.flatMap((outcome) =>
