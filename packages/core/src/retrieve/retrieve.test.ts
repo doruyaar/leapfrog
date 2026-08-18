@@ -87,13 +87,21 @@ describe('toMatchQuery', () => {
   });
 
   it('strips punctuation that FTS5 would treat as query syntax', () => {
-    expect(toMatchQuery('pricing: up 20%! (again)')).toBe(
-      '"pricing" OR "up" OR "20" OR "again"',
+    expect(toMatchQuery('pricing: rises 20%! (again)')).toBe(
+      '"pricing" OR "rises" OR "again"',
     );
   });
 
   it('is empty for punctuation-only input', () => {
     expect(toMatchQuery('!!! ??? ...')).toBe('');
+  });
+
+  it('drops short tokens and stopwords so glue words cannot match the whole corpus', () => {
+    expect(toMatchQuery('what is the pricing for Nexus?')).toBe('"pricing" OR "Nexus"');
+    // A pure glue-word question must produce no MATCH terms at all — this is what
+    // lets an off-topic question reach the refusal path instead of BM25-matching
+    // every passage containing "is" or "the".
+    expect(toMatchQuery('what is it about?')).toBe('');
   });
 });
 
@@ -212,6 +220,26 @@ describe('answerQuestion', () => {
     });
     expect(result.mode).toBe('llm');
     expect(result.answer).toContain(`[#${nexusId}]`);
+  });
+
+  it('honours the live model refusal sentinel instead of overriding it', async () => {
+    // The prompt instructs the model to reply with this exact uncited sentence when it
+    // cannot ground an answer. It must surface as a refusal — not fail the grounding
+    // check and get replaced by a forced extractive answer.
+    const model: AnswerModel = {
+      model: 'test-llm',
+      promptVersion: 'ask@4',
+      async answer() {
+        return "I don't have anything in my sources about that.";
+      },
+    };
+    const result = await answerQuestion(db, 'Nexus CVE', {
+      embedder: topicEmbedder(),
+      model,
+    });
+    expect(result.mode).toBe('refusal');
+    expect(result.answer).toBe(REFUSAL_MESSAGE);
+    expect(result.citations).toHaveLength(0);
   });
 
   it('falls back to extractive when the live model hallucinates a citation', async () => {

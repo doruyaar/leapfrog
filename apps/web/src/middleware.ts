@@ -20,7 +20,13 @@ export function middleware(request: NextRequest): NextResponse {
 
   const header = request.headers.get('authorization');
   if (header?.startsWith('Basic ')) {
-    const decoded = atob(header.slice('Basic '.length));
+    // Malformed base64 must fall through to the 401 below, not throw a 500.
+    let decoded = '';
+    try {
+      decoded = atob(header.slice('Basic '.length));
+    } catch {
+      decoded = '';
+    }
     const separator = decoded.indexOf(':');
     const suppliedUser = decoded.slice(0, separator);
     const suppliedPass = decoded.slice(separator + 1);

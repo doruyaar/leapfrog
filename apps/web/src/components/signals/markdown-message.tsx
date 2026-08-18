@@ -34,8 +34,7 @@ export function MarkdownMessage({
         components={{
           p: ({ node: _node, ...props }) => <p {...props} />,
           a: ({ node: _node, href, children, ...props }) => {
-            const isCitation =
-              typeof href === 'string' && /^\/insights\/\d+$/.test(href);
+            const isCitation = typeof href === 'string' && /^\/insights\/\d+$/.test(href);
             if (isCitation) {
               return (
                 <Link

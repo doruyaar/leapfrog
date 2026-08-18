@@ -139,10 +139,21 @@ function parseKeywords(value: string | undefined): string[] {
     : [];
 }
 
+/**
+ * Light email shape check: something@something.tld, no whitespace, RFC-ish length cap.
+ * Deliverability is the sender's problem; this only stops junk (and header-injection
+ * shaped strings) from landing in the subscriptions table.
+ */
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidEmail(email: string): boolean {
+  return email.length <= 254 && EMAIL_PATTERN.test(email);
+}
+
 /** Read the filter + delivery fields shared by create and update from a form. */
 function readSubscriptionInput(formData: FormData): SubscriptionInput | null {
   const email = str(formData.get('email'));
-  if (!email) return null;
+  if (!email || !isValidEmail(email)) return null;
 
   const frequencyRaw = str(formData.get('frequency')) as NotifyFrequency | undefined;
   const frequency = NOTIFY_FREQUENCIES.includes(frequencyRaw as NotifyFrequency)

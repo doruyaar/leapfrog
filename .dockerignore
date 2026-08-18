@@ -11,6 +11,11 @@ data/outbox
 data/*.sqlite
 data/*.sqlite-*
 
+# Private notes, local scratch clones, and editor state — never bake into an image.
+.private
+.tmp-*
+.cursor
+
 # VCS, env, and misc local artifacts.
 .git
 .gitignore

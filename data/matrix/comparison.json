@@ -47,7 +47,7 @@
         },
         "GitHub": {
           "level": "partial",
-          "note": "Packages: npm, Maven, NuGet, containers — GitHub now prioritizes license metadata from canonical package registries (npmjs.org, PyPI, Maven Central, etc.) over ClearlyDefined, cutting missing licenses from 45% to 24% across 170 million packages and adding version-range tracking for license history. [#115]"
+          "note": "Packages: npm, Maven, NuGet, containers"
         },
         "Docker": {
           "level": "none",
@@ -71,7 +71,7 @@
         },
         "Sonatype": {
           "level": "strong",
-          "note": "Lifecycle / IQ policy enforcement — A critical (CVSS 9.8) path-traversal flaw in Nexus Repository Manager 3 is being actively exploited to read stored credentials; Sonatype shipped 3.77.2 as the fix. [#1]"
+          "note": "Lifecycle / IQ policy enforcement"
         },
         "GitLab": {
           "level": "strong",
@@ -103,7 +103,7 @@
         },
         "Sonatype": {
           "level": "strong",
-          "note": "CycloneDX SBOM + policy — A critical (CVSS 9.8) path-traversal flaw in Nexus Repository Manager 3 is being actively exploited to read stored credentials; Sonatype shipped 3.77.2 as the fix. [#1]"
+          "note": "CycloneDX SBOM + policy"
         },
         "GitLab": {
           "level": "strong",
@@ -111,7 +111,7 @@
         },
         "GitHub": {
           "level": "strong",
-          "note": "Dependency graph + SBOM export — GitHub now prioritizes license metadata from canonical package registries (npmjs.org, PyPI, Maven Central, etc.) over ClearlyDefined, cutting missing licenses from 45% to 24% across 170 million packages and adding version-range tracking for license history. [#115]"
+          "note": "Dependency graph + SBOM export"
         },
         "Docker": {
           "level": "partial",
@@ -143,7 +143,7 @@
         },
         "GitHub": {
           "level": "strong",
-          "note": "GitHub Container Registry (GHCR) — GitHub now prioritizes license metadata from canonical package registries (npmjs.org, PyPI, Maven Central, etc.) over ClearlyDefined, cutting missing licenses from 45% to 24% across 170 million packages and adding version-range tracking for license history. [#115]"
+          "note": "GitHub Container Registry (GHCR)"
         },
         "Docker": {
           "level": "strong",

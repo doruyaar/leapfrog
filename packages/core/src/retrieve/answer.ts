@@ -89,6 +89,19 @@ function citationsGrounded(text: string, passages: RetrievedPassage[]): boolean 
   return cited.length > 0 && cited.every((id) => allowed.has(id));
 }
 
+/**
+ * The refusal sentence `prompts/ask.md` instructs the model to reply with. It carries
+ * no citations by design, so it must be recognised *before* the grounding check —
+ * otherwise the (correct) refusal fails `citationsGrounded` and gets overridden by a
+ * forced extractive answer, silently un-refusing the question.
+ */
+const MODEL_REFUSAL_SENTINEL = /i don[’']?t have anything in my sources/i;
+
+/** True when the model reply is its instructed refusal (and cites nothing). */
+function isModelRefusal(text: string): boolean {
+  return MODEL_REFUSAL_SENTINEL.test(text) && extractCitations(text).length === 0;
+}
+
 /** First sentence (or a trimmed lead) of a passage, for a short verbatim quote. */
 function leadQuote(content: string, max = 180): string {
   const clean = content.replace(/\s+/g, ' ').trim();
@@ -174,9 +187,16 @@ export async function answerQuestion(
 
   if (options.model) {
     try {
-      const written = await options.model.answer(query, passages, options.context);
-      if (written.trim() && citationsGrounded(written, passages)) {
-        return { answer: written.trim(), citations, mode: 'llm' };
+      const written = (
+        await options.model.answer(query, passages, options.context)
+      ).trim();
+      // An instructed refusal is a valid outcome, not a grounding failure — honour it
+      // instead of overriding it with a forced extractive answer.
+      if (isModelRefusal(written)) {
+        return { answer: REFUSAL_MESSAGE, citations: [], mode: 'refusal' };
+      }
+      if (written && citationsGrounded(written, passages)) {
+        return { answer: written, citations, mode: 'llm' };
       }
     } catch {
       // Fall through to the deterministic extractive answer.
