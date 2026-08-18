@@ -143,6 +143,7 @@ function AssistantTurn({ turn }: { turn: Turn }) {
   if (!turn.answer) return null;
   const { answer, citations, mode } = turn.answer;
   const refused = mode === 'refusal';
+  const greeting = mode === 'greeting';
 
   return (
     <div className="rounded-[6px] border border-line bg-canvas px-4 py-3">
@@ -150,6 +151,10 @@ function AssistantTurn({ turn }: { turn: Turn }) {
         {refused ? (
           <span className="flex items-center gap-1.5 text-ink-faint">
             <ShieldAlert className="size-3.5" /> Not in sources
+          </span>
+        ) : greeting ? (
+          <span className="flex items-center gap-1.5 text-accent">
+            <Sparkles className="size-3.5" /> LeapFrog assistant
           </span>
         ) : (
           <span className="flex items-center gap-1.5 text-accent">
