@@ -114,7 +114,7 @@ OpenAI-compatible gateway, `OPENROUTER_CHAT_MODEL` can be `openai/gpt-4o` today 
 | `OPENROUTER_API_KEY` | — | Generation key (live mode only) |
 | `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | Gateway endpoint |
 | `OPENROUTER_ENRICH_MODEL` | `openai/gpt-4o-mini` | Bulk enrichment (cost-optimized) |
-| `OPENROUTER_CHAT_MODEL` | `openai/gpt-4o` | Ask / battlecard generation (quality) |
+| `OPENROUTER_CHAT_MODEL` | `openai/gpt-4o` | Ask / battlecard generation / brief conflict judging (quality) |
 | `OPENROUTER_EMBEDDING_MODEL` | `openai/text-embedding-3-small` | Embeddings via OpenRouter (when the key is set) |
 | `EMBEDDING_MODEL` | `Xenova/bge-small-en-v1.5` | Local fallback embeddings (no key, offline) |
 

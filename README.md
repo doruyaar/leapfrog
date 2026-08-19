@@ -26,6 +26,9 @@ daily briefs, grounded Q&A, a comparison matrix, and battlecards.
 - **Grounded by design.** Every generated claim cites a real source item; the assistant
   refuses ("not in my sources") rather than hallucinating. LLM output is schema-validated
   before it is ever shown.
+- **Conflicts surfaced, never resolved.** When two sources make opposing claims, the brief
+  shows both sides with their quotes and citations and lets _you_ decide — it never lets the
+  model silently pick a winner or assume the newer post is settled.
 - **Runs with zero keys.** `npm run seed && npm run dev` gives a fully populated UI in
   under a minute. Embeddings use OpenRouter when a key is set and fall back to a local
   model without one; only live generation strictly needs a key.
@@ -88,6 +91,19 @@ Open <http://localhost:3000>. The app is organized as a proactive-first workspac
 The home screen: an executive summary followed by a ranked, category-grouped feed. Every
 card carries a 1–5 impact score, a "why it matters to JFrog" note, a state-change tag
 (new / update / re-phrasing), and a source badge.
+
+### Sources disagree — surfaced, not resolved
+
+![Facts in conflict](photos/source_disagree.png)
+
+When two sources make genuinely opposing claims — a negation flip, opposite-polarity terms
+on the same axis (raised vs. flat, launched vs. discontinued, confirms vs. denies), or
+diverging figures — the brief opens a **"Facts that are in conflict"** panel. Each side is
+shown with its own verbatim quote and citation, and the detected evidence is spelled out in
+the note. The system deliberately **does not let the LLM decide what's true**: it presents
+both accounts and lets the reader weigh them, rather than silently collapsing to "the latest
+wins". A mere refinement of an earlier post is _not_ flagged (see
+[`docs/PITFALLS.md`](docs/PITFALLS.md)) — only real contradictions are.
 
 ### Insight detail
 

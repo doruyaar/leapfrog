@@ -36,6 +36,18 @@ export {
   DEFAULT_BRIEF_MODEL,
 } from './summarize.js';
 export {
+  decideContradiction,
+  detectContradiction,
+  type ContradictionJudge,
+  type ContradictionResult,
+} from './contradiction.js';
+export {
+  conflictVerdictSchema,
+  createOpenRouterConflictJudge,
+  parseConflictVerdict,
+  CONFLICT_PROMPT_VERSION,
+} from './judge.js';
+export {
   createHttpUrlVerifier,
   pageMatchesItem,
   significantTerms,

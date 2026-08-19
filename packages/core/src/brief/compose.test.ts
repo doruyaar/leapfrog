@@ -125,7 +125,7 @@ describe('composeBrief', () => {
 
     const grounded: BriefSummarizer = {
       model: 'test/chat',
-      promptVersion: 'brief-llm@1',
+      promptVersion: 'brief-llm@2',
       summarize: async (sources: BriefSource[]): Promise<BriefDraft> => ({
         summary: `Grounded take [#${sources[0]!.id}]`,
         claims: [
@@ -140,7 +140,7 @@ describe('composeBrief', () => {
 
     const liar: BriefSummarizer = {
       model: 'test/chat',
-      promptVersion: 'brief-llm@1',
+      promptVersion: 'brief-llm@2',
       summarize: async (): Promise<BriefDraft> => ({
         summary: 'Made-up citation [#999]',
         claims: [],
@@ -157,7 +157,7 @@ describe('composeBrief', () => {
 
     const fabricator: BriefSummarizer = {
       model: 'test/chat',
-      promptVersion: 'brief-llm@1',
+      promptVersion: 'brief-llm@2',
       summarize: async (): Promise<BriefDraft> => ({
         summary: `Take [#${id}]`,
         claims: [
@@ -185,10 +185,12 @@ describe('composeBrief', () => {
     expect(byTitle.get('beta')).toBe('unreachable');
   });
 
-  it('surfaces a conflict when the record changed between two visible sources', async () => {
-    const priorId = seed(db, 'beta', 4); // the earlier state's source
-    const triggerId = seed(db, 'alpha', 5); // the item that revised it
-
+  function seedUpdateEvent(
+    priorId: number,
+    triggerId: number,
+    before: string,
+    after: string,
+  ): void {
     const priorFactId = db
       .insert(vendorFacts)
       .values({
@@ -206,8 +208,8 @@ describe('composeBrief', () => {
         vendor: 'Sonatype',
         dimension: 'pricing',
         kind: 'update',
-        before: 'Sonatype pricing was flat',
-        after: 'Sonatype raised enterprise pricing',
+        before,
+        after,
         materiality: 4,
         triggerItemId: triggerId,
         previousFactId: priorFactId,
@@ -216,17 +218,150 @@ describe('composeBrief', () => {
         promptVersion: 'diff@1',
       })
       .run();
+  }
+
+  it('surfaces a conflict when an update contradicts the prior recorded state', async () => {
+    const priorId = seed(db, 'beta', 4); // the earlier state's source
+    const triggerId = seed(db, 'alpha', 5); // the item that revised it
+    seedUpdateEvent(
+      priorId,
+      triggerId,
+      'Sonatype pricing was flat',
+      'Sonatype raised enterprise pricing',
+    );
 
     const brief = await composeBrief(db, { now: NOW });
 
     expect(brief.conflicts).toHaveLength(1);
     const conflict = brief.conflicts[0]!;
     expect(conflict.topic).toContain('Sonatype');
+    expect(conflict.note).toContain('opposing claims');
     const citedSources = conflict.sides.map((s) => s.sourceId).sort();
     expect(citedSources).toEqual([priorId, triggerId].sort());
     for (const side of conflict.sides) {
       expect(side.quote.length).toBeGreaterThanOrEqual(8);
     }
+  });
+
+  it('does not flag an update that merely refines the prior state', async () => {
+    // A follow-up expanding on the same account (e.g. part N of a vendor's blog series)
+    // is the record evolving, not a disagreement between sources.
+    const priorId = seed(db, 'beta', 4);
+    const triggerId = seed(db, 'alpha', 5);
+    seedUpdateEvent(
+      priorId,
+      triggerId,
+      'Sonatype positions its firewall as a control for governing dependency intake',
+      'Sonatype positions its firewall as a policy-enforcement control for dependency intake, while acknowledging coverage limits',
+    );
+
+    const brief = await composeBrief(db, { now: NOW });
+
+    expect(brief.conflicts).toEqual([]);
+  });
+
+  it('lets a live judge decide conflicts in place of the deterministic measures', async () => {
+    const priorId = seed(db, 'beta', 4);
+    const triggerId = seed(db, 'alpha', 5);
+    // A paraphrased contradiction the lexical measures cannot see.
+    seedUpdateEvent(
+      priorId,
+      triggerId,
+      'Sonatype enterprise customers pay the usual amount',
+      'Sonatype enterprise customers pay a heftier bill',
+    );
+
+    const judge = (contradicts: boolean) => ({
+      model: 'test/chat',
+      promptVersion: 'conflict@1',
+      judge: async () => ({
+        contradicts,
+        signals: contradicts ? ['"heftier bill" vs "usual amount"'] : [],
+      }),
+    });
+
+    const surfaced = await composeBrief(db, { now: NOW, judge: judge(true) });
+    expect(surfaced.conflicts).toHaveLength(1);
+    expect(surfaced.conflicts[0]!.note).toContain('"heftier bill" vs "usual amount"');
+
+    const suppressed = await composeBrief(db, { now: NOW, judge: judge(false) });
+    expect(suppressed.conflicts).toEqual([]);
+  });
+
+  it('falls back to the deterministic measures when the judge fails', async () => {
+    const priorId = seed(db, 'beta', 4);
+    const triggerId = seed(db, 'alpha', 5);
+    seedUpdateEvent(
+      priorId,
+      triggerId,
+      'Sonatype pricing was flat',
+      'Sonatype raised enterprise pricing',
+    );
+
+    const broken = {
+      model: 'test/chat',
+      promptVersion: 'conflict@1',
+      judge: async () => {
+        throw new Error('model unreachable');
+      },
+    };
+
+    const brief = await composeBrief(db, { now: NOW, judge: broken });
+    expect(brief.conflicts).toHaveLength(1); // deterministic: "raised" vs "flat"
+  });
+
+  it('keeps only drafted conflicts whose sides make opposing claims', async () => {
+    const firstId = seed(db, 'alpha', 5);
+    const secondId = seed(db, 'beta', 4);
+
+    const summarizer: BriefSummarizer = {
+      model: 'test/chat',
+      promptVersion: 'brief-llm@2',
+      summarize: async (): Promise<BriefDraft> => ({
+        summary: `Grounded take [#${firstId}]`,
+        claims: [{ text: 'It happened', sourceId: firstId, quote: 'alpha body text' }],
+        conflicts: [
+          {
+            topic: 'Vendor — pricing',
+            sides: [
+              {
+                text: 'Vendor raised enterprise pricing',
+                sourceId: firstId,
+                quote: 'alpha body text',
+              },
+              {
+                text: 'Vendor enterprise pricing stayed flat',
+                sourceId: secondId,
+                quote: 'beta body text',
+              },
+            ],
+            note: 'Genuinely opposing accounts.',
+          },
+          {
+            topic: 'Vendor — positioning',
+            sides: [
+              {
+                text: 'Vendor positions sandboxes as isolation controls',
+                sourceId: firstId,
+                quote: 'alpha body text',
+              },
+              {
+                text: 'Vendor positions sandboxes as microVM isolation boundaries',
+                sourceId: secondId,
+                quote: 'beta body text',
+              },
+            ],
+            note: 'Just a refinement, should be dropped.',
+          },
+        ],
+      }),
+    };
+
+    const brief = await composeBrief(db, { now: NOW, summarizer });
+
+    expect(brief.model).toBe('test/chat');
+    expect(brief.conflicts).toHaveLength(1);
+    expect(brief.conflicts[0]!.topic).toBe('Vendor — pricing');
   });
 
   it('produces an empty-state brief with no items', async () => {
