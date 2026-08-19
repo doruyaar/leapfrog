@@ -46,7 +46,9 @@ describe('parseConflictVerdict', () => {
       parseConflictVerdict(JSON.stringify({ verdict: 'contradict' }), A, B),
     ).toThrow();
     expect(() => parseConflictVerdict('not json at all', A, B)).toThrow();
-    expect(() => parseConflictVerdict(JSON.stringify({ verdict: 'maybe' }), A, B)).toThrow();
+    expect(() =>
+      parseConflictVerdict(JSON.stringify({ verdict: 'maybe' }), A, B),
+    ).toThrow();
   });
 
   it('strips a code fence before parsing', () => {
@@ -69,7 +71,8 @@ describe('decideContradiction', () => {
     const paraphraseA = 'Customers now pay more for the enterprise tier';
     const paraphraseB = 'The enterprise bill has stayed the same for customers';
     expect(
-      (await decideContradiction(paraphraseA, paraphraseB, judgeSaying(true))).contradicts,
+      (await decideContradiction(paraphraseA, paraphraseB, judgeSaying(true)))
+        .contradicts,
     ).toBe(true);
   });
 

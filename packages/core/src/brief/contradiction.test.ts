@@ -27,9 +27,9 @@ describe('detectContradiction', () => {
         'raised enterprise pricing by 10%',
       ).contradicts,
     ).toBe(true);
-    expect(
-      detectContradiction('now $98 per user', 'now $79 per user').contradicts,
-    ).toBe(true);
+    expect(detectContradiction('now $98 per user', 'now $79 per user').contradicts).toBe(
+      true,
+    );
     expect(
       detectContradiction('patched in version 2.3', 'patched in version 2.4').contradicts,
     ).toBe(true);
