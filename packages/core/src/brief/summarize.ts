@@ -20,7 +20,7 @@ import { MissingApiKeyError, type OpenRouterConfig } from '../enrich/client.js';
 import type { BriefDraft, BriefSource, BriefSummarizer } from './compose.js';
 
 /** Bump on any change to `prompts/brief.md`; stored with each live-composed brief. */
-export const BRIEF_LLM_PROMPT_VERSION = 'brief-llm@1';
+export const BRIEF_LLM_PROMPT_VERSION = 'brief-llm@2';
 
 /** Default model when neither the brief nor the shared chat model is configured. */
 export const DEFAULT_BRIEF_MODEL = 'openai/gpt-4o-mini';

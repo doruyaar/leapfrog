@@ -22,6 +22,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import type { Category } from '../db/schema.js';
 import type { Database } from '../db/client.js';
 import { changeEvents, rawItems, vendorFacts } from '../db/schema.js';
+import { decideContradiction, type ContradictionJudge } from './contradiction.js';
 import { rankSignals, type RankedSignal } from './rank.js';
 import type { UrlStatus, UrlVerifier } from './verify.js';
 
@@ -170,6 +171,31 @@ function claimIsGrounded(
 }
 
 /**
+ * A conflict is only worth alarming about when its sides make *opposing claims* — a
+ * later item that merely refines or extends an earlier account (the common case for
+ * follow-up posts) is the record evolving, not a disagreement. This checks every pair
+ * of sides — via the live judge when one is given, the deterministic measures otherwise
+ * — and keeps the conflict when any pair genuinely contradicts, regardless of who
+ * published what.
+ */
+export async function conflictSidesContradict(
+  conflict: BriefConflict,
+  judge?: ContradictionJudge,
+): Promise<boolean> {
+  for (let i = 0; i < conflict.sides.length; i++) {
+    for (let j = i + 1; j < conflict.sides.length; j++) {
+      const verdict = await decideContradiction(
+        conflict.sides[i]!.text,
+        conflict.sides[j]!.text,
+        judge,
+      );
+      if (verdict.contradicts) return true;
+    }
+  }
+  return false;
+}
+
+/**
  * A conflict is only surfaced when it names at least two *distinct* sources and every
  * side is grounded — otherwise it is noise, not a documented disagreement.
  */
@@ -251,12 +277,19 @@ function isoDate(at: Date): string {
  * documented disagreement between two visible sources — surfaced, not silently collapsed
  * to "the latest wins". Everything is quoted from the two items' own bodies, so the
  * conflict is grounded by construction and never invented.
+ *
+ * Not every update is a disagreement, though: a follow-up post refining an earlier
+ * account is the record evolving. Only updates whose before/after texts make opposing
+ * claims are surfaced — decided by the live judge when one is given, the deterministic
+ * measures otherwise (see {@link decideContradiction}). For the rest, the insight's
+ * "compared to previous state" diff already shows the change.
  */
-export function detectStructuralConflicts(
+export async function detectStructuralConflicts(
   db: Database,
   items: BriefItem[],
   sourcesById: Map<number, BriefSource>,
-): BriefConflict[] {
+  judge?: ContradictionJudge,
+): Promise<BriefConflict[]> {
   const itemIds = items.map((item) => item.id);
   if (itemIds.length === 0) return [];
 
@@ -295,17 +328,17 @@ export function detectStructuralConflicts(
     const prior = sourcesById.get(priorItemId);
     if (!current || !prior) continue; // only surface conflicts both sides of which are visible
 
+    const beforeText = event.before ?? prior.summary;
+    const verdict = await decideContradiction(event.after, beforeText, judge);
+    if (!verdict.contradicts) continue; // a refinement of the record, not a disagreement
+
     conflicts.push({
       topic: `${event.vendor} — ${event.dimension}`,
       sides: [
         { text: event.after, sourceId: current.id, quote: leadingQuote(current) },
-        {
-          text: event.before ?? prior.summary,
-          sourceId: prior.id,
-          quote: leadingQuote(prior),
-        },
+        { text: beforeText, sourceId: prior.id, quote: leadingQuote(prior) },
       ],
-      note: 'The record changed between these sources; both states are shown rather than assuming the newer one is settled.',
+      note: `These sources make opposing claims (${verdict.signals.join('; ')}); both are shown rather than assuming the newer one is settled.`,
     });
   }
 
@@ -356,6 +389,11 @@ export interface ComposeBriefOptions {
   summarizer?: BriefSummarizer;
   /** Verify each item's URL before committing it as a source; omit to skip (demo mode). */
   verifier?: UrlVerifier;
+  /**
+   * Live contradiction judge for conflict gating; omit for the deterministic measures
+   * (demo mode). Any judge failure also falls back to the measures per statement pair.
+   */
+  judge?: ContradictionJudge;
 }
 
 /**
@@ -378,18 +416,31 @@ export async function composeBrief(
 
   const sources = loadSources(db, items);
   const sourcesById = new Map(sources.map((source) => [source.id, source]));
-  const structuralConflicts = detectStructuralConflicts(db, items, sourcesById);
+  const structuralConflicts = await detectStructuralConflicts(
+    db,
+    items,
+    sourcesById,
+    options.judge,
+  );
 
   if (options.summarizer && items.length > 0) {
     try {
       const draft = await options.summarizer.summarize(sources);
       if (draft.summary.trim() && draftIsGrounded(draft, sources)) {
+        // A drafted "conflict" whose sides don't actually oppose each other is the
+        // record evolving, not a disagreement — drop it rather than alarm falsely.
+        const draftedConflicts: BriefConflict[] = [];
+        for (const conflict of draft.conflicts) {
+          if (await conflictSidesContradict(conflict, options.judge)) {
+            draftedConflicts.push(conflict);
+          }
+        }
         return {
           briefDate,
           summary: draft.summary.trim(),
           items,
           claims: draft.claims,
-          conflicts: mergeConflicts(structuralConflicts, draft.conflicts),
+          conflicts: mergeConflicts(structuralConflicts, draftedConflicts),
           model: options.summarizer.model,
           promptVersion: options.summarizer.promptVersion,
         };

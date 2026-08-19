@@ -1,4 +1,4 @@
-# Brief summary prompt — `brief-llm@1`
+# Brief summary prompt — `brief-llm@2`
 
 Versioned asset (ADR-0003): the chat model is config (`OPENROUTER_BRIEF_MODEL`), the
 grounding contract is code-reviewed here. Bump the version in
@@ -28,6 +28,13 @@ fields:
   - `sides`: an array of at least two objects, each `{ text, sourceId, quote }` shaped
     exactly like a claim, drawn from **different** sources.
   - `note`: one line on why it is unresolved.
+
+  A conflict is a **genuine contradiction**: the sides make opposing claims — one denies
+  what the other asserts, they state opposite directions (raised vs lowered vs flat,
+  launched vs discontinued), or they give different figures for the same thing. A source
+  that merely expands, refines, or adds caveats to another's account — e.g. a follow-up
+  post in a vendor's own blog series — is an evolving record, not a disagreement: do
+  **not** put it in `conflicts`.
 
 Rules — these are absolute:
 

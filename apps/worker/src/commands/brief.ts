@@ -20,13 +20,16 @@ import {
   createDatabase,
   createHttpUrlVerifier,
   createOpenRouterBriefSummarizer,
+  createOpenRouterConflictJudge,
   MissingApiKeyError,
   notifyHighImpact,
   readBriefModelConfig,
+  readChatConfig,
   resolveDatabasePath,
   runMigrations,
   saveBrief,
   type BriefSummarizer,
+  type ContradictionJudge,
   type StoredBrief,
   type UrlVerifier,
 } from '@leapfrog/core';
@@ -103,6 +106,22 @@ function buildSummarizer(verbose: boolean): BriefSummarizer | undefined {
   }
 }
 
+/**
+ * Build the live conflict judge (same chat model as Ask) under the same conditions as
+ * the summarizer; without it, conflict gating uses the deterministic measures.
+ */
+function buildJudge(verbose: boolean): ContradictionJudge | undefined {
+  if (process.env.INGEST_LIVE !== '1') return undefined;
+  try {
+    const judge = createOpenRouterConflictJudge(readChatConfig());
+    if (verbose) console.log(`  conflict judging via ${judge.model}`);
+    return judge;
+  } catch (error) {
+    if (error instanceof MissingApiKeyError) return undefined; // summarizer already said why
+    throw error;
+  }
+}
+
 export async function runBriefCommand(argv: string[]): Promise<number> {
   const options = parseBriefArgs(argv);
   const db = createDatabase({ path: options.dbPath });
@@ -115,6 +134,7 @@ export async function runBriefCommand(argv: string[]): Promise<number> {
 
   try {
     const summarizer = buildSummarizer(verbose);
+    const judge = buildJudge(verbose);
     const verifier: UrlVerifier | undefined = options.verifyUrls
       ? createHttpUrlVerifier()
       : undefined;
@@ -127,6 +147,7 @@ export async function runBriefCommand(argv: string[]): Promise<number> {
       topN: options.topN,
       summarizer,
       verifier,
+      judge,
     });
     if (verbose) {
       console.log(

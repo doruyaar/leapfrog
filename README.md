@@ -26,6 +26,9 @@ daily briefs, grounded Q&A, a comparison matrix, and battlecards.
 - **Grounded by design.** Every generated claim cites a real source item; the assistant
   refuses ("not in my sources") rather than hallucinating. LLM output is schema-validated
   before it is ever shown.
+- **Conflicts surfaced, never resolved.** When two sources make opposing claims, the brief
+  shows both sides with their quotes and citations and lets _you_ decide — it never lets the
+  model silently pick a winner or assume the newer post is settled.
 - **Runs with zero keys.** `npm run seed && npm run dev` gives a fully populated UI in
   under a minute. Embeddings use OpenRouter when a key is set and fall back to a local
   model without one; only live generation strictly needs a key.
@@ -81,17 +84,36 @@ Open <http://localhost:3000>. The app is organized as a proactive-first workspac
 
 ## Screenshots
 
+### Demo walkthrough
+
+https://github.com/doruyaar/leapfrog/raw/main/Screenshots/recording.mov
+
+<sub>▶ If the player doesn't load inline, [watch/download the recording here](Screenshots/recording.mov).</sub>
+
 ### Today's Brief
 
-![Today's Brief](photos/daily_brief.png)
+![Today's Brief](Screenshots/daily_brief.png)
 
 The home screen: an executive summary followed by a ranked, category-grouped feed. Every
 card carries a 1–5 impact score, a "why it matters to JFrog" note, a state-change tag
 (new / update / re-phrasing), and a source badge.
 
+### Sources disagree — surfaced, not resolved
+
+![Facts in conflict](Screenshots/source_disagree.png)
+
+When two sources make genuinely opposing claims — a negation flip, opposite-polarity terms
+on the same axis (raised vs. flat, launched vs. discontinued, confirms vs. denies), or
+diverging figures — the brief opens a **"Facts that are in conflict"** panel. Each side is
+shown with its own verbatim quote and citation, and the detected evidence is spelled out in
+the note. The system deliberately **does not let the LLM decide what's true**: it presents
+both accounts and lets the reader weigh them, rather than silently collapsing to "the latest
+wins". A mere refinement of an earlier post is _not_ flagged (see
+[`docs/PITFALLS.md`](docs/PITFALLS.md)) — only real contradictions are.
+
 ### Insight detail
 
-![Insight detail](photos/insight_cards.png)
+![Insight detail](Screenshots/insight_cards.png)
 
 Open any insight for the full enrichment — "why it matters", a before/after "compared to
 previous state" diff, the summary, the impact rationale, and full provenance (source
@@ -99,7 +121,7 @@ entities, corroboration, and the exact model, prompt version, and enrich date be
 
 ### Ask — contextual, grounded chat
 
-![Ask LeapFrog](photos/talkative_chat_about_page_context.png)
+![Ask LeapFrog](Screenshots/talkative_chat_about_page_context.png)
 
 A "Talk about it" panel opens in-context on any insight. Answers are grounded: every claim
 cites the corpus items it came from, and the assistant explains its impact scoring rather
@@ -107,14 +129,14 @@ than hallucinating.
 
 ### Competitors
 
-![Competitors](photos/battlecards.png)
+![Competitors](Screenshots/battlecards.png)
 
 Every tracked vendor with intelligence in the corpus, busiest first, each with its insight
 count, latest headline, and category mix. Open one for its timeline and filterable feed.
 
 ### Competitive Matrix — human-in-the-loop
 
-![Competitive Matrix](photos/comparison_matrix_with_human-in-the-loop_updates.png)
+![Competitive Matrix](Screenshots/comparison_matrix_with_human-in-the-loop_updates.png)
 
 JFrog vs. competitors across capability axes (Strong / Partial / Gap / Varies) with
 evidence behind every cell. When new signals arrive the system proposes matrix updates —
@@ -123,7 +145,7 @@ applied on approval.
 
 ### Battlecards
 
-![Battlecard](photos/a_battlecard.png)
+![Battlecard](Screenshots/a_battlecard.png)
 
 A one-click, source-footnoted sales battlecard per competitor: positioning, where JFrog
 wins, watch-outs, points at parity, ready-to-use talking points, and recent activity —
@@ -131,7 +153,7 @@ exportable to Markdown.
 
 ### Notifications
 
-![Notifications](photos/notifications_system.png)
+![Notifications](Screenshots/notifications_system.png)
 
 Subscribe to exactly the companies, update types, severity, and keywords you care about,
 with immediate / daily / weekly frequency. Each rule shows how many current insights it
@@ -139,7 +161,7 @@ matches before you save.
 
 ### Digest email
 
-![Digest email](photos/how_email_looks_like.png)
+![Digest email](Screenshots/how_email_looks_like.png)
 
 The email each subscription produces: matched insights with their impact score, category,
 and "why it matters", linking back to the insight and the original source.
